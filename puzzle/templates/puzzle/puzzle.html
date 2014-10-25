@@ -1,0 +1,58 @@
+{% extends "puzzle/base.html" %}
+
+{% block title %} - #{{ number }}{% endblock %}
+
+{% block js %}
+{% if not show_answers %}
+{% load staticfiles %}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
+{% endif %}
+{% endblock %}
+
+{% block main %}
+<div class="puzzle" role="main">
+	<div id="grid-wrapper">
+		<h3>&#35;{{ number }} - {{ date }} - by {{ author }}</h3>
+		<div id="grid" data-number="{{ number }}">
+			<input id="ip" type="text" autocomplete="off"></text>
+			{% for row in grid %}
+			{% for square in row %}
+			<div data-x="{{ square.col }}" data-y="{{ square.row }}" class="{{ square.type }}">
+				{% if 'block' in square.type %}
+				<img src="{% static 'puzzle/images/grey-px.png' %}">
+				{% endif %}
+				{% if square.number %}
+				<div class="grid-number">{{ square.number }}</div>
+				{% endif %}
+				{% if square.letter %}
+				<span class="letter">{{ square.letter }}</span>
+				{% endif %}
+			</div>
+			{% endfor %}
+			{% endfor %}
+		</div>
+		{% if not show_answers %}
+		<div class="buttons"><a href="{% url 'solution' number %}">Solution</a></div>
+		{% endif %}
+	</div>
+	<div class="clues">
+		<div class="across clue-box clue-text">
+			<h4>Across</h4>
+			<ul>
+				{% for c in across_clues %}
+				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue }} ({{ c.numeration }})</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<div class="down clue-box clue-text">
+			<h4>Down</h4>
+			<ul>
+				{% for c in down_clues %}
+				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue }} ({{ c.numeration }})</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}

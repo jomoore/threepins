@@ -1,0 +1,11 @@
+{% extends "puzzle/base.html" %}
+
+{% block title %} - Archive{% endblock %}
+
+{% block main %}
+<ul id="index-list">
+	{% for puzzle in puzzles %}
+	<li><a href={% url 'puzzle' puzzle.number %}> Puzzle #{{ puzzle.number }} - {{ puzzle.author }} - {{ puzzle.date }}</a></li>
+	{% endfor %}
+</ul>
+{% endblock %}
