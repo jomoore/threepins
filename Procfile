@@ -1,1 +1,1 @@
-web: gunicorn three-pins.wsgi --log-file -
+web: gunicorn three_pins.wsgi --log-file -
