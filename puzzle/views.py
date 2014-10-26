@@ -1,6 +1,7 @@
-from django.shortcuts import render
 from re import sub
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django.http import Http404
 from puzzle.models import Author, Puzzle, Entry
 
 def create_grid(puzzle, size, show_answers):
@@ -46,35 +47,51 @@ def get_clues(puzzle, grid, down):
         clues.append({'number': grid[e.y][e.x]['number'], 'clue': e.clue, 'numeration': numeration })
     return clues
 
-def display_puzzle(request, puzzle, show_answers):
+def display_puzzle(request, puzzle, show_answers=False, preview=False):
     grid = create_grid(puzzle, 15, show_answers)
     across_clues = get_clues(puzzle, grid, False)
     down_clues = get_clues(puzzle, grid, True)
     next_puzzle = int(puzzle.number) + 1
     prev_puzzle = int(puzzle.number) - 1
 
-    if Puzzle.objects.filter(number=next_puzzle, pub_date__lte=timezone.now()).count() == 0:
+    if preview:
+        if Puzzle.objects.filter(number=next_puzzle).count() == 0:
+            next_puzzle = None
+    elif Puzzle.objects.filter(number=next_puzzle, pub_date__lte=timezone.now()).count() == 0:
         next_puzzle = None
+
     if prev_puzzle < 0:
         prev_puzzle = None
 
     context = {'number': puzzle.number, 'date': timezone.localtime(puzzle.pub_date).strftime('%d %b %Y'),
-               'author': puzzle.author.name, 'grid': grid, 'show_answers': show_answers,
+               'author': puzzle.author.name, 'grid': grid, 'show_answers': show_answers, 'preview': preview,
                'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, 'puzzle/puzzle.html', context)
 
 def latest(request):
     p = Puzzle.objects.filter(pub_date__lte=timezone.now()).latest('pub_date')
-    return display_puzzle(request, p, False)
+    return display_puzzle(request, p)
 
 def puzzle(request, number):
-    p = Puzzle.objects.get(number=number)
-    return display_puzzle(request, p, False)
+    p = get_object_or_404(Puzzle, number=number)
+    if p.pub_date > timezone.now():
+        raise Http404
+    return display_puzzle(request, p)
 
 def solution(request, number):
-    p = Puzzle.objects.get(number=number)
+    p = get_object_or_404(Puzzle, number=number)
+    if p.pub_date > timezone.now():
+        raise Http404
     return display_puzzle(request, p, True)
+
+def preview(request, number):
+    p = get_object_or_404(Puzzle, number=number)
+    return display_puzzle(request, p, False, True)
+
+def preview_solution(request, number):
+    p = get_object_or_404(Puzzle, number=number)
+    return display_puzzle(request, p, True, True)
 
 def index(request):
     puzzles = Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')

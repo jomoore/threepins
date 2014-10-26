@@ -20,9 +20,9 @@
 	</header>
 	<nav role="navigation">
 		<ul>
-			<li>{% if prev_puzzle >= 0 %}<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>{% endif %}</li>
+			<li>{% block prev %}{% endblock %}</li>
 			<li><a href="{% url 'index' %}">Archive</a></li>
-			<li>{% if next_puzzle %}<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>{% endif %}</li>
+			<li>{% block next %}{% endblock %}</li>
 		</ul>
 	</nav>
 	{% block main %}{% endblock %}

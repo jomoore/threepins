@@ -10,6 +10,26 @@
 {% endif %}
 {% endblock %}
 
+{% block prev %}
+{% if prev_puzzle >= 0 %}
+{% if preview %}
+<a href="{% url 'preview' prev_puzzle %}">&lt; Previous</a>
+{% else %}
+<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block next %}
+{% if next_puzzle %}
+{% if preview %}
+<a href="{% url 'preview' next_puzzle %}">Next &gt;</a>
+{% else %}
+<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>
+{% endif %}
+{% endif %}
+{% endblock %}
+
 {% block main %}
 <div class="puzzle" role="main">
 	<div id="grid-wrapper">
@@ -33,7 +53,13 @@
 			{% endfor %}
 		</div>
 		{% if not show_answers %}
-		<div class="buttons"><a href="{% url 'solution' number %}">Solution</a></div>
+		<div class="buttons">
+			{% if preview %}
+			<a href="{% url 'preview_solution' number %}">Solution</a>
+			{% else %}
+			<a href="{% url 'solution' number %}">Solution</a>
+			{% endif %}
+		</div>
 		{% endif %}
 	</div>
 	<div class="clues">
