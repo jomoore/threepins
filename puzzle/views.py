@@ -58,8 +58,8 @@ def display_puzzle(request, puzzle, show_answers):
     if prev_puzzle < 0:
         prev_puzzle = None
 
-    context = {'number': puzzle.number, 'date': puzzle.pub_date.strftime('%d %b %Y'), 'author': puzzle.author.name,
-               'grid': grid, 'show_answers': show_answers,
+    context = {'number': puzzle.number, 'date': timezone.localtime(puzzle.pub_date).strftime('%d %b %Y'),
+               'author': puzzle.author.name, 'grid': grid, 'show_answers': show_answers,
                'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, 'puzzle/puzzle.html', context)
@@ -80,6 +80,6 @@ def index(request):
     puzzles = Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')
     info = []
     for p in puzzles:
-        info.append({'number': p.number, 'author': p.author, 'date': p.pub_date.strftime('%d %b %Y')})
+        info.append({'number': p.number, 'author': p.author, 'date': timezone.localtime(p.pub_date).strftime('%d %b %Y')})
     context = { 'puzzles': info }
     return render(request, 'puzzle/index.html', context)
