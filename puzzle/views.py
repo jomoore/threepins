@@ -54,20 +54,26 @@ def display_puzzle(request, puzzle, title, show_answers=False, preview=False):
     next_puzzle = int(puzzle.number) + 1
     prev_puzzle = int(puzzle.number) - 1
 
+    if prev_puzzle < 0:
+        prev_puzzle = None
+
     if preview:
         if Puzzle.objects.filter(number=next_puzzle).count() == 0:
             next_puzzle = None
     elif Puzzle.objects.filter(number=next_puzzle, pub_date__lte=timezone.now()).count() == 0:
         next_puzzle = None
 
-    if prev_puzzle < 0:
-        prev_puzzle = None
+    if show_answers:
+        template = 'puzzle/solution.html'
+    elif preview:
+        template = 'puzzle/preview.html'
+    else:
+        template = 'puzzle/puzzle.html'
 
     context = {'title': title, 'number': puzzle.number, 'date': timezone.localtime(puzzle.pub_date).strftime('%d %b %Y'),
-               'author': puzzle.author.name, 'grid': grid, 'show_answers': show_answers, 'preview': preview,
-               'across_clues': across_clues, 'down_clues': down_clues,
+               'author': puzzle.author.name, 'grid': grid, 'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
-    return render(request, 'puzzle/puzzle.html', context)
+    return render(request, template, context)
 
 def latest(request):
     p = Puzzle.objects.filter(pub_date__lte=timezone.now()).latest('pub_date')
@@ -76,7 +82,7 @@ def latest(request):
 
 def puzzle(request, number):
     p = get_object_or_404(Puzzle, number=number)
-    title = ' - Crossword #' + number # 
+    title = ' - Crossword #' + number
     if p.pub_date > timezone.now():
         raise Http404
     return display_puzzle(request, p, title)

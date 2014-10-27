@@ -3,31 +3,23 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block js %}
-{% if not show_answers %}
 {% load staticfiles %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
-{% endif %}
 {% endblock %}
 
-{% block prev %}
-{% if prev_puzzle >= 0 %}
-{% if preview %}
-<a href="{% url 'preview' prev_puzzle %}">&lt; Previous</a>
-{% else %}
-<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>
-{% endif %}
-{% endif %}
-{% endblock %}
-
-{% block next %}
-{% if next_puzzle %}
-{% if preview %}
-<a href="{% url 'preview' next_puzzle %}">Next &gt;</a>
-{% else %}
-<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>
-{% endif %}
-{% endif %}
+{% block nav %}
+<li>
+	{% if prev_puzzle >= 0 %}
+	{% block prev %}<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>{% endblock %}
+	{% endif %}
+</li>
+<li><a href="{% url 'index' %}">Archive</a></li>
+<li>
+	{% if next_puzzle %}
+	{% block next %}<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>{% endblock %}
+	{% endif %}
+</li>
 {% endblock %}
 
 {% block main %}
@@ -52,15 +44,11 @@
 			{% endfor %}
 			{% endfor %}
 		</div>
-		{% if not show_answers %}
 		<div class="buttons">
-			{% if preview %}
-			<a href="{% url 'preview_solution' number %}">Solution</a>
-			{% else %}
+        	{% block solution %}
 			<a href="{% url 'solution' number %}">Solution</a>
-			{% endif %}
+	        {% endblock %}
 		</div>
-		{% endif %}
 	</div>
 	<div class="clues">
 		<div class="across clue-box clue-text">

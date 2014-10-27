@@ -1,0 +1,17 @@
+{% extends "puzzle/puzzle.html" %}
+
+{% block meta %}
+<meta name="robots" content="noindex">
+{% endblock %}
+
+{% block prev %}
+<a href="{% url 'preview' prev_puzzle %}">&lt; Previous</a>
+{% endblock %}
+
+{% block next %}
+<a href="{% url 'preview' next_puzzle %}">Next &gt;</a>
+{% endblock %}
+
+{% block solution %}
+<a href="{% url 'preview_solution' number %}">Solution</a>
+{% endblock %}
