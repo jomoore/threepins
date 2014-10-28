@@ -18,7 +18,7 @@ nav li { display: inline; padding: 20px; }
 
 /* Index */
 #index-list { text-align: center; }
-#index-list li { padding: 3px; }
+#index-list li { padding-bottom: 6px; }
 
 /* Grid */
 #grid { text-align: center; position: relative; }
