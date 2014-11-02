@@ -27,12 +27,12 @@
 	<div id="grid-wrapper">
 		<h3>&#35;{{ number }} - {{ date }} - by {{ author }}</h3>
 		<div id="grid" data-number="{{ number }}">
-			<input id="ip" type="text" autocomplete="off"></text>
+			<input id="ip" type="text" autocomplete="off">
 			{% for row in grid %}
 			{% for square in row %}
 			<div data-x="{{ square.col }}" data-y="{{ square.row }}" class="{{ square.type }}">
 				{% if 'block' in square.type %}
-				<img src="{% static 'puzzle/images/grey-px.png' %}">
+				<img src="{% static 'puzzle/images/grey-px.png' %}" alt="" />
 				{% endif %}
 				{% if square.number %}
 				<div class="grid-number">{{ square.number }}</div>
