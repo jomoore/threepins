@@ -3,19 +3,19 @@
 <head>
 	{% load staticfiles %}
 	<title>Three Pins{% block title %}{% endblock %}</title>
-	<link rel="stylesheet" type="text/css" href="{% static 'puzzle/style.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300%7CRoboto:400,300italic%7CPatrick+Hand+SC" rel="stylesheet" type="text/css">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="A free interactive site dedicated to amateur cryptic crosswords. Solve online or on paper.">
-    {% block meta %}{% endblock %}
+	{% block meta %}{% endblock %}
 	{% block js %}{% endblock %}
 </head>
 <body>
 <!--[if !IE1 ]><span id='antique-IE'></span><![endif]-->
 <div class="page-wrapper">
 	<header role="banner">
-		<a href="/"><img src="{% static 'puzzle/images/pins-70px.svg' %}" alt="Three Pins logo" /></a>
+		<a href="/"><img src="{% static 'images/pins-70px.svg' %}" alt="Three Pins logo" /></a>
 		<h1>Three Pins</h1>
 		<h2>A cryptic crossword outlet</h2>
 	</header>
@@ -23,6 +23,7 @@
 		<ul>
 			{% block nav %}
 			<li><a href="{% url 'index' %}">Archive</a></li>
+			<li><a href="{% url 'contact' %}">Contact</a></li>
 			{% endblock %}
 		</ul>
 	</nav>

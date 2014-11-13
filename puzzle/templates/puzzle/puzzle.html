@@ -1,4 +1,4 @@
-{% extends "puzzle/base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -14,7 +14,7 @@
 	{% block prev %}<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>{% endblock %}
 	{% endif %}
 </li>
-<li><a href="{% url 'index' %}">Archive</a></li>
+{{ block.super }}
 <li>
 	{% if next_puzzle %}
 	{% block next %}<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>{% endblock %}
@@ -32,7 +32,7 @@
 			{% for square in row %}
 			<div data-x="{{ square.col }}" data-y="{{ square.row }}" class="{{ square.type }}">
 				{% if 'block' in square.type %}
-				<img src="{% static 'puzzle/images/grey-px.png' %}" alt="" />
+				<img src="{% static 'images/grey-px.png' %}" alt="" />
 				{% endif %}
 				{% if square.number %}
 				<div class="grid-number">{{ square.number }}</div>

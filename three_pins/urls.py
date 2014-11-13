@@ -6,5 +6,6 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^$', include('puzzle.urls')),
     url(r'^puzzle/', include('puzzle.urls')),
+    url(r'^contact/', include('contact.urls')),
     url(r'^admin/', include(admin.site.urls)),
 )

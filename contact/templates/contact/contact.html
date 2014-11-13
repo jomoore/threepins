@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %} - Contact{% endblock %}
+
+{% block main %}
+<div id="contact" class="simple-content">
+	{% if warning %}
+	<p class="warning">{{ warning }}</p>
+	{% endif %}
+	<p>Any comments about this website or its crosswords?</p>
+	<p>Got some crosswords of your own you'd like to share?</p>
+	<p>Whatever the reason, please get in touch!</p>
+	<form action="{% url 'send' %}" method="post">{% csrf_token %}
+		<label for="name">Name:</label>
+		<input type="text" name="name" />
+		
+		<label for="email">Email:</label>
+		<input type="text" name="email" />
+		
+		<label for="message">Message:</label>
+		<textarea name="message" rows="20" cols="20"></textarea>
+
+		<input type="submit" name="send" value="Send" class="send-button" />
+	</form>
+</div>
+{% endblock %}
