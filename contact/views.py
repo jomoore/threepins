@@ -1,20 +1,27 @@
 from django.shortcuts import render
 from django.core.mail import send_mail
+from smtplib import SMTPRecipientsRefused
 
 def contact(request):
     return render(request, 'contact/contact.html')
 
 def send(request):
-    if not request.POST['message']:
-        return render(request, 'contact/contact.html', {'warning': 'Add a message before you hit Send!',})
+    context = { 'name': request.POST['name'], 'email': request.POST['email'], 'message': request.POST['message'], }
 
-    name = request.POST['name']
-    if not name:
-        name = 'Anonymous'
+    if not context['message']:
+        context['warning'] = 'Add a message before you hit Send!'
+        return render(request, 'contact/contact.html', context)
 
-    email = request.POST['email']
-    if not email:
-        email = 'contact@threepins.org'
+    if not context['name']:
+        context['name'] = 'Anonymous'
 
-    send_mail('Web Feedback', request.POST['message'], name + '<' + email + '>', ['contact@threepins.org'])
+    if not context['email']:
+        context['email'] = 'contact@threepins.org'
+
+    try:
+        send_mail('Web Feedback', context['message'], context['name'] + '<' + context['email'] + '>', ['contact@threepins.org'])
+    except SMTPRecipientsRefused:
+        context['warning'] = "Couldn't make sense of that email address (but leave it blank if you like)."
+        return render(request, 'contact/contact.html', context)
+
     return render(request, 'contact/sent.html')
