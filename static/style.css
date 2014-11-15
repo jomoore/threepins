@@ -66,8 +66,8 @@ footer { border-top: 1px solid; clear: both; }
 }
 
 @media print {
-    body { font-size: 0.7em; }
-    h3 { font-size: 0.7em; }
+    body { font-size: 0.75em; }
+    h3 { font-size: 0.8em; }
     a { display: none; }
     header img { display: none; }
     nav { display: none; }

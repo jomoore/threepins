@@ -34,7 +34,7 @@
 			{% for square in row %}
 			<div data-x="{{ square.col }}" data-y="{{ square.row }}" class="{{ square.type }}">
 				{% if 'block' in square.type %}
-				<img src="{% static 'images/grey-px.png' %}" alt="" />
+				<img src="{% static 'images/grey-px.png' %}" alt="block" />
 				{% endif %}
 				{% if square.number %}
 				<div class="grid-number">{{ square.number }}</div>
