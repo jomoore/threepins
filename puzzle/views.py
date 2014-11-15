@@ -47,7 +47,10 @@ def get_clues(puzzle, grid, down):
         clues.append({'number': grid[e.y][e.x]['number'], 'clue': e.clue, 'numeration': numeration })
     return clues
 
-def display_puzzle(request, puzzle, title, show_answers=False, preview=False):
+def get_date_string(puzzle):
+    return timezone.localtime(puzzle.pub_date).strftime('%d %b %Y')
+
+def display_puzzle(request, puzzle, title, description, show_answers=False, preview=False):
     grid = create_grid(puzzle, 15, show_answers)
     across_clues = get_clues(puzzle, grid, False)
     down_clues = get_clues(puzzle, grid, True)
@@ -70,44 +73,46 @@ def display_puzzle(request, puzzle, title, show_answers=False, preview=False):
     else:
         template = 'puzzle/puzzle.html'
 
-    context = {'title': title, 'number': puzzle.number, 'date': timezone.localtime(puzzle.pub_date).strftime('%d %b %Y'),
+    context = {'title': title, 'description': description, 'number': puzzle.number, 'date': get_date_string(puzzle),
                'author': puzzle.author.name, 'grid': grid, 'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, template, context)
 
 def latest(request):
     p = Puzzle.objects.filter(pub_date__lte=timezone.now()).latest('pub_date')
-    title = " - A cryptic crossword outlet"
-    return display_puzzle(request, p, title)
+    title = 'A cryptic crossword outlet'
+    description = 'A free interactive site dedicated to amateur cryptic crosswords. Solve online or on paper.'
+    return display_puzzle(request, p, title, description)
 
 def puzzle(request, number):
     p = get_object_or_404(Puzzle, number=number)
-    title = ' - Crossword #' + number
+    title = 'Crossword #' + number
+    description = 'Crossword #' + number + ', first published on ' + get_date_string(p) + '.'
     if p.pub_date > timezone.now():
         raise Http404
-    return display_puzzle(request, p, title)
+    return display_puzzle(request, p, title, description)
 
 def solution(request, number):
     p = get_object_or_404(Puzzle, number=number)
-    title = ' - Solution #' + number
+    title = 'Solution #' + number
     if p.pub_date > timezone.now():
         raise Http404
-    return display_puzzle(request, p, title, True)
+    return display_puzzle(request, p, title, title, True)
 
 def preview(request, number):
     p = get_object_or_404(Puzzle, number=number)
-    title = ' - Preview #' + number
-    return display_puzzle(request, p, title, False, True)
+    title = 'Preview #' + number
+    return display_puzzle(request, p, title, title, False, True)
 
 def preview_solution(request, number):
     p = get_object_or_404(Puzzle, number=number)
-    title = ' - Solution #' + number
-    return display_puzzle(request, p, title, True, True)
+    title = 'Solution #' + number
+    return display_puzzle(request, p, title, title, True, True)
 
 def index(request):
     puzzles = Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')
     info = []
     for p in puzzles:
-        info.append({'number': p.number, 'author': p.author, 'date': timezone.localtime(p.pub_date).strftime('%d %b %Y')})
+        info.append({'number': p.number, 'author': p.author, 'date': get_date_string(p)})
     context = { 'puzzles': info }
     return render(request, 'puzzle/index.html', context)
