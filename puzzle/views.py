@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import Http404
 from puzzle.models import Author, Puzzle, Entry
+from visitors.models import save_request
 
 def create_grid(puzzle, size, show_answers):
     entries = Entry.objects.filter(puzzle=puzzle).order_by('y', 'x')
@@ -72,6 +73,8 @@ def display_puzzle(request, puzzle, title, description, show_answers=False, prev
         template = 'puzzle/preview.html'
     else:
         template = 'puzzle/puzzle.html'
+
+    save_request(request)
 
     context = {'title': title, 'description': description, 'number': puzzle.number, 'date': get_date_string(puzzle),
                'author': puzzle.author.name, 'grid': grid, 'across_clues': across_clues, 'down_clues': down_clues,

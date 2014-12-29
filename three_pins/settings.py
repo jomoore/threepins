@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'puzzle',
     'contact',
+    'visitors',
 )
 
 MIDDLEWARE_CLASSES = (
