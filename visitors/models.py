@@ -1,19 +1,17 @@
 from django.db import models
 from django.utils import timezone
+from ipware.ip import get_real_ip
 
 def save_request(request):
     if Visitor.objects.count() >= 100:
         Visitor.objects.earliest('date').delete()
     v = Visitor()
+    ip = get_real_ip(request)
+    v.ip_addr = ip if ip is not None else ''
+    v.user_agent = request.META.get('HTTP_USER_AGENT', '')
     v.path = request.path
+    v.referrer = request.META.get('HTTP_REFERER', '')
     v.date = timezone.now()
-    meta = request.META
-    if 'REMOTE_ADDR' in meta:
-        v.ip_addr = request.META['REMOTE_ADDR']
-    if 'HTTP_USER_AGENT' in meta:
-        v.user_agent = request.META['HTTP_USER_AGENT']
-    if 'HTTP_REFERER' in meta:
-        v.referrer = request.META['HTTP_REFERER']
     v.save()
 
 class Visitor(models.Model):
