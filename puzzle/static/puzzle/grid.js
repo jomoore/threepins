@@ -315,7 +315,7 @@ $(document).ready(function() {
 				var enteredLetter = $letter.text();
 				var correctLetter = grid[x][y].$div.attr('data-a');
 				if (enteredLetter != correctLetter)
-					$letter.css('color', 'red');
+					$letter.remove();
 				if (active.down)
 					y++;
 				else
@@ -446,8 +446,8 @@ $(document).ready(function() {
 			grid.checkAnswer();
 		});
 
-		var $cheatButton = $('<button>Cheat</button>');
-		$cheatButton.on('click', function() {
+		var $peekButton = $('<button>Peek</button>');
+		$peekButton.on('click', function() {
 			grid.showAnswer();
 			cookieManager.saveLetters(grid);
 		});
@@ -470,7 +470,7 @@ $(document).ready(function() {
 
 		$div.empty();
 		$div.append($checkButton);
-		$div.append($cheatButton);
+		$div.append($peekButton);
 		$div.append($solutionButton);
 	}
 
