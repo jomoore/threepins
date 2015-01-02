@@ -82,6 +82,7 @@ footer { border-top: 1px solid; clear: both; }
     #grid > .leftmost { border-left: 1px solid grey; }
     #grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
     .grid-number { top: 1px; font-size: 9px; }
+    .buttons { display: none; }
     .clue-box { width: 260px; }
     .clue-box li { padding: 1px; }
 
