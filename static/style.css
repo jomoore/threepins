@@ -39,6 +39,8 @@ nav li { display: inline; padding: 20px; }
 .highlight { background: #ffffba; }
 .letter { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; line-height: 100%; }
 .buttons { text-align: right; padding-right: 10px; font-size: 0.8em; }
+.buttons button { opacity: 0.8; background: white; color: #336600; border: 1px dotted; padding: 1px; margin: 3px 0px 0px 5px; }
+.buttons button:hover { opacity: 1; background: #336600; color: white; border: 1px solid; }
 
 /* Clues */
 .puzzle { clear: left; background: url(images/smudge.jpg) bottom right no-repeat; padding-bottom: 20px; }

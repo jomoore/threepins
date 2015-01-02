@@ -32,14 +32,18 @@
 			<input id="ip" type="text" autocomplete="off">
 			{% for row in grid %}
 			{% for square in row %}
-			<div data-x="{{ square.col }}" data-y="{{ square.row }}" class="{{ square.type }}">
+			<div data-x="{{ square.col }}" data-y="{{ square.row }}"
+				 {% if square.letter %}
+				 data-a="{{ square.letter }}"
+				 {% endif %}
+				 class="{{ square.type }}">
 				{% if 'block' in square.type %}
 				<img src="{% static 'images/grey-px.png' %}" alt="block" />
 				{% endif %}
 				{% if square.number %}
 				<div class="grid-number">{{ square.number }}</div>
 				{% endif %}
-				{% if square.letter %}
+				{% if square.letter and show_answers %}
 				<span class="letter">{{ square.letter }}</span>
 				{% endif %}
 			</div>

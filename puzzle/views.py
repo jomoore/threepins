@@ -5,7 +5,7 @@ from django.http import Http404
 from puzzle.models import Author, Puzzle, Entry
 from visitors.models import save_request
 
-def create_grid(puzzle, size, show_answers):
+def create_grid(puzzle, size):
     entries = Entry.objects.filter(puzzle=puzzle).order_by('y', 'x')
     grid = []
     number = 1
@@ -25,8 +25,7 @@ def create_grid(puzzle, size, show_answers):
             number += 1
         for letter in answer:
             grid[row][col]['type'] = 'light'
-            if show_answers:
-                grid[row][col]['letter'] = letter.upper()
+            grid[row][col]['letter'] = letter.upper()
             if e.down:
                 row += 1
             else:
@@ -52,7 +51,7 @@ def get_date_string(puzzle):
     return timezone.localtime(puzzle.pub_date).strftime('%d %b %Y')
 
 def display_puzzle(request, puzzle, title, description, show_answers=False, preview=False):
-    grid = create_grid(puzzle, 15, show_answers)
+    grid = create_grid(puzzle, 15)
     across_clues = get_clues(puzzle, grid, False)
     down_clues = get_clues(puzzle, grid, True)
     next_puzzle = int(puzzle.number) + 1
@@ -78,7 +77,7 @@ def display_puzzle(request, puzzle, title, description, show_answers=False, prev
 
     context = {'title': title, 'description': description, 'number': puzzle.number, 'date': get_date_string(puzzle),
                'author': puzzle.author.name, 'grid': grid, 'across_clues': across_clues, 'down_clues': down_clues,
-               'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
+               'show_answers': show_answers, 'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, template, context)
 
 def latest(request):

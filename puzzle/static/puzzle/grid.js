@@ -243,6 +243,12 @@ $(document).ready(function() {
 			}
 		};
 
+		var revealLetter = function(x, y) {
+			var letter = grid[x][y].$div.attr('data-a');
+			grid[x][y].$div.children('.letter').remove();
+			grid[x][y].$div.append('<span class="letter">' + letter.toUpperCase() + '</span>');
+		}
+
 		this.deleteLetter = function(backpedal) {
 			clearLetter(backpedal);
 		};
@@ -299,6 +305,58 @@ $(document).ready(function() {
 					}
 				}
 			}
+		}
+
+		this.checkAnswer = function() {
+			var x = active.x;
+			var y = active.y;
+			for (var i = 0; i < active.length; i++) {
+				var $letter = grid[x][y].$div.children('.letter').first();
+				var enteredLetter = $letter.text();
+				var correctLetter = grid[x][y].$div.attr('data-a');
+				if (enteredLetter != correctLetter)
+					$letter.css('color', 'red');
+				if (active.down)
+					y++;
+				else
+					x++;
+			}
+			doClearActive();
+		}
+
+		this.showAnswer = function() {
+			var x = active.x;
+			var y = active.y;
+			for (var i = 0; i < active.length; i++) {
+				revealLetter(x, y);
+				if (active.down)
+					y++;
+				else
+					x++;
+			}
+			doClearActive();
+		}
+
+		this.showSolution = function() {
+			for (var y = 0; y < size; y++) {
+				for (var x = 0; x < size; x++) {
+					if (grid[x][y].light) {
+						revealLetter(x, y);
+					}
+				}
+			}
+			doClearActive();
+		}
+
+		this.clearAll = function() {
+			for (var y = 0; y < size; y++) {
+				for (var x = 0; x < size; x++) {
+					if (grid[x][y].light) {
+						grid[x][y].$div.children('.letter').remove();
+					}
+				}
+			}
+			doClearActive();
 		}
 
 		var initGrid = function() {
@@ -380,6 +438,42 @@ $(document).ready(function() {
 		});
 	}
 
+	/* The page initially contains a link to the solution in case Javascript is disabled.
+	 * Since it's enabled, we can remove the link and provide some buttons instead. */
+	function ButtonBox(grid, $div, cookieManager) {
+		var $checkButton = $('<button>Check</button>');
+		$checkButton.on('click', function() {
+			grid.checkAnswer();
+		});
+
+		var $cheatButton = $('<button>Cheat</button>');
+		$cheatButton.on('click', function() {
+			grid.showAnswer();
+			cookieManager.saveLetters(grid);
+		});
+
+		var $solutionButton = $('<button id="solution-button">Solution</button>');
+		$solutionButton.on('click', function() {
+			grid.showSolution();
+			cookieManager.saveLetters(grid);
+			$solutionButton.detach();
+			$div.append($clearButton);
+		});
+
+		var $clearButton = $('<button id="clear-button">Clear All</button>');
+		$clearButton.on('click', function() {
+			grid.clearAll();
+			cookieManager.saveLetters(grid);
+			$clearButton.detach();
+			$div.append($solutionButton);
+		});
+
+		$div.empty();
+		$div.append($checkButton);
+		$div.append($cheatButton);
+		$div.append($solutionButton);
+	}
+
 	function CookieManager() {
 		var WARNING_VERSION = '1';
 		var WARNING_TEXT =
@@ -435,6 +529,7 @@ $(document).ready(function() {
 	var cm = new CookieManager();
 	var grid = new Grid(15, $('#grid'));
 	var input = new GridInput(grid, $('#ip'), cm);
+	var bb = new ButtonBox(grid, $('.buttons'), cm);
 	cm.loadLetters(grid);
 
 	$('#grid > div').on('mousedown', function() {
