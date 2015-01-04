@@ -375,7 +375,6 @@ $(document).ready(function() {
 		/* --- Initialisation --- */
 
 		var initGrid = function() {
-			var $div = $container.children('div').first();
 			for (var x = 0; x < size; x++) {
 				grid[x] = [];
 				for (var y = 0; y < size; y++) {
