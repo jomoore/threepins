@@ -6,7 +6,7 @@ $(document).ready(function() {
 			this.down = down;
 			this.length = length;
 			this.target = target;
-		}
+		};
 
 		this.clear = function() {
 			this.x = null;
@@ -14,7 +14,19 @@ $(document).ready(function() {
 			this.down = false;
 			this.length = 0;
 			this.target = 0;
-		}
+		};
+
+		this.iterate = function(f) {
+			var x = this.x;
+			var y = this.y;
+			for (var i = 0; i < this.length; i++) {
+				f(x, y);
+				if (this.down)
+					y++;
+				else
+					x++;
+			}
+		};
 
 		this.set(x, y, down, length, target);
 	}
@@ -29,6 +41,28 @@ $(document).ready(function() {
 		this.number = $container.attr('data-number');
 		var grid = [];
 		var active = new Entry();
+
+		/* --- Iterators --- */
+
+		var iterateAll = function(f) {
+			for (var y = 0; y < size; y++) {
+				for (var x = 0; x < size; x++) {
+					f(x, y);
+				}
+			}
+		};
+
+		var iterateLights = function(f) {
+			for (var y = 0; y < size; y++) {
+				for (var x = 0; x < size; x++) {
+					if (grid[x][y].light) {
+						f(x, y);
+					}
+				}
+			}
+		};
+
+		/* --- Property tests --- */
 
 		var headAcross = function(x, y) {
 			return grid[x][y].head && x < (size - 1) && grid[x + 1][y].light && (x === 0 || !grid[x - 1][y].light);
@@ -48,7 +82,9 @@ $(document).ready(function() {
 					((x > 0 && grid[x - 1][y].light) ||
 					 (x < (size - 1) && grid[x + 1][y].light));
 			}
-		}
+		};
+
+		/* --- Target control --- */
 
 		var getTarget = function() {
 			var x = active.x;
@@ -64,7 +100,7 @@ $(document).ready(function() {
 		var isTarget = function(x, y) {
 			var target = getTarget();
 			return (x == target.x && y == target.y);
-		}
+		};
 
 		this.targetPosition = function() {
 			var target = getTarget();
@@ -72,16 +108,10 @@ $(document).ready(function() {
 		};
 
 		var clearHighlights = function() {
-			var x = active.x;
-			var y = active.y;
-			for (var i = 0; i < active.length; i++) {
+			active.iterate(function(x, y) {
 				grid[x][y].$div.removeClass('target');
 				grid[x][y].$div.removeClass('highlight');
-				if (active.down) 
-					y++;
-				else
-					x++;
-			}
+			});
 		};
 
 		var setActive = function(x, y, down) {
@@ -214,10 +244,28 @@ $(document).ready(function() {
 			}
 		};
 
-		var setLetter = function(letter) {
+		/* --- Letter control --- */
+
+		var getLetter = function(x, y) {
+			return grid[x][y].$div.children('.letter').first().text();
+		};
+
+		var clearLetter = function(x, y) {
+			grid[x][y].$div.children('.letter').remove();
+		};
+
+		var setLetter = function(x, y, letter) {
+			clearLetter(x, y);
+			grid[x][y].$div.append('<span class="letter">' + letter.toUpperCase() + '</span>');
+		};
+
+		var revealLetter = function(x, y) {
+			setLetter(x, y, grid[x][y].$div.attr('data-a'));
+		};
+
+		var setTargetLetter = function(letter) {
 			var target = getTarget();
-			grid[target.x][target.y].$div.children('.letter').remove();
-			grid[target.x][target.y].$div.append('<span class="letter">' + letter.toUpperCase() + '</span>');
+			setLetter(target.x, target.y, letter);
 
 			if (active.target < (active.length - 1)) {
 				if (active.down)
@@ -229,9 +277,9 @@ $(document).ready(function() {
 			}
 		};
 
-		var clearLetter = function(backpedal) {
+		var clearTargetLetter = function(backpedal) {
 			var target = getTarget();
-			grid[target.x][target.y].$div.children('.letter').remove();
+			clearLetter(target.x, target.y);
 
 			if (backpedal && active.target > 0) {
 				if (active.down)
@@ -243,23 +291,17 @@ $(document).ready(function() {
 			}
 		};
 
-		var revealLetter = function(x, y) {
-			var letter = grid[x][y].$div.attr('data-a');
-			grid[x][y].$div.children('.letter').remove();
-			grid[x][y].$div.append('<span class="letter">' + letter.toUpperCase() + '</span>');
-		}
-
-		this.deleteLetter = function(backpedal) {
-			clearLetter(backpedal);
+		this.deleteTargetLetter = function(backpedal) {
+			clearTargetLetter(backpedal);
 		};
 
 		this.updateLetters = function(prevInput, newInput) {
 			if (newInput.length > prevInput.length) {
 				for (var i = prevInput.length; i < newInput.length; i++)
-					setLetter(newInput[i]);
+					setTargetLetter(newInput[i]);
 			} else if (prevInput.length > newInput.length) {
 				for (var i = newInput.length; i < prevInput.length; i++)
-					clearLetter(true);
+					clearTargetLetter(true);
 			} else {
 				var change;
 				for (change = 0; change < newInput.length; change++) {
@@ -268,10 +310,10 @@ $(document).ready(function() {
 				}
 
 				for (var i = change; i < newInput.length; i++)
-					clearLetter(true);
+					clearTargetLetter(true);
 
 				for (var i = change; i < newInput.length; i++)
-					setLetter(newLetters[i]);
+					setTargetLetter(newLetters[i]);
 			}
 		};
 
@@ -279,96 +321,68 @@ $(document).ready(function() {
 			var letters = '';
 			var nonEmpty = false;
 
-			for (var y = 0; y < size; y++) {
-				for (var x = 0; x < size; x++) {
-					var text = grid[x][y].$div.children('.letter').first().text();
-					if (text.length) {
-						letters += text;
-						nonEmpty = true;
-					} else {
-						letters += '.';
-					}
+			iterateAll(function(x, y) {
+				var text = getLetter(x, y);
+				if (text.length) {
+					letters += text;
+					nonEmpty = true;
+				} else {
+					letters += '.';
 				}
-			}
+			});
 
 			return nonEmpty ? letters : '';
-		}
+		};
 
 		this.importLetters = function(letters) {
 			if (letters.length) {
-				for (var y = 0; y < size; y++) {
-					for (var x = 0; x < size; x++) {
-						var letter = letters[y * size + x];
-						if (letter !== '.') {
-							grid[x][y].$div.append('<span class="letter">' + letter + '</span>');
-						}
+				iterateAll(function(x, y) {
+					var letter = letters[y * size + x];
+					if (letter !== '.') {
+						setLetter(x, y, letter);
 					}
-				}
+				});
 			}
-		}
+		};
+
+		/* --- Button handlers --- */
 
 		this.checkAnswer = function() {
-			var x = active.x;
-			var y = active.y;
-			for (var i = 0; i < active.length; i++) {
-				var $letter = grid[x][y].$div.children('.letter').first();
-				var enteredLetter = $letter.text();
+			active.iterate(function(x, y) {
+				var enteredLetter = getLetter(x, y);
 				var correctLetter = grid[x][y].$div.attr('data-a');
 				if (enteredLetter != correctLetter)
-					$letter.remove();
-				if (active.down)
-					y++;
-				else
-					x++;
-			}
+					clearLetter(x, y);
+			});
 			doClearActive();
-		}
+		};
 
 		this.showAnswer = function() {
-			var x = active.x;
-			var y = active.y;
-			for (var i = 0; i < active.length; i++) {
-				revealLetter(x, y);
-				if (active.down)
-					y++;
-				else
-					x++;
-			}
+			active.iterate(revealLetter);
 			doClearActive();
-		}
+		};
 
 		this.showSolution = function() {
-			for (var y = 0; y < size; y++) {
-				for (var x = 0; x < size; x++) {
-					if (grid[x][y].light) {
-						revealLetter(x, y);
-					}
-				}
-			}
+			iterateLights(revealLetter);
 			doClearActive();
-		}
+		};
 
 		this.clearAll = function() {
-			for (var y = 0; y < size; y++) {
-				for (var x = 0; x < size; x++) {
-					if (grid[x][y].light) {
-						grid[x][y].$div.children('.letter').remove();
-					}
-				}
-			}
+			iterateLights(clearLetter);
 			doClearActive();
-		}
+		};
+
+		/* --- Initialisation --- */
 
 		var initGrid = function() {
+			var $div = $container.children('div').first();
 			for (var x = 0; x < size; x++) {
 				grid[x] = [];
 				for (var y = 0; y < size; y++) {
 					grid[x][y] = new Square();
 				}
 			}
-		}
 
-		var collectSquares = function() {
 			var $div = $container.children('div').first();
 			for (var y = 0; y < size; y++) {
 				for (var x = 0; x < size; x++) {
@@ -382,7 +396,6 @@ $(document).ready(function() {
 
 		active.clear();
 		initGrid();
-		collectSquares();
 	}
 
 	/* The Android soft keyboard is spectacularly painful to work with.
@@ -545,7 +558,7 @@ $(document).ready(function() {
 			case 8: /* Backspace */
 				/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
 				if ($('#antique-IE').length) {
-					grid.deleteLetter(true);
+					grid.deleteTargetLetter(true);
 					cm.saveLetters(grid);
 					input.reset();
 					return false;
@@ -579,7 +592,7 @@ $(document).ready(function() {
 				input.reset();
 				return false;
 			case 46: /* Delete */
-				grid.deleteLetter(false);
+				grid.deleteTargetLetter(false);
 				cm.saveLetters(grid);
 				input.reset();
 				return false;
