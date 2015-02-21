@@ -61,7 +61,7 @@
 			<h4>Across</h4>
 			<ul>
 				{% for c in across_clues %}
-				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue }} ({{ c.numeration }})</li>
+				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue|safe }} ({{ c.numeration }})</li>
 				{% endfor %}
 			</ul>
 		</div>
@@ -69,7 +69,7 @@
 			<h4>Down</h4>
 			<ul>
 				{% for c in down_clues %}
-				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue }} ({{ c.numeration }})</li>
+				<li><span class="clue-number">{{ c.number }}</span> {{ c.clue|safe }} ({{ c.numeration }})</li>
 				{% endfor %}
 			</ul>
 		</div>
