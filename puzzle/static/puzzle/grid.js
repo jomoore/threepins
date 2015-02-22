@@ -464,6 +464,11 @@ $(document).ready(function() {
 			cookieManager.saveLetters(grid);
 		});
 
+		var $printButton = $('<button>Print</button>');
+		$printButton.on('click', function() {
+			window.print();
+		});
+
 		var $solutionButton = $('<button id="solution-button">Solution</button>');
 		$solutionButton.on('click', function() {
 			grid.showSolution();
@@ -483,6 +488,7 @@ $(document).ready(function() {
 		$div.empty();
 		$div.append($checkButton);
 		$div.append($peekButton);
+		$div.append($printButton);
 		$div.append($solutionButton);
 	}
 
