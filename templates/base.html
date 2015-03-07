@@ -22,12 +22,12 @@
 	<link rel="manifest" href="{% static 'images/manifest.json' %}">
 	<link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
 	<meta name="msapplication-TileColor" content="#00a300">
-	<meta name="msapplication-TileImage" content="/images/mstile-144x144.png">
-	<meta name="msapplication-config" content="/images/browserconfig.xml">
-	<meta name="theme-color" content="#ffffff">	<meta charset="utf-8">
+	<meta name="msapplication-TileImage" content="{% static 'images/mstile-144x144.png' %}">
+	<meta name="msapplication-config" content="{% static 'images/browserconfig.xml' %}">
+	<meta name="theme-color" content="#ffffff">
+	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="{% block description %}{% endblock %}">
-	<meta charset="utf-8">
 	{% block meta %}{% endblock %}
 	{% block js %}{% endblock %}
 </head>
