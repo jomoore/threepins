@@ -263,6 +263,13 @@ $(document).ready(function() {
 			setLetter(x, y, grid[x][y].$div.attr('data-a'));
 		};
 
+		var checkLetter = function(x, y) {
+			var enteredLetter = getLetter(x, y);
+			var correctLetter = grid[x][y].$div.attr('data-a');
+			if (enteredLetter != correctLetter)
+				clearLetter(x, y);
+		};
+
 		var setTargetLetter = function(letter) {
 			var target = getTarget();
 			setLetter(target.x, target.y, letter);
@@ -345,16 +352,17 @@ $(document).ready(function() {
 			}
 		};
 
+
 		/* --- Button handlers --- */
 
 		this.checkAnswer = function() {
-			active.iterate(function(x, y) {
-				var enteredLetter = getLetter(x, y);
-				var correctLetter = grid[x][y].$div.attr('data-a');
-				if (enteredLetter != correctLetter)
-					clearLetter(x, y);
-			});
+			active.iterate(checkLetter);
 			doClearActive();
+		};
+
+		this.checkAll = function() {
+			doClearActive();
+			iterateLights(checkLetter);
 		};
 
 		this.showAnswer = function() {
@@ -469,6 +477,11 @@ $(document).ready(function() {
 			window.print();
 		});
 
+		var $checkAllButton = $('<button>Check All</button>');
+		$checkAllButton.on('click', function() {
+			grid.checkAll()
+		});
+
 		var $solutionButton = $('<button id="solution-button">Solution</button>');
 		$solutionButton.on('click', function() {
 			grid.showSolution();
@@ -489,6 +502,7 @@ $(document).ready(function() {
 		$div.append($checkButton);
 		$div.append($peekButton);
 		$div.append($printButton);
+		$div.append($checkAllButton);
 		$div.append($solutionButton);
 	}
 
