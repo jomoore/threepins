@@ -19,7 +19,7 @@ def create_grid(puzzle, size):
     # Populate with entries
     for e in entries:
         row, col = e.y, e.x
-        answer = sub('[ -]', '', e.answer)
+        answer = sub("[' -]", '', e.answer)
         if not grid[row][col]['number']:
             grid[row][col]['number'] = number
             number += 1
@@ -43,7 +43,8 @@ def get_clues(puzzle, grid, down):
     entries = Entry.objects.filter(puzzle=puzzle, down=down).order_by('y', 'x')
     clues = []
     for e in entries:
-        numeration = sub(' ', ',', sub(r'[^ -]+', lambda m: str(len(m.group(0))), e.answer))
+        numeration = sub(r'[^ -]+', lambda m: str(len(m.group(0))), sub("'", '', e.answer))
+        numeration = sub(' ', ',', numeration)
         clues.append({'number': grid[e.y][e.x]['number'], 'clue': e.clue, 'numeration': numeration })
     return clues
 
