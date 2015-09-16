@@ -13,8 +13,8 @@ ul { list-style: none; }
 /* Header */
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }
 header img { float: left; border: 0px; }
-nav { clear: left; font-size: 2em; font-weight: bold; text-align: center;
-      background: url(images/nav.png) repeat-x; background-size: contain; margin: 10px 0px 20px 0px; }
+nav { clear: left; font-size: 1.8em; font-weight: bold; text-align: center;
+	  background: url(images/nav.png) repeat-x; background-size: contain; margin: 10px 0px 20px 0px; }
 nav ul { padding: 5px; }
 nav li { display: inline; padding: 20px; }
 
@@ -57,35 +57,35 @@ nav li { display: inline; padding: 20px; }
 footer { border-top: 1px solid; clear: both; }
 
 @media screen {
-    #grid-wrapper { display: inline-block; margin: 0px 0px 20px 30px; }
-    #grid { width: 436px; height: 436px; }
-    #grid > div { width: 28px; height: 28px; line-height: 28px; border-bottom: 1px solid black; border-right: 1px solid black; }
-    #grid > .topmost { border-top: 1px solid black; }
-    #grid > .leftmost { border-left: 1px solid black; }
-    #grid img { display: none; }
-    .grid-number { top: 0px; font-size: 11px; }
-    .clue-box { width: 300px; }
+	#grid-wrapper { display: inline-block; margin: 0px 0px 20px 30px; }
+	#grid { width: 436px; height: 436px; }
+	#grid > div { width: 28px; height: 28px; line-height: 28px; border-bottom: 1px solid black; border-right: 1px solid black; }
+	#grid > .topmost { border-top: 1px solid black; }
+	#grid > .leftmost { border-left: 1px solid black; }
+	#grid img { display: none; }
+	.grid-number { top: 0px; font-size: 11px; }
+	.clue-box { width: 300px; }
 }
 
 @media print {
-    body { font-size: 0.75em; }
-    h3 { font-size: 0.8em; }
-    a { display: none; }
-    header img { display: none; }
-    nav { display: none; }
+	body { font-size: 0.75em; }
+	h3 { font-size: 0.8em; }
+	a { display: none; }
+	header img { display: none; }
+	nav { display: none; }
 
-    #grid-wrapper { display: block; margin: 15px 0px 30px 100px; width: 376px; }
-    #grid { width: 376px; height: 376px; }
-    #grid > input { display: none; }
-    #grid > div { width: 24px; height: 24px; line-height: 24px; border-bottom: 1px solid grey; border-right: 1px solid grey; }
-    #grid > .topmost { border-top: 1px solid grey; }
-    #grid > .leftmost { border-left: 1px solid grey; }
-    #grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
-    .grid-number { top: 1px; font-size: 9px; }
-    .buttons { display: none; }
-    .clue-box { width: 260px; }
-    .clue-box li { padding: 1px; }
+	#grid-wrapper { display: block; margin: 15px 0px 30px 100px; width: 376px; }
+	#grid { width: 376px; height: 376px; }
+	#grid > input { display: none; }
+	#grid > div { width: 24px; height: 24px; line-height: 24px; border-bottom: 1px solid grey; border-right: 1px solid grey; }
+	#grid > .topmost { border-top: 1px solid grey; }
+	#grid > .leftmost { border-left: 1px solid grey; }
+	#grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
+	.grid-number { top: 1px; font-size: 9px; }
+	.buttons { display: none; }
+	.clue-box { width: 260px; }
+	.clue-box li { padding: 1px; }
 
-    #cookie-warning { display: none; }
-    footer { display: none; }
+	#cookie-warning { display: none; }
+	footer { display: none; }
 }
