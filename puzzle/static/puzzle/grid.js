@@ -1,4 +1,4 @@
-$(document).ready(function() {
+var GridModule = (function() {
 	function Entry(x, y, down, length, target) {
 		this.set = function(x, y, down, length, target) {
 			this.x = x;
@@ -352,7 +352,6 @@ $(document).ready(function() {
 			}
 		};
 
-
 		/* --- Button handlers --- */
 
 		this.checkAnswer = function() {
@@ -456,6 +455,55 @@ $(document).ready(function() {
 				return false;
 			}
 		});
+
+		/* If there's a real keyboard, we can handle a few extra key events */
+		$input.keydown(function(e) {
+			if (grid.isActive()) {
+				switch (e.which) {
+				case 8: /* Backspace */
+					/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
+					if ($('#antique-IE').length) {
+						grid.deleteTargetLetter(true);
+						cm.saveLetters(grid);
+						resetInput();
+						return false;
+					}
+					return true;
+				case 9: /* Tab */
+					if (e.shiftKey)
+						grid.activatePrevious();
+					else
+						grid.activateNext();
+					resetInput();
+					return false;
+				case 13: /* Return */
+				case 27: /* Escape */
+					grid.clearActive();
+					return false;
+				case 37: /* Left arrow */
+					grid.moveTarget(-1, 0);
+					resetInput();
+					return false;
+				case 38: /* Up arrow */
+					grid.moveTarget(0, -1);
+					resetInput();
+					return false;
+				case 39: /* Right arrow */
+					grid.moveTarget(1, 0);
+					resetInput();
+					return false;
+				case 40: /* Down arrow */
+					grid.moveTarget(0, 1);
+					resetInput();
+					return false;
+				case 46: /* Delete */
+					grid.deleteTargetLetter(false);
+					cm.saveLetters(grid);
+					resetInput();
+					return false;
+				}
+			}
+		});
 	}
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
@@ -557,65 +605,25 @@ $(document).ready(function() {
 			$warning.insertAfter('.puzzle');
 	}
 
+	return {
+		Grid: Grid,
+		GridInput: GridInput,
+		ButtonBox: ButtonBox,
+		CookieManager: CookieManager
+	};
+})();
+
+$(document).ready(function() {
 	/* Construct the grid */
-	var cm = new CookieManager();
-	var grid = new Grid(15, $('#grid'));
-	var input = new GridInput(grid, $('#ip'), cm);
-	var bb = new ButtonBox(grid, $('.buttons'), cm);
+	var cm = new GridModule.CookieManager();
+	var grid = new GridModule.Grid(15, $('#grid'));
+	var input = new GridModule.GridInput(grid, $('#ip'), cm);
+	var bb = new GridModule.ButtonBox(grid, $('.buttons'), cm);
 	cm.loadLetters(grid);
 
 	$('#grid > div').on('mousedown', function() {
 		if (grid.activateClicked($(this)))
 			input.reset();
 		return false;
-	});
-
-	/* If there's a real keyboard, we can handle a few extra key events */
-	$('#ip').keydown(function(e) {
-		if (grid.isActive()) {
-			switch (e.which) {
-			case 8: /* Backspace */
-				/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
-				if ($('#antique-IE').length) {
-					grid.deleteTargetLetter(true);
-					cm.saveLetters(grid);
-					input.reset();
-					return false;
-				}
-				return true;
-			case 9: /* Tab */
-				if (e.shiftKey)
-					grid.activatePrevious();
-				else
-					grid.activateNext();
-				input.reset();
-				return false;
-			case 13: /* Return */
-			case 27: /* Escape */
-				grid.clearActive();
-				return false;
-			case 37: /* Left arrow */
-				grid.moveTarget(-1, 0);
-				input.reset();
-				return false;
-			case 38: /* Up arrow */
-				grid.moveTarget(0, -1);
-				input.reset();
-				return false;
-			case 39: /* Right arrow */
-				grid.moveTarget(1, 0);
-				input.reset();
-				return false;
-			case 40: /* Down arrow */
-				grid.moveTarget(0, 1);
-				input.reset();
-				return false;
-			case 46: /* Delete */
-				grid.deleteTargetLetter(false);
-				cm.saveLetters(grid);
-				input.reset();
-				return false;
-			}
-		}
 	});
 });
