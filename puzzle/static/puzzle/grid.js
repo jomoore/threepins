@@ -612,18 +612,3 @@ var GridModule = (function() {
 		CookieManager: CookieManager
 	};
 })();
-
-$(document).ready(function() {
-	/* Construct the grid */
-	var cm = new GridModule.CookieManager();
-	var grid = new GridModule.Grid(15, $('#grid'));
-	var input = new GridModule.GridInput(grid, $('#ip'), cm);
-	var bb = new GridModule.ButtonBox(grid, $('.buttons'), cm);
-	cm.loadLetters(grid);
-
-	$('#grid > div').on('mousedown', function() {
-		if (grid.activateClicked($(this)))
-			input.reset();
-		return false;
-	});
-});
