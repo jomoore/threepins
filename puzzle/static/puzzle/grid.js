@@ -239,7 +239,9 @@ var GridModule = (function() {
 			var target = getTarget();
 			target.x += dx;
 			target.y += dy;
-			if (grid[target.x][target.y].light) {
+			if (target.x >= 0 && target.x < size &&
+				target.y >= 0 && target.y < size &&
+				grid[target.x][target.y].light) {
 				setActive(target.x, target.y, hasDirection(target.x, target.y, active.down) ? active.down : !active.down);
 			}
 		};
