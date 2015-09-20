@@ -32,6 +32,7 @@ var Builder = (function() {
 				var div = document.createElement('div');
 				div.setAttribute('data-y', y);
 				div.setAttribute('data-x', x);
+				div.setAttribute('data-a', 'A');
 				fixture.appendChild(div);
 			}
 		}
@@ -130,6 +131,16 @@ QUnit.assert.notHighlighted = function(div, message) {
 			  {target: target, highlighted: highlighted}, 
 			  {target: false, highlighted: false},
 			  message);
+};
+
+QUnit.assert.letterEqual = function(div, expectedLetter, message) {
+	var actualLetter = div.querySelector('.letter').innerHTML;
+	this.push(actualLetter == expectedLetter, actualLetter, expectedLetter, message);
+};
+
+QUnit.assert.noLetter = function(div, message) {
+	var letter = div.querySelector('.letter');
+	this.push(letter == null, letter, null, message);
 };
 
 QUnit.module("Builder functions");
@@ -615,4 +626,172 @@ QUnit.test("Move target within blocks", function(assert) {
 	assert.target(nodeList[2 * size + 1], "Step up");
 	grid.moveTarget(0, -1);
 	assert.target(nodeList[size + 1], "Step up");
+});
+
+QUnit.module("Text entry");
+QUnit.test("Add text", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	assert.target(nodeList[0], "Initial selection");
+
+	grid.updateLetters('...', '...a');
+	grid.updateLetters('...a', '...ab');
+	grid.updateLetters('...ab', '...abcd');
+	grid.updateLetters('...abcd', '...abcd');
+	grid.updateLetters('...abcd', '...abcde');
+	grid.updateLetters('...abcde', '...abcdef');
+
+	assert.letterEqual(nodeList[0], 'A', "Content A");
+	assert.letterEqual(nodeList[1], 'B', "Content B");
+	assert.letterEqual(nodeList[2], 'C', "Content C");
+	assert.letterEqual(nodeList[3], 'D', "Content D");
+	assert.letterEqual(nodeList[4], 'F', "Content F");
+});
+
+QUnit.test("Delete text", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	/* Set up some text to delete */
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	assert.target(nodeList[0], "Initial selection");
+	grid.updateLetters('...', '...abcde');
+	assert.letterEqual(nodeList[0], 'A', "Content A");
+	assert.letterEqual(nodeList[1], 'B', "Content B");
+	assert.letterEqual(nodeList[2], 'C', "Content C");
+
+	/* Deleted upwards starting from an empty square */
+	grid.activateClicked($('#qunit-fixture').children('div').eq(size));
+	grid.updateLetters('...', '..');
+	assert.target(nodeList[0], "Backspace from empty square");
+	assert.letterEqual(nodeList[0], 'A', "First square has letter");
+	grid.updateLetters('..', '.');
+	assert.target(nodeList[0], "Backspace from first square");
+	assert.noLetter(nodeList[0], "First letter deleted");
+	grid.updateLetters('.', '');
+	assert.target(nodeList[0], "No change");
+
+	/* Deleted leftwards starting from a populated square */
+	grid.activateClicked($('#qunit-fixture').children('div').eq(2));
+	grid.activateClicked($('#qunit-fixture').children('div').eq(2));
+	grid.updateLetters('...', '..');
+	assert.target(nodeList[1], "Backspace from populated square");
+	assert.noLetter(nodeList[2], "Backspace from populated square");
+	grid.updateLetters('..', '.');
+	assert.target(nodeList[0], "Second backspace from populated square");
+	assert.noLetter(nodeList[1], "Second backspace from populated square");
+});
+
+QUnit.test("Check answer", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	grid.updateLetters('', 'aabba');
+	grid.checkAnswer();
+	
+	assert.letterEqual(nodeList[0], 'A', "Correct letter");
+	assert.letterEqual(nodeList[1], 'A', "Correct letter");
+	assert.noLetter(nodeList[2], "Incorrect letter");
+	assert.noLetter(nodeList[3], "Incorrect letter");
+	assert.letterEqual(nodeList[4], 'A', "Correct letter");
+});
+
+QUnit.test("Check all", function (assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	grid.updateLetters('', 'aabba');
+	grid.activateClicked($('#qunit-fixture').children('div').eq(2 * size));
+	grid.updateLetters('', 'aabba');
+	grid.checkAll();
+
+	assert.letterEqual(nodeList[0], 'A', "Correct letter");
+	assert.letterEqual(nodeList[1], 'A', "Correct letter");
+	assert.noLetter(nodeList[2], "Incorrect letter");
+	assert.noLetter(nodeList[3], "Incorrect letter");
+	assert.letterEqual(nodeList[4], 'A', "Correct letter");
+
+	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
+	assert.letterEqual(nodeList[2 * size + 1], 'A', "Correct letter");
+	assert.noLetter(nodeList[2 * size + 2], "Incorrect letter");
+	assert.noLetter(nodeList[2 * size + 3], "Incorrect letter");
+	assert.letterEqual(nodeList[2 * size + 4], 'A', "Correct letter");
+});
+
+QUnit.test("Show answer", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	grid.showAnswer();
+
+	for (var i = 0; i < size; i++) {
+		assert.letterEqual(nodeList[i], 'A', "Revealed letter");
+	}
+
+	for (var i = 2 * size; i < 3 * size; i++) {
+		assert.noLetter(nodeList[i], "No revealed letter");
+	}
+});
+
+QUnit.test("Show solution", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.showSolution();
+
+	for (var i = 0; i < size * size; i++) {
+		if (nodeList[i].getAttribute('data-x') % 2 == 0 ||
+			nodeList[i].getAttribute('data-y') % 2 == 0) {
+			assert.letterEqual(nodeList[i], 'A', "Revealed letter");
+		} else {
+			assert.block(nodeList[i], "Block");
+		}
+	}
+});
+
+QUnit.test("Clear all", function(assert) {
+	var size = 5;
+	Builder.createAlternating(size, 1);
+	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+
+	var grid = new GridModule.Grid(size, $('#qunit-fixture'));
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked($('#qunit-fixture').children('div').first());
+	assert.target(nodeList[0], "Initial selection");
+	grid.updateLetters('...', '...abcde');
+	grid.clearAll();
+
+	for (var i = 0; i < size * size; i++) {
+		assert.noLetter(nodeList[i], "Grid empty");
+	}
 });
