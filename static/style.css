@@ -57,9 +57,9 @@ nav li { display: inline; white-space: nowrap; }
 footer { border-top: 1px solid; clear: both; }
 
 @media screen {
-    body { font-size: 0.85em; }
+	body { font-size: 0.85em; }
 	h3 { font-size: 0.8em; }
-    nav li { padding: 5px; }
+	nav li { padding: 5px; }
 	#grid-wrapper { display: inline-block; margin: 0px 20px 20px 10px; }
 	#grid { width: 301px; height: 301px; }
 	#grid > div { width: 19px; height: 19px; line-height: 19px; border-bottom: 1px solid black; border-right: 1px solid black; }
@@ -71,7 +71,7 @@ footer { border-top: 1px solid; clear: both; }
 }
 
 @media screen and (min-width: 500px) {
-    body { font-size: 1em; }
+	body { font-size: 1em; }
 	h3 { font-size: 1em; }
 	#grid { width: 436px; height: 436px; margin-left: 30px; }
 	#grid > div { width: 28px; height: 28px; line-height: 28px; }
@@ -79,14 +79,14 @@ footer { border-top: 1px solid; clear: both; }
 }
 
 @media screen and (min-width: 580px) {
-    nav { font-size: 1.4em; }
-    nav li { padding: 15px; }
+	nav { font-size: 1.4em; }
+	nav li { padding: 15px; }
 	.clue-box { width: 320px; }
 }
 
 @media screen and (min-width: 720px) {
-    nav { font-size: 1.8em; }
-    nav li { padding: 20px; }
+	nav { font-size: 1.8em; }
+	nav li { padding: 20px; }
 }
 
 @media print {
