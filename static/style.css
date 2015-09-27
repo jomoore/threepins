@@ -13,10 +13,10 @@ ul { list-style: none; }
 /* Header */
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }
 header img { float: left; border: 0px; }
-nav { clear: left; font-size: 1.8em; font-weight: bold; text-align: center;
-	  background: url(images/nav.png) repeat-x; background-size: contain; margin: 10px 0px 20px 0px; }
+nav { clear: left; font-weight: bold; text-align: center; margin: 10px 0px 20px 0px;
+	  background: url(images/nav.png) repeat-x; background-size: contain; }
 nav ul { padding: 5px; }
-nav li { display: inline; padding: 20px; }
+nav li { display: inline; padding: 20px; white-space: nowrap; }
 
 /* Contact */
 #contact { width: 600px; margin: auto; }
@@ -45,7 +45,7 @@ nav li { display: inline; padding: 20px; }
 /* Clues */
 .puzzle { clear: left; background: url(images/smudge.jpg) bottom right no-repeat; padding-bottom: 20px; }
 .clues { display: inline-block; vertical-align: top; }
-.clue-box { display: inherit; vertical-align: top; padding-left: 40px; margin: 0px 20px 20px -1px; }
+.clue-box { display: inherit; vertical-align: top; padding-left: 30px; margin: 0px 20px 20px -1px; }
 .clue-number { font-weight: bold; }
 .down { border-left: 1px dashed; }
 
@@ -57,14 +57,27 @@ nav li { display: inline; padding: 20px; }
 footer { border-top: 1px solid; clear: both; }
 
 @media screen {
-	#grid-wrapper { display: inline-block; margin: 0px 0px 20px 30px; }
+	#grid-wrapper { display: inline-block; margin: 0px 20px 20px 30px; }
 	#grid { width: 436px; height: 436px; }
 	#grid > div { width: 28px; height: 28px; line-height: 28px; border-bottom: 1px solid black; border-right: 1px solid black; }
 	#grid > .topmost { border-top: 1px solid black; }
 	#grid > .leftmost { border-left: 1px solid black; }
 	#grid img { display: none; }
 	.grid-number { top: 0px; font-size: 11px; }
+	.clue-box { width: 280px; }
+}
+
+@media screen and (min-width: 330px) {
 	.clue-box { width: 300px; }
+}
+
+@media screen and (min-width: 620px) {
+    nav { font-size: 1.4em; }
+	.clue-box { width: 320px; }
+}
+
+@media screen and (min-width: 720px) {
+    nav { font-size: 1.8em; }
 }
 
 @media print {
@@ -89,3 +102,5 @@ footer { border-top: 1px solid; clear: both; }
 	#cookie-warning { display: none; }
 	footer { display: none; }
 }
+
+@page { size: portrait; }
