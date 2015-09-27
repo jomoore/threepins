@@ -29,7 +29,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="{% block description %}{% endblock %}">
 	{% block meta %}{% endblock %}
-	{% block js %}{% endblock %}
 </head>
 <body>
 <!--[if !IE1 ]><span id='antique-IE'></span><![endif]-->
@@ -52,5 +51,6 @@
 	<footer>
 	</footer>
 </div>
+{% block js %}{% endblock %}
 </body>
 </html>

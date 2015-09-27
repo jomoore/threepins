@@ -1,4 +1,31 @@
 var GridModule = (function() {
+	var ClassShim = (function() {
+		return {
+			addClass: function(el, className) {
+				if (el.classList)
+					el.classList.add(className);
+				else
+					el.className += ' ' + className;
+			},
+
+			removeClass: function(el, className) {
+				if (el.classList)
+					el.classList.remove(className);
+				else {
+					el.className = el.className.replace(
+						new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+				}
+			},
+
+			hasClass: function(el, className) {
+				if (el.classList)
+					return el.classList.contains(className);
+				else
+					return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
+			}
+		};
+	})();
+
 	function Entry(x, y, down, length, target) {
 		this.set = function(x, y, down, length, target) {
 			this.x = x;
@@ -34,11 +61,11 @@ var GridModule = (function() {
 	function Square() {
 		this.head = false;
 		this.light = false;
-		this.$div = null;
+		this.div = null;
 	}
 
-	function Grid(size, $container) {
-		this.number = $container.attr('data-number');
+	function Grid(size, container) {
+		this.number = container.getAttribute('data-number');
 		var grid = [];
 		var active = new Entry();
 
@@ -104,46 +131,46 @@ var GridModule = (function() {
 
 		this.targetPosition = function() {
 			var target = getTarget();
-			return grid[target.x][target.y].$div.position();
+			return grid[target.x][target.y].div.offsetTop;
 		};
 
 		var clearHighlights = function() {
 			active.iterate(function(x, y) {
-				grid[x][y].$div.removeClass('target');
-				grid[x][y].$div.removeClass('highlight');
+				ClassShim.removeClass(grid[x][y].div, 'target');
+				ClassShim.removeClass(grid[x][y].div, 'highlight');
 			});
 		};
 
 		var setActive = function(x, y, down) {
 			clearHighlights();
 			active.set(x, y, down, 1, 0);
-			grid[x][y].$div.addClass('target');
+			ClassShim.addClass(grid[x][y].div, 'target');
 
 			if (down) {
 				while (active.y > 0 && grid[x][active.y - 1].light) {
 					active.y--;
 					active.length++;
 					active.target++;
-					grid[x][active.y].$div.addClass('highlight');
+					ClassShim.addClass(grid[x][active.y].div, 'highlight');
 				}
 
 				while (y < (size - 1) && grid[x][y + 1].light) {
 					y++;
 					active.length++;
-					grid[x][y].$div.addClass('highlight');
+					ClassShim.addClass(grid[x][y].div, 'highlight');
 				}
 			} else {
 				while (active.x > 0 && grid[active.x - 1][y].light) {
 					active.x--;
 					active.length++;
 					active.target++;
-					grid[active.x][y].$div.addClass('highlight');
+					ClassShim.addClass(grid[active.x][y].div, 'highlight');
 				}
 
 				while (x < (size - 1) && grid[x + 1][y].light) {
 					x++;
 					active.length++;
-					grid[x][y].$div.addClass('highlight');
+					ClassShim.addClass(grid[x][y].div, 'highlight');
 				}
 			}
 		};
@@ -157,9 +184,9 @@ var GridModule = (function() {
 			doClearActive();
 		};
 
-		this.activateClicked = function($div) {
-			var x = parseInt($div.attr('data-x'));
-			var y = parseInt($div.attr('data-y'));
+		this.activateClicked = function(div) {
+			var x = parseInt(div.getAttribute('data-x'));
+			var y = parseInt(div.getAttribute('data-y'));
 			var direction;
 
 			if (!grid[x][y].light) {
@@ -249,25 +276,36 @@ var GridModule = (function() {
 		/* --- Letter control --- */
 
 		var getLetter = function(x, y) {
-			return grid[x][y].$div.children('.letter').first().text();
+			var elList = grid[x][y].div.getElementsByClassName('letter');
+			if (elList.length)
+				return elList[0].innerHTML;
+			else
+				return '';
 		};
 
 		var clearLetter = function(x, y) {
-			grid[x][y].$div.children('.letter').remove();
+			var elList = grid[x][y].div.getElementsByClassName('letter');
+			if (elList.length)
+				grid[x][y].div.removeChild(elList[0]);
 		};
 
 		var setLetter = function(x, y, letter) {
 			clearLetter(x, y);
-			grid[x][y].$div.append('<span class="letter">' + letter.toUpperCase() + '</span>');
+
+			var el = document.createElement('span');
+			ClassShim.addClass(el, 'letter');
+			el.innerHTML = letter.toUpperCase();
+
+			grid[x][y].div.appendChild(el);
 		};
 
 		var revealLetter = function(x, y) {
-			setLetter(x, y, grid[x][y].$div.attr('data-a'));
+			setLetter(x, y, grid[x][y].div.getAttribute('data-a'));
 		};
 
 		var checkLetter = function(x, y) {
 			var enteredLetter = getLetter(x, y);
-			var correctLetter = grid[x][y].$div.attr('data-a');
+			var correctLetter = grid[x][y].div.getAttribute('data-a');
 			if (enteredLetter != correctLetter)
 				clearLetter(x, y);
 		};
@@ -391,13 +429,13 @@ var GridModule = (function() {
 				}
 			}
 
-			var $div = $container.children('div').first();
+			var elList = container.querySelectorAll('.block, .light');
 			for (var y = 0; y < size; y++) {
 				for (var x = 0; x < size; x++) {
-					grid[x][y].light = !$div.hasClass('block');
-					grid[x][y].head = $div.children('.grid-number').length > 0;
-					grid[x][y].$div = $div;
-					$div = $div.next('div');
+					var el = elList[y * size + x];
+					grid[x][y].light = !ClassShim.hasClass(el, 'block');
+					grid[x][y].head = el.getElementsByClassName('grid-number').length > 0;
+					grid[x][y].div = el;
 				}
 			}
 		};
@@ -424,12 +462,11 @@ var GridModule = (function() {
 	 * doesn't show up. We fill it with some lengthy dummy text so that backspace does something discernible,
 	 * and examine deltas in its contents in lieu of getting nice sensible keypresses.
 	 */
-	function GridInput(grid, $input, cookieManager) {
+	function GridInput(grid, input, cookieManager) {
 		var prevInput = '';
 
 		var positionToTarget = function() {
-			var p = grid.targetPosition();
-			$input.css('top', p.top);
+			input.style.top = grid.targetPosition() + 'px';
 		};
 
 		var resetInput = function() {
@@ -437,37 +474,39 @@ var GridModule = (function() {
 			for (var i = 0; i <= 100; i++)
 				prevInput += '.';
 
-			positionToTarget($input);
-			$input.focus();
-			$input.val('');
-			$input.val(prevInput);
+			positionToTarget();
+			input.focus();
+			input.value = '';
+			input.value = prevInput;
 		};
 
 		this.reset = function() {
 			resetInput();
 		};
 
-		$input.on('input', function() {
+		input.addEventListener('input', function(e) {
 			if (grid.isActive()) {
-				var newInput = $input.val().replace(/ /g, '');
+				var newInput = input.value.replace(/ /g, '');
 				grid.updateLetters(prevInput, newInput);
 				cookieManager.saveLetters(grid);
 				prevInput = newInput;
-				positionToTarget($input);
+				positionToTarget();
+				e.preventDefault();
 				return false;
 			}
 		});
 
 		/* If there's a real keyboard, we can handle a few extra key events */
-		$input.keydown(function(e) {
+		input.addEventListener('keydown', function(e) {
 			if (grid.isActive()) {
 				switch (e.which) {
 				case 8: /* Backspace */
 					/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
-					if ($('#antique-IE').length) {
+					if (document.getElementById('antique-IE')) {
 						grid.deleteTargetLetter(true);
 						cm.saveLetters(grid);
 						resetInput();
+						e.preventDefault();
 						return false;
 					}
 					return true;
@@ -477,31 +516,38 @@ var GridModule = (function() {
 					else
 						grid.activateNext();
 					resetInput();
+					e.preventDefault();
 					return false;
 				case 13: /* Return */
 				case 27: /* Escape */
 					grid.clearActive();
+					e.preventDefault();
 					return false;
 				case 37: /* Left arrow */
 					grid.moveTarget(-1, 0);
 					resetInput();
+					e.preventDefault();
 					return false;
 				case 38: /* Up arrow */
 					grid.moveTarget(0, -1);
 					resetInput();
+					e.preventDefault();
 					return false;
 				case 39: /* Right arrow */
 					grid.moveTarget(1, 0);
 					resetInput();
+					e.preventDefault();
 					return false;
 				case 40: /* Down arrow */
 					grid.moveTarget(0, 1);
 					resetInput();
+					e.preventDefault();
 					return false;
 				case 46: /* Delete */
 					grid.deleteTargetLetter(false);
 					cm.saveLetters(grid);
 					resetInput();
+					e.preventDefault();
 					return false;
 				}
 			}
@@ -510,50 +556,56 @@ var GridModule = (function() {
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
 	 * Since it's enabled, we can remove the link and provide some buttons instead. */
-	function ButtonBox(grid, $div, cookieManager) {
-		var $checkButton = $('<button>Check</button>');
-		$checkButton.on('click', function() {
+	function ButtonBox(grid, div, cookieManager) {
+		var checkButton = document.createElement('button');
+		checkButton.innerHTML = 'Check';
+		checkButton.addEventListener('click', function() {
 			grid.checkAnswer();
 		});
 
-		var $peekButton = $('<button>Peek</button>');
-		$peekButton.on('click', function() {
+		var peekButton = document.createElement('button');
+		peekButton.innerHTML = 'Peek';
+		peekButton.addEventListener('click', function() {
 			grid.showAnswer();
 			cookieManager.saveLetters(grid);
 		});
 
-		var $printButton = $('<button>Print</button>');
-		$printButton.on('click', function() {
+		var printButton = document.createElement('button');
+		printButton.innerHTML = 'Print';
+		printButton.addEventListener('click', function() {
 			window.print();
 		});
 
-		var $checkAllButton = $('<button>Check All</button>');
-		$checkAllButton.on('click', function() {
+		var checkAllButton = document.createElement('button');
+		checkAllButton.innerHTML = 'Check All';
+		checkAllButton.addEventListener('click', function() {
 			grid.checkAll()
 		});
 
-		var $solutionButton = $('<button id="solution-button">Solution</button>');
-		$solutionButton.on('click', function() {
+		var solutionButton = document.createElement('button');
+		solutionButton.innerHTML = 'Solution';
+		solutionButton.addEventListener('click', function() {
 			grid.showSolution();
 			cookieManager.saveLetters(grid);
-			$solutionButton.detach();
-			$div.append($clearButton);
+			div.removeChild(solutionButton);
+			div.appendChild(clearButton);
 		});
 
-		var $clearButton = $('<button id="clear-button">Clear All</button>');
-		$clearButton.on('click', function() {
+		var clearButton = document.createElement('button');
+		clearButton.innerHTML = 'Clear All';
+		clearButton.addEventListener('click', function() {
 			grid.clearAll();
 			cookieManager.saveLetters(grid);
-			$clearButton.detach();
-			$div.append($solutionButton);
+			div.removeChild(clearButton);
+			div.appendChild(solutionButton);
 		});
 
-		$div.empty();
-		$div.append($checkButton);
-		$div.append($peekButton);
-		$div.append($printButton);
-		$div.append($checkAllButton);
-		$div.append($solutionButton);
+		div.innerHTML = '';
+		div.appendChild(checkButton);
+		div.appendChild(peekButton);
+		div.appendChild(printButton);
+		div.appendChild(checkAllButton);
+		div.appendChild(solutionButton);
 	}
 
 	function CookieManager() {
@@ -594,17 +646,21 @@ var GridModule = (function() {
 			grid.importLetters(getCookie('puzzle' + grid.number));
 		};
 
-		var $warning = $('<div id="cookie-warning">' + WARNING_TEXT + '</div>');
-		var $button = $('<button>OK</button>');
+		var warning = document.createElement('div');
+		warning.id = 'cookie-warning';
+		warning.innerHTML = WARNING_TEXT;
 
-		$warning.append($button);
-		$button.on('click', function() {
+		var button = document.createElement('button');
+		button.innerHTML = 'OK';
+
+		warning.appendChild(button);
+		button.addEventListener('click', function() {
 			setCookie('cookiesAccepted', WARNING_VERSION, 90, '/');
-			$warning.remove();
+			warning.parentNode.removeChild(warning);
 		});
 
 		if (getCookie('cookiesAccepted') !== WARNING_VERSION)
-			$warning.insertAfter('.puzzle');
+			document.getElementsByClassName('page-wrapper')[0].insertBefore(warning, document.querySelector('footer'));
 	}
 
 	return {
