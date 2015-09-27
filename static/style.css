@@ -81,12 +81,16 @@ footer { border-top: 1px solid; clear: both; }
 @media screen and (min-width: 580px) {
 	nav { font-size: 1.4em; }
 	nav li { padding: 15px; }
-	.clue-box { width: 320px; }
+	.clue-box { width: 300px; }
 }
 
 @media screen and (min-width: 720px) {
 	nav { font-size: 1.8em; }
 	nav li { padding: 20px; }
+}
+
+@media screen and (min-width: 1280px) {
+	.clue-box { width: 320px; }
 }
 
 @media print {
