@@ -126,3 +126,4 @@ PIPELINE_JS = {
 }
 PIPELINE_CSS_COMPRESSOR = None
 PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
+PIPELINE_DISABLE_WRAPPER = True
