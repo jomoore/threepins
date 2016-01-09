@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.urlresolvers import reverse
+from django.utils import timezone
 from datetime import datetime
 
 BOOL_DOWN = ((True, 'Down'), (False, 'Across'))
@@ -29,8 +31,15 @@ class Puzzle(models.Model):
     type = models.IntegerField(default=0, choices=PUZZLE_TYPES, editable=False)
     instructions = models.TextField(blank=True, null=True, editable=False)
     comments = models.TextField(blank=True)
+
     def __str__(self):
         return str(self.number)
+
+    def get_absolute_url(self):
+        if self.pub_date > timezone.now():
+            return reverse('puzzle.views.preview', args=[self.number])
+        else:
+            return reverse('puzzle.views.puzzle', args=[self.number])
 
 class Entry(models.Model):
     puzzle = models.ForeignKey(Puzzle)
