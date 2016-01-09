@@ -7,7 +7,7 @@ BOOL_DOWN = ((True, 'Down'), (False, 'Across'))
 PUZZLE_TYPES = ((0, 'Blocked'), (1, 'Barred'))
 
 def default_author():
-    return Author.objects.get(name='Cyborg')
+    return Author.objects.first()
 
 def default_number():
     if Puzzle.objects.count():
@@ -15,7 +15,7 @@ def default_number():
     return 0
 
 def default_pub_date():
-    return datetime(2100, 1, 1, 0, 0, 0)
+    return datetime(2100, 1, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone())
 
 class Author(models.Model):
     name = models.CharField(max_length=15)
