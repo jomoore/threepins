@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from puzzle.models import Author, Puzzle, Entry
 from puzzle.feeds import PuzzleFeed
 from puzzle.views import create_grid, get_clues, get_date_string
+from puzzle.admin import import_from_xml
 
 def create_small_puzzle():
     size = 3
@@ -289,3 +290,22 @@ class PuzzleViewTests(TestCase):
     def test_empty_index_list(self):
         response = self.client.get(reverse('index'))
         self.assertEqual(response.status_code, 200)
+
+class PuzzleAdminTests(TestCase):
+    def verify_entry(self, entry, puzzle, clue, answer, x, y, down):
+        self.assertEqual(entry.puzzle, puzzle)
+        self.assertEqual(entry.clue, clue)
+        self.assertEqual(entry.answer, answer)
+        self.assertEqual(entry.x, x)
+        self.assertEqual(entry.y, y)
+        self.assertEqual(entry.down, down)
+
+    def test_import_from_xml(self):
+        a = Author.objects.create(name='Test Author')
+        p = Puzzle.objects.create()
+        import_from_xml('puzzle/test_data/small.xml', p)
+        entries = Entry.objects.order_by('down', 'y', 'x')
+        self.verify_entry(entries[0], p, '1a', 'ab c', 0, 0, False)
+        self.verify_entry(entries[1], p, '3a', 'xyz', 0, 2, False)
+        self.verify_entry(entries[2], p, '1d', 'amx', 0, 0, True)
+        self.verify_entry(entries[3], p, '2d', 'c-nz', 2, 0, True)
