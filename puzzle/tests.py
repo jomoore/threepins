@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 from puzzle.models import Author, Puzzle, Entry
 from puzzle.feeds import PuzzleFeed
-from puzzle.views import create_grid
+from puzzle.views import create_grid, get_clues, get_date_string
 
 class PuzzleModelTests(TestCase):
     def test_default_author(self):
@@ -74,19 +74,19 @@ class FeedTests(TestCase):
         feed = PuzzleFeed()
         self.assertEqual(feed.items().count(), limit)
 
-class GridCreationTests(TestCase):
-    def create_small_puzzle(self):
-        size = 3
-        a = Author.objects.create(name='Test Author')
-        p = Puzzle.objects.create(size=size)
-        e0 = Entry.objects.create(puzzle=p, clue='e0', answer='ab c', x=0, y=0, down=False)
-        e1 = Entry.objects.create(puzzle=p, clue='e1', answer='x-yz', x=0, y=2, down=False)
-        e2 = Entry.objects.create(puzzle=p, clue='e2', answer='amx', x=0, y=0, down=True)
-        e3 = Entry.objects.create(puzzle=p, clue='e3', answer='cnz', x=2, y=0, down=True)
-        return p
+def create_small_puzzle():
+    size = 3
+    a = Author.objects.create(name='Test Author')
+    p = Puzzle.objects.create(size=size)
+    e0 = Entry.objects.create(puzzle=p, clue='1a', answer='ab c', x=0, y=0, down=False)
+    e1 = Entry.objects.create(puzzle=p, clue='3a', answer='x-yz', x=0, y=2, down=False)
+    e2 = Entry.objects.create(puzzle=p, clue='1d', answer='amx', x=0, y=0, down=True)
+    e3 = Entry.objects.create(puzzle=p, clue='2d', answer='cnz', x=2, y=0, down=True)
+    return p
 
+class GridCreationTests(TestCase):
     def test_create_grid_pattern(self):
-        grid = create_grid(self.create_small_puzzle(), 3)
+        grid = create_grid(create_small_puzzle(), 3)
         for row in range(3):
             for col in range(3):
                 self.assertEqual(grid[row][col]['row'], row)
@@ -99,21 +99,21 @@ class GridCreationTests(TestCase):
                     self.assertFalse('block' in grid[row][col]['type'])
 
     def test_create_grid_clue_numbers(self):
-        grid = create_grid(self.create_small_puzzle(), 3)
+        grid = create_grid(create_small_puzzle(), 3)
         expected_numbers = [[1, None, 2], [None, None, None], [3, None, None]]
         for row in range(3):
             for col in range(3):
                 self.assertEqual(grid[row][col]['number'], expected_numbers[row][col])
 
     def test_create_grid_letters(self):
-        grid = create_grid(self.create_small_puzzle(), 3)
+        grid = create_grid(create_small_puzzle(), 3)
         expected_letters = [['A', 'B', 'C'], ['M', None, 'N'], ['X', 'Y', 'Z']]
         for row in range(3):
             for col in range(3):
                 self.assertEqual(grid[row][col]['letter'], expected_letters[row][col])
 
     def test_create_grid_borders(self):
-        grid = create_grid(self.create_small_puzzle(), 3)
+        grid = create_grid(create_small_puzzle(), 3)
         for row in range(3):
             for col in range(3):
                 if row == 0:
@@ -124,3 +124,33 @@ class GridCreationTests(TestCase):
                     self.assertTrue('leftmost' in grid[row][col]['type'])
                 else:
                     self.assertFalse('leftmost' in grid[row][col]['type'])
+
+class ClueCreationTests(TestCase):
+    def test_get_clues(self):
+        p = create_small_puzzle()
+        grid = create_grid(p, 3)
+
+        across_clues = get_clues(p, grid, False)
+        self.assertEquals(len(across_clues), 2)
+        self.assertEquals(across_clues[0]['number'], 1)
+        self.assertEquals(across_clues[0]['clue'], '1a')
+        self.assertEquals(across_clues[0]['numeration'], '2,1')
+        self.assertEquals(across_clues[1]['number'], 3)
+        self.assertEquals(across_clues[1]['clue'], '3a')
+        self.assertEquals(across_clues[1]['numeration'], '1-2')
+
+        down_clues = get_clues(p, grid, True)
+        self.assertEquals(len(down_clues), 2)
+        self.assertEquals(down_clues[0]['number'], 1)
+        self.assertEquals(down_clues[0]['clue'], '1d')
+        self.assertEquals(down_clues[0]['numeration'], '3')
+        self.assertEquals(down_clues[1]['number'], 2)
+        self.assertEquals(down_clues[1]['clue'], '2d')
+        self.assertEquals(down_clues[1]['numeration'], '3')
+
+class DateFormattingTests(TestCase):
+    def test_get_date_string(self):
+        dt = datetime(1980, 3, 4, 1, 2, 3, tzinfo=timezone.get_default_timezone())
+        a = Author.objects.create(name='Test Author')
+        p = Puzzle.objects.create(pub_date=dt)
+        self.assertEquals(get_date_string(p), '04 Mar 1980')
