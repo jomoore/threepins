@@ -3,8 +3,6 @@ from django.utils import timezone
 from ipware.ip import get_real_ip
 
 def save_request(request):
-    if Visitor.objects.count() >= 100:
-        Visitor.objects.earliest('date').delete()
     v = Visitor()
     ip = get_real_ip(request)
     v.ip_addr = ip if ip is not None else ''
@@ -13,6 +11,8 @@ def save_request(request):
     v.referrer = request.META.get('HTTP_REFERER', '')
     v.date = timezone.now()
     v.save()
+    for v in Visitor.objects.order_by('-date')[100:]:
+        v.delete()
 
 class Visitor(models.Model):
     ip_addr = models.CharField('IP address', max_length=40)

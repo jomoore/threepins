@@ -6,6 +6,7 @@ from puzzle.models import Author, Puzzle, Entry
 from puzzle.feeds import PuzzleFeed
 from puzzle.views import create_grid, get_clues, get_date_string
 from puzzle.admin import import_from_xml
+from visitors.models import Visitor
 
 def create_small_puzzle():
     size = 3
@@ -309,3 +310,21 @@ class PuzzleAdminTests(TestCase):
         self.verify_entry(entries[1], p, '3a', 'xyz', 0, 2, False)
         self.verify_entry(entries[2], p, '1d', 'amx', 0, 0, True)
         self.verify_entry(entries[3], p, '2d', 'c-nz', 2, 0, True)
+
+class VisitorLogTests(TestCase):
+    def test_log_visitor(self):
+        create_puzzle_range()
+        self.client.get('/')
+        self.client.get('/')
+        self.client.get('/')
+        self.assertEqual(Visitor.objects.count(), 3)
+
+    def test_limit_visitor_list(self):
+        create_puzzle_range()
+        start_time = timezone.now()
+        for i in range(150):
+            Visitor.objects.create(ip_addr='', user_agent='', path='', referrer='', date=start_time + timedelta(minutes=i))
+        self.client.get('/')
+        self.assertEqual(Visitor.objects.count(), 100)
+        self.assertEqual(Visitor.objects.order_by('date').first().date, start_time + timedelta(minutes=50))
+        self.assertEqual(Visitor.objects.order_by('date').last().date, start_time + timedelta(minutes=149))
