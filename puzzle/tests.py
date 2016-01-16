@@ -170,21 +170,23 @@ class PuzzleViewTests(TestCase):
         response = self.client.get('/')
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
-        self.assertEqual(response.content.count('class="light'), 8)
-        self.assertEqual(response.content.count('class="block'), (15 * 15) - 8)
-        self.assertEqual(response.content.count('topmost'), 15)
-        self.assertEqual(response.content.count('leftmost'), 15)
-        self.assertEqual(response.content.count('class="grid-number"'), 3)
-        self.assertEqual(response.content.count('data-a='), 8)
+        self.assertEqual(response.content.count('class="light'.encode('utf-8')), 8)
+        self.assertEqual(response.content.count('class="block'.encode('utf-8')), (15 * 15) - 8)
+        self.assertEqual(response.content.count('topmost'.encode('utf-8')), 15)
+        self.assertEqual(response.content.count('leftmost'.encode('utf-8')), 15)
+        self.assertEqual(response.content.count('class="grid-number"'.encode('utf-8')), 3)
+        self.assertEqual(response.content.count('data-a='.encode('utf-8')), 8)
         for i in range(3):
-            self.assertEqual(response.content.count('data-x="%i"' % i), 15)
-            self.assertEqual(response.content.count('data-y="%i"' % i), 15)
+            search_str = 'data-x="%i"' % i
+            self.assertEqual(response.content.count(search_str.encode('utf-8')), 15)
+            search_str = 'data-y="%i"' % i
+            self.assertEqual(response.content.count(search_str.encode('utf-8')), 15)
 
     def test_home_page_clues(self):
         create_puzzle_range()
         response = self.client.get('/')
         self.assertContains(response, 'clue-box')
-        self.assertEqual(response.content.count('clue-number'), 4)
+        self.assertEqual(response.content.count('clue-number'.encode('utf-8')), 4)
 
     def test_home_page_wrapping(self):
         create_puzzle_range()
@@ -247,7 +249,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="2"')
-        self.assertEqual(response.content.count('class="letter"'), 8)
+        self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
         self.assertContains(response, '<title>Three Pins - Solution #2</title>')
 
     def test_preview_solution_available(self):
@@ -256,7 +258,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
-        self.assertEqual(response.content.count('class="letter"'), 8)
+        self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
         self.assertContains(response, '<title>Three Pins - Solution #3</title>')
 
     def test_invalid_puzzle(self):
