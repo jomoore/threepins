@@ -2,6 +2,7 @@ from re import sub
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import Http404
+from django.views.decorators.gzip import gzip_page
 from puzzle.models import Author, Puzzle, Entry
 from visitors.models import save_request
 
@@ -81,12 +82,14 @@ def display_puzzle(request, puzzle, title, description, show_answers=False, prev
                'show_answers': show_answers, 'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, template, context)
 
+@gzip_page
 def latest(request):
     p = Puzzle.objects.filter(pub_date__lte=timezone.now()).latest('pub_date')
     title = 'A cryptic crossword outlet'
     description = 'A free interactive site dedicated to amateur cryptic crosswords. Solve online or on paper.'
     return display_puzzle(request, p, title, description)
 
+@gzip_page
 def puzzle(request, number):
     p = get_object_or_404(Puzzle, number=number)
     title = 'Crossword #' + number

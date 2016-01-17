@@ -73,8 +73,7 @@
 {% endblock %}
 
 {% block js %}
-{% load pipeline %}
-{% javascript 'grid' %}
+<script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
 <script>
 	var cm = new GridModule.CookieManager();
 	var grid = new GridModule.Grid(15, document.getElementById('grid'));
