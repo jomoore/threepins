@@ -1,8 +1,7 @@
 dj-database-url==0.3.0
 Django==1.8.8
 django-ipware==0.1.0
-django-toolbelt==0.0.1
-gunicorn==19.1.1
+gunicorn==19.4.5
 psycopg2==2.6.1
 wheel==0.24.0
 whitenoise==2.0.6
