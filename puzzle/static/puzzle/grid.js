@@ -65,7 +65,7 @@ var GridModule = (function() {
 	}
 
 	function Grid(size, container) {
-		this.number = container.getAttribute('data-number');
+		var number = container.getAttribute('data-number');
 		var grid = [];
 		var active = new Entry();
 
@@ -338,8 +338,45 @@ var GridModule = (function() {
 			}
 		};
 
+		var saveLetters = function(grid) {
+			if (window.localStorage) {
+				var letters = '';
+				var nonEmpty = false;
+
+				iterateLights(function(x, y) {
+					var text = getLetter(x, y);
+					if (text.length) {
+						letters += text;
+						nonEmpty = true;
+					} else {
+						letters += '.';
+					}
+				});
+
+				if (nonEmpty)
+					localStorage.setItem('puzzle' + number, letters);
+				else
+					localStorage.removeItem('puzzle' + number);
+			}
+		};
+
+		var loadLetters = function(grid) {
+			if (window.localStorage) {
+				var letters = localStorage.getItem('puzzle' + number);
+				if (letters) {
+					var i = 0;
+					iterateLights(function(x, y) {
+						if (letters[i] !== '.')
+							setLetter(x, y, letters[i]);
+						i++;
+					});
+				}
+			}
+		};
+
 		this.deleteTargetLetter = function(backpedal) {
 			clearTargetLetter(backpedal);
+			saveLetters();
 		};
 
 		this.updateLetters = function(prevInput, newInput) {
@@ -362,34 +399,8 @@ var GridModule = (function() {
 				for (var i = change; i < newInput.length; i++)
 					setTargetLetter(newLetters[i]);
 			}
-		};
 
-		this.exportLetters = function() {
-			var letters = '';
-			var nonEmpty = false;
-
-			iterateAll(function(x, y) {
-				var text = getLetter(x, y);
-				if (text.length) {
-					letters += text;
-					nonEmpty = true;
-				} else {
-					letters += '.';
-				}
-			});
-
-			return nonEmpty ? letters : '';
-		};
-
-		this.importLetters = function(letters) {
-			if (letters.length) {
-				iterateAll(function(x, y) {
-					var letter = letters[y * size + x];
-					if (letter !== '.') {
-						setLetter(x, y, letter);
-					}
-				});
-			}
+			saveLetters();
 		};
 
 		/* --- Button handlers --- */
@@ -397,26 +408,31 @@ var GridModule = (function() {
 		this.checkAnswer = function() {
 			active.iterate(checkLetter);
 			doClearActive();
+			saveLetters();
 		};
 
 		this.checkAll = function() {
 			doClearActive();
 			iterateLights(checkLetter);
+			saveLetters();
 		};
 
 		this.showAnswer = function() {
 			active.iterate(revealLetter);
 			doClearActive();
+			saveLetters();
 		};
 
 		this.showSolution = function() {
 			iterateLights(revealLetter);
 			doClearActive();
+			saveLetters();
 		};
 
 		this.clearAll = function() {
 			iterateLights(clearLetter);
 			doClearActive();
+			saveLetters();
 		};
 
 		/* --- Initialisation --- */
@@ -442,6 +458,7 @@ var GridModule = (function() {
 
 		active.clear();
 		initGrid();
+		loadLetters();
 	}
 
 	/* The Android soft keyboard is spectacularly painful to work with.
@@ -462,7 +479,7 @@ var GridModule = (function() {
 	 * doesn't show up. We fill it with some lengthy dummy text so that backspace does something discernible,
 	 * and examine deltas in its contents in lieu of getting nice sensible keypresses.
 	 */
-	function GridInput(grid, input, cookieManager) {
+	function GridInput(grid, input) {
 		var prevInput = '';
 
 		var positionToTarget = function() {
@@ -488,7 +505,6 @@ var GridModule = (function() {
 			if (grid.isActive()) {
 				var newInput = input.value.replace(/ /g, '');
 				grid.updateLetters(prevInput, newInput);
-				cookieManager.saveLetters(grid);
 				prevInput = newInput;
 				positionToTarget();
 				e.preventDefault();
@@ -504,7 +520,6 @@ var GridModule = (function() {
 					/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
 					if (document.getElementById('antique-IE')) {
 						grid.deleteTargetLetter(true);
-						cm.saveLetters(grid);
 						resetInput();
 						e.preventDefault();
 						return false;
@@ -545,7 +560,6 @@ var GridModule = (function() {
 					return false;
 				case 46: /* Delete */
 					grid.deleteTargetLetter(false);
-					cm.saveLetters(grid);
 					resetInput();
 					e.preventDefault();
 					return false;
@@ -556,7 +570,7 @@ var GridModule = (function() {
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
 	 * Since it's enabled, we can remove the link and provide some buttons instead. */
-	function ButtonBox(grid, div, cookieManager) {
+	function ButtonBox(grid, div) {
 		var checkButton = document.createElement('button');
 		checkButton.innerHTML = 'Check';
 		checkButton.addEventListener('click', function() {
@@ -567,7 +581,6 @@ var GridModule = (function() {
 		peekButton.innerHTML = 'Peek';
 		peekButton.addEventListener('click', function() {
 			grid.showAnswer();
-			cookieManager.saveLetters(grid);
 		});
 
 		var printButton = document.createElement('button');
@@ -586,7 +599,6 @@ var GridModule = (function() {
 		solutionButton.innerHTML = 'Solution';
 		solutionButton.addEventListener('click', function() {
 			grid.showSolution();
-			cookieManager.saveLetters(grid);
 			div.removeChild(solutionButton);
 			div.appendChild(clearButton);
 		});
@@ -595,7 +607,6 @@ var GridModule = (function() {
 		clearButton.innerHTML = 'Clear All';
 		clearButton.addEventListener('click', function() {
 			grid.clearAll();
-			cookieManager.saveLetters(grid);
 			div.removeChild(clearButton);
 			div.appendChild(solutionButton);
 		});
@@ -608,65 +619,9 @@ var GridModule = (function() {
 		div.appendChild(solutionButton);
 	}
 
-	function CookieManager() {
-		var WARNING_VERSION = '1';
-		var WARNING_TEXT =
-			'This site uses cookies to store puzzle progress. They will automatically expire after 30 days. ' +
-			'If you would prefer not to have them, they can be <a href="http://www.aboutcookies.org/">disabled ' +
-			'in your browser settings</a>.';
-
-		/* Source: http://www.w3schools.com/js/js_cookies.asp */
-		var setCookie = function(key, value, expiry, path) {
-			var d = new Date();
-			d.setTime(d.getTime() + (expiry * 24 * 60 * 60 * 1000));
-			var str = key + "=" + value + "; " + "expires=" + d.toUTCString();
-			document.cookie = key + "=" + value + "; " + "expires=" + d.toUTCString() + "; path=" + path;
-		};
-
-		var getCookie = function(key) {
-			var name = key + "=";
-			var ca = document.cookie.split(';');
-			for (var i = 0; i < ca.length; i++) {
-				var c = ca[i];
-				while (c.charAt(0)==' ') c = c.substring(1);
-				if (c.indexOf(name) != -1) return c.substring(name.length,c.length);
-			}
-			return "";
-		};
-
-		this.saveLetters = function(grid) {
-			var letters = grid.exportLetters();
-			var expiry = letters.length ? 30 : -1;
-
-			/* Set cookie on the root path for the benefit of puzzles shown on the home page */
-			setCookie('puzzle' + grid.number, letters, expiry, '/');
-		};
-
-		this.loadLetters = function(grid) {
-			grid.importLetters(getCookie('puzzle' + grid.number));
-		};
-
-		var warning = document.createElement('div');
-		warning.id = 'cookie-warning';
-		warning.innerHTML = WARNING_TEXT;
-
-		var button = document.createElement('button');
-		button.innerHTML = 'OK';
-
-		warning.appendChild(button);
-		button.addEventListener('click', function() {
-			setCookie('cookiesAccepted', WARNING_VERSION, 90, '/');
-			warning.parentNode.removeChild(warning);
-		});
-
-		if (getCookie('cookiesAccepted') !== WARNING_VERSION)
-			document.getElementsByClassName('page-wrapper')[0].insertBefore(warning, document.querySelector('footer'));
-	}
-
 	return {
 		Grid: Grid,
 		GridInput: GridInput,
 		ButtonBox: ButtonBox,
-		CookieManager: CookieManager
 	};
 })();

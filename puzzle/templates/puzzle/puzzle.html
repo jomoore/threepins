@@ -75,11 +75,9 @@
 {% block js %}
 <script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
 <script>
-	var cm = new GridModule.CookieManager();
 	var grid = new GridModule.Grid(15, document.getElementById('grid'));
-	var input = new GridModule.GridInput(grid, document.getElementById('ip'), cm);
-	var bb = new GridModule.ButtonBox(grid, document.getElementsByClassName('buttons')[0], cm);
-	cm.loadLetters(grid);
+	var input = new GridModule.GridInput(grid, document.getElementById('ip'));
+	var bb = new GridModule.ButtonBox(grid, document.getElementsByClassName('buttons')[0]);
 
 	var squares = document.querySelectorAll('.block, .light');
 	for (var i = 0; i < squares.length; i++) {
