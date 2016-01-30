@@ -3,8 +3,7 @@ var Builder = (function() {
 	var fixture = document.getElementById('qunit-fixture');
 
 	/* Set clue numbers at the start of each entry */
-	var setNumbers = function(size) {
-		var nodeList = document.querySelectorAll('#qunit-fixture > div');
+	var setNumbers = function(size, nodeList) {
 		var number = 1;
 		for (var i = 0; i < nodeList.length; i++) {
 			var headAcross = (!nodeList[i].classList.contains('block') && 
@@ -37,11 +36,13 @@ var Builder = (function() {
 				fixture.appendChild(div);
 			}
 		}
+		
+		return document.querySelectorAll('#qunit-fixture > div');
 	};
 
 	/* Create a grid with lights in alternating rows and columns */
 	var createAlternating = function(size, keepEvens) {
-		createEmpty(size);
+		var nodeList = createEmpty(size);
 
 		var elList = fixture.children;
 		for (var i = 0; i < elList.length; i++) {
@@ -55,27 +56,26 @@ var Builder = (function() {
 			}
 		}
 
-		setNumbers(size);
+		setNumbers(size, nodeList);
+		return nodeList;
 	};
 
 	/* Block out an entire row of the grid */
-	var blockRow = function(row, size) {
-		var nodeList = document.querySelectorAll('#qunit-fixture > div');
+	var blockRow = function(row, size, nodeList) {
 		for (var x = 0; x < size; x++) {
 			nodeList[row * size + x].classList.add('block');
 		}
 
-		setNumbers(size);
+		setNumbers(size, nodeList);
 	};
 
 	/* Block out an entire column of the grid */
-	var blockCol = function(col, size) {
-		var nodeList = document.querySelectorAll('#qunit-fixture > div');
+	var blockCol = function(col, size, nodeList) {
 		for (var y = 0; y < size; y++) {
 			nodeList[y * size + col].classList.add('block');
 		}
 
-		setNumbers(size);
+		setNumbers(size, nodeList);
 	};
 
 	/* Empty the fixture */
@@ -151,9 +151,8 @@ QUnit.module("Builder functions");
 QUnit.test("Map node list to co-ordinates", function(assert) {
 	for (var size = 3; size <= 15; size++)
 	{
-		Builder.createEmpty(size);
+		var nodeList = Builder.createEmpty(size);
 
-		var nodeList = document.querySelectorAll('#qunit-fixture > div');
 		assert.equal(nodeList.length, size * size, "Create empty grid size " + size);
 		assert.equalCoord(nodeList[0], {x: 0, y: 0}, "First cell");
 		assert.equalCoord(nodeList[1], {x: 1, y: 0}, "Second cell");
@@ -167,10 +166,9 @@ QUnit.test("Map node list to co-ordinates", function(assert) {
 
 QUnit.test("Build even grid", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
+	var nodeList = Builder.createAlternating(size, 1);
 
 	/* Check block/light pattern */
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
 	assert.equal(nodeList.length, size * size, "Create even grid size " + size);
 	assert.light(nodeList[0], "Row 0, Col 0");
 	assert.light(nodeList[1], "Row 0, Col 1");
@@ -200,10 +198,9 @@ QUnit.test("Build even grid", function(assert) {
 
 QUnit.test("Build odd grid", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 0);
+	var nodeList = Builder.createAlternating(size, 0);
 
 	/* Check block/light pattern */
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
 	assert.equal(nodeList.length, size * size, "Create odd grid size " + size);
 	assert.block(nodeList[0], "Row 0, Col 0");
 	assert.light(nodeList[1], "Row 0, Col 1");
@@ -233,14 +230,13 @@ QUnit.test("Build odd grid", function(assert) {
 
 QUnit.test("Build bordered even grid", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	Builder.blockRow(0, size);
-	Builder.blockRow(size - 1, size);
-	Builder.blockCol(0, size);
-	Builder.blockCol(size - 1, size);
+	var nodeList = Builder.createAlternating(size, 1);
+	Builder.blockRow(0, size, nodeList);
+	Builder.blockRow(size - 1, size, nodeList);
+	Builder.blockCol(0, size, nodeList);
+	Builder.blockCol(size - 1, size, nodeList);
 
 	/* Check block/light pattern */
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
 	assert.equal(nodeList.length, size * size, "Create bordered even grid size " + size);
 	assert.block(nodeList[0], "Row 0, Col 0");
 	assert.block(nodeList[1], "Row 0, Col 1");
@@ -265,14 +261,13 @@ QUnit.test("Build bordered even grid", function(assert) {
 
 QUnit.test("Build bordered odd grid", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 0);
-	Builder.blockRow(0, size);
-	Builder.blockRow(size - 1, size);
-	Builder.blockCol(0, size);
-	Builder.blockCol(size - 1, size);
+	var nodeList = Builder.createAlternating(size, 0);
+	Builder.blockRow(0, size, nodeList);
+	Builder.blockRow(size - 1, size, nodeList);
+	Builder.blockCol(0, size, nodeList);
+	Builder.blockCol(size - 1, size, nodeList);
 
 	/* Check block/light pattern */
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
 	assert.equal(nodeList.length, size * size, "Create bordered odd grid size " + size);
 	assert.block(nodeList[0], "Row 0, Col 0");
 	assert.block(nodeList[1], "Row 0, Col 1");
@@ -299,15 +294,13 @@ QUnit.test("Build bordered odd grid", function(assert) {
 QUnit.module("Grid selection");
 QUnit.test("Move target to across entry", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var col = 0; col < 2; col++) {
 		for (var target = col; target < size * size; target += 2 * size) {
-			grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[target]);
+			grid.activateClicked(nodeList[target]);
 			for (var n = 0; n < nodeList.length; n++) {
 				if (n == target)
 					assert.target(nodeList[target], "Target " + target);
@@ -322,15 +315,13 @@ QUnit.test("Move target to across entry", function(assert) {
 
 QUnit.test("Move target to down entry", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var row = 0; row < 2; row++) {
 		for (var target = row * size; target < 2 * row * size; target += 2) {
-			grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[target]);
+			grid.activateClicked(nodeList[target]);
 			if (target != 0) { // Selects the across entry in preference
 				for (var n = 0; n < nodeList.length; n++) {
 					if (n == target)
@@ -348,9 +339,7 @@ QUnit.test("Move target to down entry", function(assert) {
 
 QUnit.test("Move target within across entry", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -358,7 +347,7 @@ QUnit.test("Move target within across entry", function(assert) {
 		// Avoid clicking numbered squares which will select down entries
 		if (nodeList[target].querySelector('.grid-number') == null || target == 0)
 		{
-			grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[target]);
+			grid.activateClicked(nodeList[target]);
 			for (var n = 0; n < nodeList.length; n++) {
 				if (n == target)
 					assert.target(nodeList[target], "Target " + target);
@@ -373,9 +362,7 @@ QUnit.test("Move target within across entry", function(assert) {
 
 QUnit.test("Move target within down entry", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -383,7 +370,7 @@ QUnit.test("Move target within down entry", function(assert) {
 		// Avoid clicking numbered squares which will select across entries
 		if (nodeList[target].querySelector('.grid-number') == null)
 		{
-			grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[target]);
+			grid.activateClicked(nodeList[target]);
 
 			for (var n = 0; n < nodeList.length; n++) {
 				if (n == target)
@@ -399,9 +386,7 @@ QUnit.test("Move target within down entry", function(assert) {
 
 QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -430,14 +415,12 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 
 QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
-		grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2 * size]);
+		grid.activateClicked(nodeList[2 * size]);
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size)
 				assert.target(nodeList[n], "Target - Row 2, Col 0)");
@@ -447,7 +430,7 @@ QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 				assert.notHighlighted(nodeList[n], "No highlight");
 		}
 
-		grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2 * size]);
+		grid.activateClicked(nodeList[2 * size]);
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size)
 				assert.target(nodeList[n], "Target - Row 2, Col 0)");
@@ -461,14 +444,12 @@ QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 
 QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
-		grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2 * size + 2]);
+		grid.activateClicked(nodeList[2 * size + 2]);
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size + 2)
 				assert.target(nodeList[n], "Target - Row 2, Col 2)");
@@ -478,7 +459,7 @@ QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 				assert.notHighlighted(nodeList[n], "No highlight");
 		}
 
-		grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2 * size + 2]);
+		grid.activateClicked(nodeList[2 * size + 2]);
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size + 2)
 				assert.target(nodeList[n], "Target - Row 2, Col 2)");
@@ -492,13 +473,11 @@ QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 
 QUnit.test("Select next", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 0);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 0);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	assert.target(nodeList[size], "First across entry");
 
 	grid.activateNext();
@@ -516,13 +495,11 @@ QUnit.test("Select next", function(assert) {
 
 QUnit.test("Select previous", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 0);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 0);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	assert.target(nodeList[size], "First across entry");
 
 	grid.activatePrevious();
@@ -540,9 +517,7 @@ QUnit.test("Select previous", function(assert) {
 
 QUnit.test("Move target within grid limits", function(assert) {
 	var size = 3;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -585,17 +560,16 @@ QUnit.test("Move target within grid limits", function(assert) {
 
 QUnit.test("Move target within blocks", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 0);
-	Builder.blockRow(0, size);
-	Builder.blockRow(size - 1, size);
-	Builder.blockCol(0, size);
-	Builder.blockCol(size - 1, size);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
+	var nodeList = Builder.createAlternating(size, 0);
+	Builder.blockRow(0, size, nodeList);
+	Builder.blockRow(size - 1, size, nodeList);
+	Builder.blockCol(0, size, nodeList);
+	Builder.blockCol(size - 1, size, nodeList);
 
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size + 1]);
+	grid.activateClicked(nodeList[size + 1]);
 	assert.target(nodeList[size + 1], "Initial selection");
 
 	grid.moveTarget(-1, 0);
@@ -635,9 +609,7 @@ QUnit.test("Move target within blocks", function(assert) {
 QUnit.module("Text entry");
 QUnit.test("Add text", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -660,9 +632,7 @@ QUnit.test("Add text", function(assert) {
 
 QUnit.test("Delete text", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -675,7 +645,7 @@ QUnit.test("Delete text", function(assert) {
 	assert.letterEqual(nodeList[2], 'C', "Content C");
 
 	/* Deleted upwards starting from an empty square */
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	grid.updateLetters('...', '..');
 	assert.target(nodeList[0], "Backspace from empty square");
 	assert.letterEqual(nodeList[0], 'A', "First square has letter");
@@ -686,8 +656,8 @@ QUnit.test("Delete text", function(assert) {
 	assert.target(nodeList[0], "No change");
 
 	/* Deleted leftwards starting from a populated square */
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2]);
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2]);
+	grid.activateClicked(nodeList[2]);
+	grid.activateClicked(nodeList[2]);
 	grid.updateLetters('...', '..');
 	assert.target(nodeList[1], "Backspace from populated square");
 	assert.noLetter(nodeList[2], "Backspace from populated square");
@@ -698,9 +668,7 @@ QUnit.test("Delete text", function(assert) {
 
 QUnit.test("Check answer", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -717,15 +685,13 @@ QUnit.test("Check answer", function(assert) {
 
 QUnit.test("Check all", function (assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
 	grid.updateLetters('', 'aabba');
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[2 * size]);
+	grid.activateClicked(nodeList[2 * size]);
 	grid.updateLetters('', 'aabba');
 	grid.checkAll();
 
@@ -744,9 +710,7 @@ QUnit.test("Check all", function (assert) {
 
 QUnit.test("Show answer", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -764,9 +728,7 @@ QUnit.test("Show answer", function(assert) {
 
 QUnit.test("Show solution", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -784,9 +746,7 @@ QUnit.test("Show solution", function(assert) {
 
 QUnit.test("Clear all", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
@@ -803,13 +763,11 @@ QUnit.test("Clear all", function(assert) {
 QUnit.module("Local storage");
 QUnit.test("Remember letter", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	grid.updateLetters('...', '...Z');
 	assert.letterEqual(nodeList[size], 'Z', "Set letter");
 
@@ -825,11 +783,10 @@ QUnit.test("Remember letter", function(assert) {
 
 QUnit.test("Remember solution", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
+
 	grid.showSolution();
 
 	grid = new GridModule.Grid(size, Builder.fixture);
@@ -845,11 +802,10 @@ QUnit.test("Remember solution", function(assert) {
 
 QUnit.test("Remember clear", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
+
 	grid.showSolution();
 	grid.clearAll();
 
@@ -863,13 +819,11 @@ QUnit.test("Remember clear", function(assert) {
 
 QUnit.test("Remember check", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	grid.updateLetters('...', '...ZA');
 	grid.checkAnswer();
 	assert.noLetter(nodeList[size]);
@@ -888,13 +842,11 @@ QUnit.test("Remember check", function(assert) {
 
 QUnit.test("Remember check all", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelectorAll('.block, .light')[size]);
+	grid.activateClicked(nodeList[size]);
 	grid.updateLetters('...', '...ZA');
 	grid.checkAll();
 	assert.noLetter(nodeList[size]);
@@ -913,11 +865,10 @@ QUnit.test("Remember check all", function(assert) {
 
 QUnit.test("Remember peek", function(assert) {
 	var size = 5;
-	Builder.createAlternating(size, 1);
-	var nodeList = document.querySelectorAll('#qunit-fixture > div');
-
+	var nodeList = Builder.createAlternating(size, 1);
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
+
 	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
 	grid.showAnswer();
 	assert.letterEqual(nodeList[0], 'A', "Correct letter");
