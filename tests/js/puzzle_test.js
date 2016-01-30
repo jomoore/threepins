@@ -392,7 +392,7 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 
 	for (var i = 0; i < 2; i++) {
 		/* Select first cell - across entry should be highlighted */
-		grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+		grid.activateClicked(nodeList[0]);
 		assert.target(nodeList[0], "Target - Row 0, Col 0");
 		for (var n = 1; n < nodeList.length; n++) {
 			if (n < size)
@@ -402,7 +402,7 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 		}
 
 		/* Select again - down entry should be highlighted */
-		grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+		grid.activateClicked(nodeList[0]);
 		assert.target(nodeList[0], "Target - Row 0, Col 0)");
 		for (var n = 1; n < nodeList.length; n++) {
 			if (n % size == 0)
@@ -521,7 +521,7 @@ QUnit.test("Move target within grid limits", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	assert.target(nodeList[0], "Initial selection");
 
 	grid.moveTarget(-1, 0);
@@ -613,7 +613,7 @@ QUnit.test("Add text", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	assert.target(nodeList[0], "Initial selection");
 
 	grid.updateLetters('...', '...a');
@@ -637,7 +637,7 @@ QUnit.test("Delete text", function(assert) {
 	assert.ok(grid, "Grid created");
 
 	/* Set up some text to delete */
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	assert.target(nodeList[0], "Initial selection");
 	grid.updateLetters('...', '...abcde');
 	assert.letterEqual(nodeList[0], 'A', "Content A");
@@ -672,7 +672,7 @@ QUnit.test("Check answer", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	grid.updateLetters('', 'aabba');
 	grid.checkAnswer();
 	
@@ -689,7 +689,7 @@ QUnit.test("Check all", function (assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	grid.updateLetters('', 'aabba');
 	grid.activateClicked(nodeList[2 * size]);
 	grid.updateLetters('', 'aabba');
@@ -714,7 +714,7 @@ QUnit.test("Show answer", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	grid.showAnswer();
 
 	for (var i = 0; i < size; i++) {
@@ -750,7 +750,7 @@ QUnit.test("Clear all", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	assert.target(nodeList[0], "Initial selection");
 	grid.updateLetters('...', '...abcde');
 	grid.clearAll();
@@ -761,6 +761,22 @@ QUnit.test("Clear all", function(assert) {
 });
 
 QUnit.module("Local storage");
+
+// Helper function to remove all inserted letters and recreate the GridModule
+var recreateGrid = function(size, nodeList, assert) {
+	var letters = document.getElementsByClassName('letter');
+	while (letters[0])
+		letters[0].parentNode.removeChild(letters[0]);
+
+	for (var i = 0; i < nodeList.length; i++)
+		assert.noLetter(nodeList[i], "Cleared grid");
+
+	var grid = new GridModule.Grid(size, Builder.fixture);
+	assert.ok(grid, "Grid recreated");
+
+	return grid;
+};
+
 QUnit.test("Remember letter", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
@@ -771,13 +787,7 @@ QUnit.test("Remember letter", function(assert) {
 	grid.updateLetters('...', '...Z');
 	assert.letterEqual(nodeList[size], 'Z', "Set letter");
 
-	var letters = document.getElementsByClassName('letter');
-	while (letters[0])
-		letters[0].parentNode.removeChild(letters[0]);
-	assert.noLetter(nodeList[size], "Cleared grid");
-
-	grid = new GridModule.Grid(size, Builder.fixture);
-	assert.ok(grid, "Grid recreated");
+	grid = recreateGrid(size, nodeList, assert);
 	assert.letterEqual(nodeList[size], 'Z', "Remembered letter");
 });
 
@@ -789,9 +799,7 @@ QUnit.test("Remember solution", function(assert) {
 
 	grid.showSolution();
 
-	grid = new GridModule.Grid(size, Builder.fixture);
-	assert.ok(grid, "Grid recreated");
-
+	grid = recreateGrid(size, nodeList, assert);
 	for (var i = 0; i < size * size; i++) {
 		if (nodeList[i].getAttribute('data-x') % 2 == 0 ||
 			nodeList[i].getAttribute('data-y') % 2 == 0) {
@@ -809,9 +817,7 @@ QUnit.test("Remember clear", function(assert) {
 	grid.showSolution();
 	grid.clearAll();
 
-	grid = new GridModule.Grid(size, Builder.fixture);
-	assert.ok(grid, "Grid recreated");
-
+	grid = recreateGrid(size, nodeList, assert);
 	for (var i = 0; i < size * size; i++) {
 		assert.noLetter(nodeList[i], "Grid empty");
 	}
@@ -829,12 +835,7 @@ QUnit.test("Remember check", function(assert) {
 	assert.noLetter(nodeList[size]);
 	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
 
-	var letters = document.getElementsByClassName('letter');
-	while (letters[0])
-		letters[0].parentNode.removeChild(letters[0]);
-	assert.noLetter(nodeList[2 * size], "Cleared grid");
-
-	grid = new GridModule.Grid(size, Builder.fixture);
+	grid = recreateGrid(size, nodeList, assert);
 	assert.ok(grid, "Grid recreated");
 	assert.noLetter(nodeList[size], "Incorrect letter removed");
 	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter preserved");
@@ -852,13 +853,7 @@ QUnit.test("Remember check all", function(assert) {
 	assert.noLetter(nodeList[size]);
 	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
 
-	var letters = document.getElementsByClassName('letter');
-	while (letters[0])
-		letters[0].parentNode.removeChild(letters[0]);
-	assert.noLetter(nodeList[2 * size], "Cleared grid");
-
-	grid = new GridModule.Grid(size, Builder.fixture);
-	assert.ok(grid, "Grid recreated");
+	grid = recreateGrid(size, nodeList, assert);
 	assert.noLetter(nodeList[size], "Incorrect letter removed");
 	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter preserved");
 });
@@ -869,16 +864,11 @@ QUnit.test("Remember peek", function(assert) {
 	var grid = new GridModule.Grid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(Builder.fixture.querySelector('.block, .light'));
+	grid.activateClicked(nodeList[0]);
 	grid.showAnswer();
 	assert.letterEqual(nodeList[0], 'A', "Correct letter");
 
-	var letters = document.getElementsByClassName('letter');
-	while (letters[0])
-		letters[0].parentNode.removeChild(letters[0]);
-	assert.noLetter(nodeList[0], "Cleared grid");
-
-	grid = new GridModule.Grid(size, Builder.fixture);
+	grid = recreateGrid(size, nodeList, assert);
 	assert.ok(grid, "Grid recreated");
 	assert.letterEqual(nodeList[0], 'A', "Correct letter preserved");
 });
