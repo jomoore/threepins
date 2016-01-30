@@ -99,38 +99,38 @@ QUnit.assert.equalCoord = function(div, expected, message) {
 };
 
 QUnit.assert.block = function(div, message) {
-	block = div.classList.contains('block');
+	var block = div.classList.contains('block');
 	this.push(block, block, true, message);
 };
 
 QUnit.assert.light = function(div, message) {
-	block = div.classList.contains('block');
+	var block = div.classList.contains('block');
 	this.push(!block, !block, true, message);
 };
 
 QUnit.assert.numbered = function(div, message) {
-	number = div.querySelector('.grid-number');
+	var number = div.querySelector('.grid-number');
 	this.push(number != null, number != null, true, message);
 };
 
 QUnit.assert.notNumbered = function(div, message) {
-	number = div.querySelector('.grid-number');
+	var number = div.querySelector('.grid-number');
 	this.push(number == null, number == null, true, message);
 };
 
 QUnit.assert.target = function(div, message) {
-	target = div.classList.contains('target');
+	var target = div.classList.contains('target');
 	this.push(target, target, true, message);
 };
 
 QUnit.assert.highlighted = function(div, message) {
-	highlighted = div.classList.contains('highlight');
+	var highlighted = div.classList.contains('highlight');
 	this.push(highlighted, highlighted, true, message);
 };
 
 QUnit.assert.notHighlighted = function(div, message) {
-	target = div.classList.contains('target');
-	highlighted = div.classList.contains('highlight');
+	var target = div.classList.contains('target');
+	var highlighted = div.classList.contains('highlight');
 	this.push(!target && !highlighted,
 			  {target: target, highlighted: highlighted}, 
 			  {target: false, highlighted: false},
