@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import Http404
 from django.views.decorators.gzip import gzip_page
+from django.contrib.admin.views.decorators import staff_member_required
 from puzzle.models import Author, Puzzle, Entry
 from visitors.models import save_request
 
@@ -105,11 +106,13 @@ def solution(request, number):
         raise Http404
     return display_puzzle(request, p, title, title, True)
 
+@staff_member_required
 def preview(request, number):
     p = get_object_or_404(Puzzle, number=number)
     title = 'Preview #' + number
     return display_puzzle(request, p, title, title, False, True)
 
+@staff_member_required
 def preview_solution(request, number):
     p = get_object_or_404(Puzzle, number=number)
     title = 'Solution #' + number
