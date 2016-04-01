@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from puzzle.models import Author, Puzzle, Entry
 from puzzle.feeds import PuzzleFeed
 from puzzle.views import create_grid, get_clues, get_date_string
@@ -165,6 +166,14 @@ class DateFormattingTests(TestCase):
         self.assertEquals(get_date_string(p), '04 Mar 1980')
 
 class PuzzleViewTests(TestCase):
+    def log_in_super_user(self):
+        password = 'password'
+        superuser = User.objects.create_superuser('test', 'test@example.com', password)
+        self.client.login(username=superuser.username, password=password)
+
+    def log_out_super_user(self):
+        self.client.logout()
+
     def test_home_page_grid_squares(self):
         create_puzzle_range()
         response = self.client.get('/')
@@ -234,14 +243,21 @@ class PuzzleViewTests(TestCase):
         response = self.client.get(reverse('puzzle', args=[3]))
         self.assertEqual(response.status_code, 404)
 
+    def test_preview_requires_login(self):
+        create_puzzle_range()
+        response = self.client.get(reverse('preview', args=[3]))
+        self.assertRedirects(response, '/admin/login/?next=/puzzle/preview/3/')
+
     def test_preview_future_puzzle(self):
         create_puzzle_range()
+        self.log_in_super_user()
         response = self.client.get(reverse('preview', args=[3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertNotContains(response, 'class="letter"')
         self.assertContains(response, '<title>Three Pins - Preview #3</title>')
+        self.log_out_super_user()
 
     def test_solution_available(self):
         create_puzzle_range()
@@ -254,12 +270,14 @@ class PuzzleViewTests(TestCase):
 
     def test_preview_solution_available(self):
         create_puzzle_range()
+        self.log_in_super_user()
         response = self.client.get(reverse('preview_solution', args=[3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
         self.assertContains(response, '<title>Three Pins - Solution #3</title>')
+        self.log_out_super_user()
 
     def test_invalid_puzzle(self):
         create_puzzle_range()
@@ -273,13 +291,17 @@ class PuzzleViewTests(TestCase):
 
     def test_invalid_preview(self):
         create_puzzle_range()
+        self.log_in_super_user()
         response = self.client.get(reverse('preview', args=[100]))
         self.assertEqual(response.status_code, 404)
+        self.log_out_super_user()
 
     def test_invalid_preview_solution(self):
         create_puzzle_range()
+        self.log_in_super_user()
         response = self.client.get(reverse('preview_solution', args=[100]))
         self.assertEqual(response.status_code, 404)
+        self.log_out_super_user()
 
     def test_index_list(self):
         create_puzzle_range()
