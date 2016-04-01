@@ -1,11 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from ipware.ip import get_real_ip
+from re import sub
 
 def save_request(request):
     v = Visitor()
     ip = get_real_ip(request)
-    v.ip_addr = ip if ip is not None else ''
+    v.ip_addr = sub(r'[0-9a-fA-F]+$', 'x', ip) if ip is not None else ''
     v.user_agent = request.META.get('HTTP_USER_AGENT', '')
     v.path = request.path
     v.referrer = request.META.get('HTTP_REFERER', '')
