@@ -19,15 +19,15 @@ nav ul { padding: 5px; }
 nav li { display: inline; white-space: nowrap; }
 
 /* Contact */
-#contact { width: 600px; margin: auto; }
-#contact p { padding-left: 80px; padding-bottom: 2px; }
-#contact p:nth-last-child(2) { margin-bottom: 15px; }
-#contact input, #contact textarea { padding: 5px; width: 471px; margin-bottom: 10px; }
-#contact textarea { height: 180px; }
+#contact { max-width: 38em; margin: auto; }
+#contact p { text-align: centre; padding-bottom: 0.1em; }
+#contact p:nth-last-child(2) { margin-bottom: 1em; }
+#contact .warning { margin-bottom: 0.7em; color: red; }
+#contact label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
+#contact input, #contact textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
+#contact textarea { height: 11em; }
+#contact input.send-button { width: 6em; float: right; clear: both; margin-right: 18.5%; }
 #contact input:focus, #contact textarea:focus { border: 2px solid #336600; }
-#contact input.send-button { width: 100px; float: right; }
-#contact label { float: left; text-align: right; margin-right: 15px; width: 100px; }
-#contact .warning { margin-bottom: 10px; color: red; }
 
 /* Grid */
 #grid { text-align: center; position: relative; }
@@ -50,10 +50,6 @@ nav li { display: inline; white-space: nowrap; }
 .down { border-left: 1px dashed; }
 
 /* Footer */
-#cookie-warning { color: white; background: #336600; text-align: center; position: fixed; bottom: 0%; width: 100%; padding: 3px; }
-#cookie-warning a { text-decoration: underline; color: SkyBlue; }
-#cookie-warning button { background: beige; border: none; border-radius: 3px; padding: 2px; margin-left: 10px; }
-#cookie-warning button:hover { background: white; }
 footer { border-top: 1px solid; clear: both; }
 
 @media screen {
@@ -87,6 +83,9 @@ footer { border-top: 1px solid; clear: both; }
 @media screen and (min-width: 720px) {
 	nav { font-size: 1.8em; }
 	nav li { padding: 20px; }
+	#contact p { padding-left: 5em; }
+	#contact label { text-align: right; margin-left: 0em; }
+	#contact input.send-button { margin-right: 1em; }
 }
 
 @media screen and (min-width: 1280px) {
@@ -112,7 +111,6 @@ footer { border-top: 1px solid; clear: both; }
 	.clue-box { width: 260px; }
 	.clue-box li { padding: 1px; }
 
-	#cookie-warning { display: none; }
 	footer { display: none; }
 }
 
