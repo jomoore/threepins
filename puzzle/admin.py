@@ -49,5 +49,7 @@ class PuzzleAdmin(admin.ModelAdmin):
         if xml_file:
             import_from_xml(xml_file, obj)
 
+admin.site.site_header = "Three Pins Administration"
+admin.site.site_title = "Three Pins"
 admin.site.register(Author)
 admin.site.register(Puzzle, PuzzleAdmin)
