@@ -76,9 +76,15 @@
 <script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
 <script>
 	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
-	var grid = new GridModule.Grid(15, document.getElementById('grid'));
-	var input = new GridModule.GridInput(grid, document.getElementById('ip'));
-	var bb = new GridModule.ButtonBox(grid, document.getElementsByClassName('buttons')[0]);
+	var grid = new GridModule.Grid(15);
+	grid.loadGrid(document.getElementById('grid'));
+	grid.loadLetters();
+
+	var input = new GridModule.GridInput(grid);
+	input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
+
+	var bb = new GridModule.ButtonBox(grid);
+	bb.insertButtons(document.getElementsByClassName('buttons')[0]);
 
 	var squares = document.querySelectorAll('.block, .light');
 	for (var i = 0; i < squares.length; i++) {

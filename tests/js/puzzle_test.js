@@ -292,10 +292,19 @@ QUnit.test("Build bordered odd grid", function(assert) {
 });
 
 QUnit.module("Grid selection");
+
+// Helper to create a grid and load its content from the page
+var createGrid = function(size, fixture) {
+	var grid = new GridModule.Grid(size);
+	grid.loadGrid(fixture);
+	grid.loadLetters();
+	return grid;
+};
+
 QUnit.test("Move target to across entry", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var col = 0; col < 2; col++) {
@@ -316,7 +325,7 @@ QUnit.test("Move target to across entry", function(assert) {
 QUnit.test("Move target to down entry", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var row = 0; row < 2; row++) {
@@ -340,7 +349,7 @@ QUnit.test("Move target to down entry", function(assert) {
 QUnit.test("Move target within across entry", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var target = 0; target < size; target++) {
@@ -363,7 +372,7 @@ QUnit.test("Move target within across entry", function(assert) {
 QUnit.test("Move target within down entry", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var target = 0; target < size * size; target += size) {
@@ -387,7 +396,7 @@ QUnit.test("Move target within down entry", function(assert) {
 QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
@@ -416,7 +425,7 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
@@ -445,7 +454,7 @@ QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
@@ -474,7 +483,7 @@ QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 QUnit.test("Select next", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 0);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[size]);
@@ -496,7 +505,7 @@ QUnit.test("Select next", function(assert) {
 QUnit.test("Select previous", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 0);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[size]);
@@ -518,7 +527,7 @@ QUnit.test("Select previous", function(assert) {
 QUnit.test("Move target within grid limits", function(assert) {
 	var size = 3;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -566,7 +575,7 @@ QUnit.test("Move target within blocks", function(assert) {
 	Builder.blockCol(0, size, nodeList);
 	Builder.blockCol(size - 1, size, nodeList);
 
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[size + 1]);
@@ -610,7 +619,7 @@ QUnit.module("Text entry");
 QUnit.test("Add text", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -633,7 +642,7 @@ QUnit.test("Add text", function(assert) {
 QUnit.test("Delete text", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	/* Set up some text to delete */
@@ -666,10 +675,25 @@ QUnit.test("Delete text", function(assert) {
 	assert.noLetter(nodeList[1], "Second backspace from populated square");
 });
 
+QUnit.test("Get text", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+	
+	grid.activateClicked(nodeList[0]);
+	grid.updateLetters('...', '...HI');
+	grid.activateClicked(nodeList[3]);
+	grid.updateLetters('...', '...MA');
+
+	var entry = grid.getActiveEntry();
+	assert.equal(entry, 'HI.MA', "Got active text");
+});
+
 QUnit.test("Check answer", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -686,7 +710,7 @@ QUnit.test("Check answer", function(assert) {
 QUnit.test("Check all", function (assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -711,7 +735,7 @@ QUnit.test("Check all", function (assert) {
 QUnit.test("Show answer", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -729,7 +753,7 @@ QUnit.test("Show answer", function(assert) {
 QUnit.test("Show solution", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.showSolution();
@@ -747,7 +771,7 @@ QUnit.test("Show solution", function(assert) {
 QUnit.test("Clear all", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);
@@ -771,7 +795,7 @@ var recreateGrid = function(size, nodeList, assert) {
 	for (var i = 0; i < nodeList.length; i++)
 		assert.noLetter(nodeList[i], "Cleared grid");
 
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid recreated");
 
 	return grid;
@@ -780,7 +804,7 @@ var recreateGrid = function(size, nodeList, assert) {
 QUnit.test("Remember letter", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
 	grid.activateClicked(nodeList[size]);
@@ -794,7 +818,7 @@ QUnit.test("Remember letter", function(assert) {
 QUnit.test("Remember solution", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.showSolution();
@@ -811,7 +835,7 @@ QUnit.test("Remember solution", function(assert) {
 QUnit.test("Remember clear", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.showSolution();
@@ -826,7 +850,7 @@ QUnit.test("Remember clear", function(assert) {
 QUnit.test("Remember check", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[size]);
@@ -844,7 +868,7 @@ QUnit.test("Remember check", function(assert) {
 QUnit.test("Remember check all", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[size]);
@@ -861,7 +885,7 @@ QUnit.test("Remember check all", function(assert) {
 QUnit.test("Remember peek", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
-	var grid = new GridModule.Grid(size, Builder.fixture);
+	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
 	grid.activateClicked(nodeList[0]);

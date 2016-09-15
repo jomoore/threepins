@@ -87,9 +87,9 @@ var GridModule = (function() {
 		this.div = null;
 	}
 
-	function Grid(size, container) {
-		var number = container.getAttribute('data-number');
+	function Grid(size) {
 		var grid = [];
+		var storageName;
 		var active = new Entry();
 		active.clear();
 
@@ -378,15 +378,15 @@ var GridModule = (function() {
 				});
 
 				if (nonEmpty)
-					localStorage.setItem('puzzle' + number, letters);
+					localStorage.setItem(storageName, letters);
 				else
-					localStorage.removeItem('puzzle' + number);
+					localStorage.removeItem(storageName);
 			}
 		};
 
-		var loadLetters = function(grid) {
+		this.loadLetters = function(grid) {
 			if (window.localStorage) {
-				var letters = localStorage.getItem('puzzle' + number);
+				var letters = localStorage.getItem(storageName);
 				if (letters) {
 					var i = 0;
 					iterateLights(function(x, y) {
@@ -427,6 +427,17 @@ var GridModule = (function() {
 			saveLetters();
 		};
 
+		this.getActiveEntry = function() {
+			var entry = '';
+			var letter;
+			active.iterate(function(x, y) {
+				letter = getLetter(x, y); 
+				entry += letter ? letter : '.';
+			});
+
+			return entry;
+		};
+
 		/* --- Button handlers --- */
 
 		this.checkAnswer = function() {
@@ -461,7 +472,7 @@ var GridModule = (function() {
 
 		/* --- Initialisation --- */
 
-		var initGrid = function() {
+		this.loadGrid = function(container) {
 			for (var x = 0; x < size; x++) {
 				grid[x] = [];
 				for (var y = 0; y < size; y++) {
@@ -478,10 +489,9 @@ var GridModule = (function() {
 					grid[x][y].div = el;
 				}
 			}
-		};
 
-		initGrid();
-		loadLetters();
+			storageName = 'puzzle' + container.getAttribute('data-number');
+		};
 	}
 
 	/* The Android soft keyboard is spectacularly painful to work with.
@@ -502,7 +512,8 @@ var GridModule = (function() {
 	 * doesn't show up. We fill it with some lengthy dummy text so that backspace does something discernible,
 	 * and examine deltas in its contents in lieu of getting nice sensible keypresses.
 	 */
-	function GridInput(grid, input) {
+	function GridInput(grid) {
+		var input;
 		var prevInput = '';
 
 		var positionToTarget = function() {
@@ -524,76 +535,88 @@ var GridModule = (function() {
 			resetInput();
 		};
 
-		input.addEventListener('input', function(e) {
-			if (grid.isActive()) {
-				var newInput = input.value.replace(/ /g, '');
-				grid.updateLetters(prevInput, newInput);
-				prevInput = newInput;
-				positionToTarget();
-				e.preventDefault();
-				return false;
-			}
-		});
+		var addInputEventListener = function() {
+			input.addEventListener('input', function(e) {
+				if (grid.isActive()) {
+					var newInput = input.value.replace(/ /g, '');
+					grid.updateLetters(prevInput, newInput);
+					prevInput = newInput;
+					positionToTarget();
+					e.preventDefault();
+					return false;
+				}
+			});
+		};
 
-		/* If there's a real keyboard, we can handle a few extra key events */
-		input.addEventListener('keydown', function(e) {
-			if (grid.isActive()) {
-				switch (e.which) {
-				case 8: /* Backspace */
-					/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
-					if (document.getElementById('antique-IE')) {
-						grid.deleteTargetLetter(true);
+		var addKeydownEventListener = function(antiqueIE) {
+			/* If there's a real keyboard, we can handle a few extra key events */
+			input.addEventListener('keydown', function(e) {
+				if (grid.isActive()) {
+					switch (e.which) {
+					case 8: /* Backspace */
+						/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
+						if (antiqueIE) {
+							grid.deleteTargetLetter(true);
+							resetInput();
+							e.preventDefault();
+							return false;
+						}
+						return true;
+					case 9: /* Tab */
+						if (e.shiftKey)
+							grid.activatePrevious();
+						else
+							grid.activateNext();
+						resetInput();
+						e.preventDefault();
+						return false;
+					case 13: /* Return */
+					case 27: /* Escape */
+						grid.clearActive();
+						e.preventDefault();
+						return false;
+					case 37: /* Left arrow */
+						grid.moveTarget(-1, 0);
+						resetInput();
+						e.preventDefault();
+						return false;
+					case 38: /* Up arrow */
+						grid.moveTarget(0, -1);
+						resetInput();
+						e.preventDefault();
+						return false;
+					case 39: /* Right arrow */
+						grid.moveTarget(1, 0);
+						resetInput();
+						e.preventDefault();
+						return false;
+					case 40: /* Down arrow */
+						grid.moveTarget(0, 1);
+						resetInput();
+						e.preventDefault();
+						return false;
+					case 46: /* Delete */
+						grid.deleteTargetLetter(false);
 						resetInput();
 						e.preventDefault();
 						return false;
 					}
-					return true;
-				case 9: /* Tab */
-					if (e.shiftKey)
-						grid.activatePrevious();
-					else
-						grid.activateNext();
-					resetInput();
-					e.preventDefault();
-					return false;
-				case 13: /* Return */
-				case 27: /* Escape */
-					grid.clearActive();
-					e.preventDefault();
-					return false;
-				case 37: /* Left arrow */
-					grid.moveTarget(-1, 0);
-					resetInput();
-					e.preventDefault();
-					return false;
-				case 38: /* Up arrow */
-					grid.moveTarget(0, -1);
-					resetInput();
-					e.preventDefault();
-					return false;
-				case 39: /* Right arrow */
-					grid.moveTarget(1, 0);
-					resetInput();
-					e.preventDefault();
-					return false;
-				case 40: /* Down arrow */
-					grid.moveTarget(0, 1);
-					resetInput();
-					e.preventDefault();
-					return false;
-				case 46: /* Delete */
-					grid.deleteTargetLetter(false);
-					resetInput();
-					e.preventDefault();
-					return false;
 				}
-			}
-		});
+			});
+		};
+
+		this.registerControl = function(inputControl, antiqueIE) {
+			input = inputControl;
+			addInputEventListener();
+			addKeydownEventListener(antiqueIE);
+		};
 	}
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
 	 * Since it's enabled, we can remove the link and provide some buttons instead. */
-	function ButtonBox(grid, div) {
+	function ButtonBox(grid) {
+		var div;
+		
 		var checkButton = document.createElement('button');
 		checkButton.innerHTML = 'Check';
 		checkButton.addEventListener('click', function() {
@@ -634,12 +657,15 @@ var GridModule = (function() {
 			div.appendChild(solutionButton);
 		});
 
-		div.innerHTML = '';
-		div.appendChild(checkButton);
-		div.appendChild(peekButton);
-		div.appendChild(printButton);
-		div.appendChild(checkAllButton);
-		div.appendChild(solutionButton);
+		this.insertButtons = function(d) {
+			div = d;
+			div.innerHTML = '';
+			div.appendChild(checkButton);
+			div.appendChild(peekButton);
+			div.appendChild(printButton);
+			div.appendChild(checkAllButton);
+			div.appendChild(solutionButton);
+		};
 	}
 
 	return {
