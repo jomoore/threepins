@@ -91,6 +91,7 @@ var GridModule = (function() {
 		var number = container.getAttribute('data-number');
 		var grid = [];
 		var active = new Entry();
+		active.clear();
 
 		/* --- Iterators --- */
 
@@ -234,7 +235,7 @@ var GridModule = (function() {
 			var y = active.y;
 			var down = active.down;
 
-			while (y < size) {
+			while (true) {
 				x++;
 
 				if (x >= size) {
@@ -248,7 +249,7 @@ var GridModule = (function() {
 					down = !down;
 				}
 
-				if (y < size && (!down && headAcross(x, y)) || (down && headDown(x, y))) {
+				if ((!down && headAcross(x, y)) || (down && headDown(x, y))) {
 					setActive(x, y, down);
 					break;
 				}
@@ -260,7 +261,7 @@ var GridModule = (function() {
 			var y = active.y;
 			var down = active.down;
 
-			while (y >= 0) {
+			while (true) {
 				x--;
 
 				if (x < 0) {
@@ -274,7 +275,7 @@ var GridModule = (function() {
 					down = !down;
 				}
 
-				if (y >= 0 && (!down && headAcross(x, y)) || (down && headDown(x, y))) {
+				if ((!down && headAcross(x, y)) || (down && headDown(x, y))) {
 					setActive(x, y, down);
 					break;
 				}
@@ -479,7 +480,6 @@ var GridModule = (function() {
 			}
 		};
 
-		active.clear();
 		initGrid();
 		loadLetters();
 	}
