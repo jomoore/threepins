@@ -9,5 +9,7 @@ urlpatterns = patterns('',
     url(r'^(?P<number>\d+)/solution/$', views.solution, name='solution'),
     url(r'^preview/(?P<number>\d+)/$', views.preview, name='preview'),
     url(r'^preview/(?P<number>\d+)/solution/$', views.preview_solution, name='preview_solution'),
+    url(r'^create/$', views.create, name='create'),
+    url(r'^create/blank/(?P<number>\d+)/$', views.blank, name='blank'),
     url(r'^rss/$', PuzzleFeed(), name='rss'),
 )

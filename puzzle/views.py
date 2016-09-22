@@ -1,10 +1,10 @@
 from re import sub
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.views.decorators.gzip import gzip_page
 from django.contrib.admin.views.decorators import staff_member_required
-from puzzle.models import Author, Puzzle, Entry
+from puzzle.models import Author, Puzzle, Entry, Blank, Block
 from visitors.models import save_request
 
 def create_grid(puzzle, size):
@@ -40,6 +40,19 @@ def create_grid(puzzle, size):
 
     # All done!
     return grid
+
+def create_thumbnail(blank, square_size):
+    svg = '<svg width="%d" height="%d" data-id="%d">' % (blank.size * square_size, blank.size * square_size, blank.id)
+    for y in range(0, blank.size):
+        for x in range(0, blank.size):
+            if (Block.objects.filter(blank=blank.id, x=x, y=y).exists()):
+                fill = '0,0,0'
+            else:
+                fill = '255,255,255'
+            svg += '<rect x="%d" y="%d" width="%d" height="%d" style="fill:rgb(%s);stroke-width:1;stroke:rgb(0,0,0)" />' % \
+                   (x * square_size, y * square_size, square_size, square_size, fill)
+    svg += '</svg>'
+    return svg
 
 def get_clues(puzzle, grid, down):
     entries = Entry.objects.filter(puzzle=puzzle, down=down).order_by('y', 'x')
@@ -123,5 +136,21 @@ def index(request):
     info = []
     for p in puzzles:
         info.append({'number': p.number, 'author': p.author, 'date': get_date_string(p)})
-    context = { 'puzzles': info }
+    context = {'puzzles': info}
     return render(request, 'puzzle/index.html', context)
+
+def create(request):
+    blanks = Blank.objects.all().order_by('display_order', 'id');
+    thumbs = []
+    for b in blanks:
+        thumbs.append(create_thumbnail(b, 10))
+    context = {'thumbs': thumbs}
+    return render(request, 'puzzle/create.html', context)
+
+def blank(request, number):
+    blank = get_object_or_404(Blank, id=number)
+    isBlock = []
+    for y in range(blank.size):
+        for x in range(blank.size):
+            isBlock.append(Block.objects.filter(blank=blank.id, x=x, y=y).exists())
+    return JsonResponse({'size': blank.size, 'isBlock': isBlock})

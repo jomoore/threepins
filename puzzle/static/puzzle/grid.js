@@ -427,6 +427,48 @@ var GridModule = (function() {
 			saveLetters();
 		};
 
+		/* --- Grid-fill queries --- */
+
+		var getClueNumber = function(x, y) {
+			return grid[x][y].div.getElementsByClassName('grid-number')[0].textContent;
+		};
+
+		this.getClueNums = function() {
+			var clueNums = {across: [], down: []};
+			iterateLights(function(x, y) {
+				if (headAcross(x, y)) {
+					clueNums.across.push(getClueNumber(x, y));
+				}
+
+				if (headDown(x, y)) {
+					clueNums.down.push(getClueNumber(x, y));
+				}
+			});
+
+			return clueNums;
+		};
+
+		this.getWordLengths = function() {
+			var wordLengths = {across: [], down: []};
+			iterateLights(function(x, y) {
+				if (headAcross(x, y)) {
+					var length = 1;
+					while ((x + length < size) && grid[x + length][y].light)
+						length++;
+					wordLengths.across.push(length);
+				}
+
+				if (headDown(x, y)) {
+					var length = 1;
+					while ((y + length < size) && grid[x][y + length].light)
+						length++;
+					wordLengths.down.push(length);
+				}
+			});
+
+			return wordLengths;
+		};
+
 		this.getActiveEntry = function() {
 			var entry = '';
 			var letter;
@@ -436,6 +478,74 @@ var GridModule = (function() {
 			});
 
 			return entry;
+		};
+
+		this.getActiveDirection = function() {
+			return active.down;
+		};
+
+		this.getActiveIndex = function() {
+			var index = 0;
+			var activeIndex;
+			
+			iterateLights(function(x, y) {
+				if (x == active.x && y == active.y)
+					activeIndex = index;
+				if ((active.down && headDown(x, y)) || (!active.down && headAcross(x, y)))
+					++index;
+			});
+
+			return activeIndex;
+		};
+
+		this.setActiveEntry = function(word) {
+			var i = 0;
+			active.iterate(function(x, y) {
+				setLetter(x, y, word[i++]);
+			});
+		};
+
+		this.resetActiveEntry = function() {
+			active.iterate(function(x, y) {
+				if (!((active.down && x > 0 && getLetter(x - 1, y)) ||
+					  (active.down && x < (size - 1) && getLetter(x + 1, y)) ||
+					  (!active.down && y > 0 && getLetter(x, y - 1)) ||
+					  (!active.down && y < (size - 1) && getLetter(x, y + 1)))) {
+					clearLetter(x, y);
+				}
+			});
+		};
+
+		this.getIpuzPuzzle = function() {
+			var puzzle = [];
+			for (var y = 0; y < size; y++) {
+				puzzle.push([]);
+				for (var x = 0; x < size; x++) {
+					if (!grid[x][y].light)
+						puzzle[y].push('#');
+					else if (headAcross(x, y) || headDown(x, y))
+						puzzle[y].push(+getClueNumber(x, y));
+					else
+						puzzle[y].push(0);
+				}
+			}
+
+			return puzzle;
+		};
+
+		this.getIpuzSolution = function() {
+			var solution = [];
+			for (var y = 0; y < size; y++) {
+				solution.push([]);
+				for (var x = 0; x < size; x++) {
+					if (!grid[x][y].light)
+						solution[y].push('#');
+					else
+						solution[y].push(getLetter(x, y) || 0);
+				}
+			}
+
+			return solution;
 		};
 
 		/* --- Button handlers --- */
@@ -535,11 +645,12 @@ var GridModule = (function() {
 			resetInput();
 		};
 
-		var addInputEventListener = function() {
+		var addInputEventListener = function(callback) {
 			input.addEventListener('input', function(e) {
 				if (grid.isActive()) {
 					var newInput = input.value.replace(/ /g, '');
 					grid.updateLetters(prevInput, newInput);
+					if (callback) callback();
 					prevInput = newInput;
 					positionToTarget();
 					e.preventDefault();
@@ -548,7 +659,7 @@ var GridModule = (function() {
 			});
 		};
 
-		var addKeydownEventListener = function(antiqueIE) {
+		var addKeydownEventListener = function(antiqueIE, callback) {
 			/* If there's a real keyboard, we can handle a few extra key events */
 			input.addEventListener('keydown', function(e) {
 				if (grid.isActive()) {
@@ -557,6 +668,7 @@ var GridModule = (function() {
 						/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
 						if (antiqueIE) {
 							grid.deleteTargetLetter(true);
+							if (callback) callback();
 							resetInput();
 							e.preventDefault();
 							return false;
@@ -567,36 +679,43 @@ var GridModule = (function() {
 							grid.activatePrevious();
 						else
 							grid.activateNext();
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 13: /* Return */
 					case 27: /* Escape */
 						grid.clearActive();
+						if (callback) callback();
 						e.preventDefault();
 						return false;
 					case 37: /* Left arrow */
 						grid.moveTarget(-1, 0);
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 38: /* Up arrow */
 						grid.moveTarget(0, -1);
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 39: /* Right arrow */
 						grid.moveTarget(1, 0);
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 40: /* Down arrow */
 						grid.moveTarget(0, 1);
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 46: /* Delete */
 						grid.deleteTargetLetter(false);
+						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
@@ -605,10 +724,10 @@ var GridModule = (function() {
 			});
 		};
 
-		this.registerControl = function(inputControl, antiqueIE) {
+		this.registerControl = function(inputControl, antiqueIE, inputCallback) {
 			input = inputControl;
-			addInputEventListener();
-			addKeydownEventListener(antiqueIE);
+			addInputEventListener(inputCallback);
+			addKeydownEventListener(antiqueIE, inputCallback);
 		};
 	}
 

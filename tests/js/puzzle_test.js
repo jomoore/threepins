@@ -675,21 +675,6 @@ QUnit.test("Delete text", function(assert) {
 	assert.noLetter(nodeList[1], "Second backspace from populated square");
 });
 
-QUnit.test("Get text", function(assert) {
-	var size = 5;
-	var nodeList = Builder.createAlternating(size, 1);
-	var grid = createGrid(size, Builder.fixture);
-	assert.ok(grid, "Grid created");
-	
-	grid.activateClicked(nodeList[0]);
-	grid.updateLetters('...', '...HI');
-	grid.activateClicked(nodeList[3]);
-	grid.updateLetters('...', '...MA');
-
-	var entry = grid.getActiveEntry();
-	assert.equal(entry, 'HI.MA', "Got active text");
-});
-
 QUnit.test("Check answer", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
@@ -782,6 +767,103 @@ QUnit.test("Clear all", function(assert) {
 	for (var i = 0; i < size * size; i++) {
 		assert.noLetter(nodeList[i], "Grid empty");
 	}
+});
+
+QUnit.module("Grid-fill");
+QUnit.test("Get grid numbers", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	var clueNums = grid.getClueNums();
+	assert.deepEqual(clueNums.across, ['1', '4', '5'], "Across clue numbers match");
+	assert.deepEqual(clueNums.down, ['1', '2', '3'], "Down clue numbers match");
+});
+
+QUnit.test("Get word lengths", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	var wordLengths = grid.getWordLengths();
+	assert.deepEqual(wordLengths.across, [5, 5, 5], "Across lengths match");
+	assert.deepEqual(wordLengths.down, [5, 5, 5], "Down lengths match");
+});
+
+QUnit.test("Get text", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+	
+	grid.activateClicked(nodeList[0]);
+	grid.updateLetters('...', '...HI');
+	grid.activateClicked(nodeList[3]);
+	grid.updateLetters('...', '...MA');
+
+	var entry = grid.getActiveEntry();
+	assert.equal(entry, 'HI.MA', "Got active text");
+});
+
+QUnit.test("Get index", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+	
+	grid.activateClicked(nodeList[0]);
+	assert.equal(grid.getActiveIndex(), 0, "First across");
+	assert.equal(grid.getActiveDirection(), false, "Correct direction");
+	grid.activateClicked(nodeList[2 * size]);
+	assert.equal(grid.getActiveIndex(), 1, "Second across");
+	assert.equal(grid.getActiveDirection(), false, "Correct direction");
+	grid.activateClicked(nodeList[size]);
+	assert.equal(grid.getActiveIndex(), 0, "First down");
+	assert.equal(grid.getActiveDirection(), true, "Correct direction");
+	grid.activateClicked(nodeList[size - 1]);
+	assert.equal(grid.getActiveIndex(), 2, "Third down");
+	assert.equal(grid.getActiveDirection(), true, "Correct direction");
+});
+
+QUnit.test("Set text", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+	
+	grid.activateClicked(nodeList[1]);
+	grid.setActiveEntry('FROGS');
+	assert.letterEqual(nodeList[0], 'F', "First letter set");
+	assert.letterEqual(nodeList[4], 'S', "Last letter set");
+});
+
+QUnit.test("Reset text", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+	
+	grid.activateClicked(nodeList[0]);
+	grid.setActiveEntry('FROGS');
+	grid.activateClicked(nodeList[size]);
+	grid.setActiveEntry('FLAME');
+	grid.activateClicked(nodeList[1]);
+	grid.resetActiveEntry();
+
+	assert.letterEqual(nodeList[0], 'F', "Checked letter preserved");
+	assert.noLetter(nodeList[1], "Unchecked letter removed");
+	assert.noLetter(nodeList[size - 1], "Unchecked letter removed");
+
+	grid.activateClicked(nodeList[size * 2 + 1]);
+	grid.setActiveEntry('APPLE');
+	grid.activateClicked(nodeList[size]);
+	grid.resetActiveEntry();
+
+	assert.noLetter(nodeList[0], "Unchecked letter removed");
+	assert.letterEqual(nodeList[size * 2], 'A', "Checked letter preserved");
+	assert.noLetter(nodeList[size * (size - 1)], "Unchecked letter removed");
 });
 
 QUnit.module("Local storage");

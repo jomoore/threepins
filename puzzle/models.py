@@ -50,3 +50,14 @@ class Entry(models.Model):
     down = models.BooleanField('direction', choices=BOOL_DOWN, default=False)
     def __str__(self):
         return self.answer
+
+class Blank(models.Model):
+    size = models.IntegerField(default=15, editable=False)
+    display_order = models.IntegerField(default=100)
+    def __str__(self):
+        return str(self.id)
+
+class Block(models.Model):
+    blank = models.ForeignKey(Blank)
+    x = models.IntegerField()
+    y = models.IntegerField()

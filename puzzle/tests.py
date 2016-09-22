@@ -3,9 +3,9 @@ from django.test import TestCase
 from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from puzzle.models import Author, Puzzle, Entry
+from puzzle.models import Author, Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed
-from puzzle.views import create_grid, get_clues, get_date_string
+from puzzle.views import create_grid, create_thumbnail, get_clues, get_date_string
 from puzzle.admin import import_from_xml
 from visitors.models import Visitor
 
@@ -134,6 +134,24 @@ class GridCreationTests(TestCase):
                     self.assertIn('leftmost', grid[row][col]['type'])
                 else:
                     self.assertNotIn('leftmost', grid[row][col]['type'])
+
+class ThumbnailTests(TestCase):
+    def test_create_thumbnail(self):
+        blank = Blank.objects.create(id=1, size=3)
+        b0 = Block.objects.create(blank=blank, y=0, x=2)
+        b1 = Block.objects.create(blank=blank, y=1, x=0)
+        b2 = Block.objects.create(blank=blank, y=2, x=1)
+        svg = create_thumbnail(blank, 10)
+        self.assertIn('<svg width="30" data-id="1">', svg)
+        self.assertIn('rect x="0" y="0" width="10" height="10" style="fill:rgb(255,255,255);', svg)
+        self.assertIn('rect x="10" y="0" width="10" height="10" style="fill:rgb(255,255,255);', svg)
+        self.assertIn('rect x="20" y="0" width="10" height="10" style="fill:rgb(0,0,0);', svg)
+        self.assertIn('rect x="0" y="10" width="10" height="10" style="fill:rgb(0,0,0);', svg)
+        self.assertIn('rect x="10" y="10" width="10" height="10" style="fill:rgb(255,255,255);', svg)
+        self.assertIn('rect x="20" y="10" width="10" height="10" style="fill:rgb(255,255,255);', svg)
+        self.assertIn('rect x="0" y="20" width="10" height="10" style="fill:rgb(255,255,255);', svg)
+        self.assertIn('rect x="10" y="20" width="10" height="10" style="fill:rgb(0,0,0);', svg)
+        self.assertIn('rect x="20" y="20" width="10" height="10" style="fill:rgb(255,255,255);', svg)
 
 class ClueCreationTests(TestCase):
     def test_get_clues(self):

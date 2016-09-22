@@ -42,6 +42,7 @@
 		<ul>
 			{% block nav %}
 			<li><a href="/">Home</a></li>
+			<li><a href="{% url 'create' %}">Create</a></li>
 			<li><a href="{% url 'index' %}">Archive</a></li>
 			<li><a href="{% url 'contact' %}">Contact</a></li>
 			{% endblock %}

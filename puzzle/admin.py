@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import CharField
 from django.forms import TextInput, FileField, ModelForm
 from xml.etree import ElementTree
-from puzzle.models import Author, Puzzle, Entry
+from puzzle.models import Author, Puzzle, Entry, Blank, Block
 
 XMLNS = '{http://crossword.info/xml/rectangular-puzzle}'
 
@@ -49,7 +49,15 @@ class PuzzleAdmin(admin.ModelAdmin):
         if xml_file:
             import_from_xml(xml_file, obj)
 
+class BlockInline(admin.TabularInline):
+    model = Block
+
+class BlankAdmin(admin.ModelAdmin):
+    inlines = [BlockInline]
+    save_as = True
+    
 admin.site.site_header = "Three Pins Administration"
 admin.site.site_title = "Three Pins"
 admin.site.register(Author)
 admin.site.register(Puzzle, PuzzleAdmin)
+admin.site.register(Blank, BlankAdmin)
