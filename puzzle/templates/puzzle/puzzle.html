@@ -82,9 +82,7 @@
 
 	var input = new GridModule.GridInput(grid);
 	input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
-
-	var bb = new GridModule.ButtonBox(grid);
-	bb.insertButtons(document.getElementsByClassName('buttons')[0]);
+	GridModule.makeButtonBox(grid, document.getElementsByClassName('buttons')[0]);
 
 	var squares = document.querySelectorAll('.block, .light');
 	for (var i = 0; i < squares.length; i++) {

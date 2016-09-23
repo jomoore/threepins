@@ -21,34 +21,34 @@
  * @licend  The above is the entire license notice for the JavaScript code in this page.
  */
 
-var GridModule = (function() {
-	var ClassShim = (function() {
-		return {
-			addClass: function(el, className) {
-				if (el.classList)
-					el.classList.add(className);
-				else
-					el.className += ' ' + className;
-			},
+var ClassShim = (function() {
+	return {
+		addClass: function(el, className) {
+			if (el.classList)
+				el.classList.add(className);
+			else
+				el.className += ' ' + className;
+		},
 
-			removeClass: function(el, className) {
-				if (el.classList)
-					el.classList.remove(className);
-				else {
-					el.className = el.className.replace(
-						new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
-				}
-			},
-
-			hasClass: function(el, className) {
-				if (el.classList)
-					return el.classList.contains(className);
-				else
-					return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
+		removeClass: function(el, className) {
+			if (el.classList)
+				el.classList.remove(className);
+			else {
+				el.className = el.className.replace(
+					new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
 			}
-		};
-	})();
+		},
 
+		hasClass: function(el, className) {
+			if (el.classList)
+				return el.classList.contains(className);
+			else
+				return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
+		}
+	};
+})();
+
+var GridModule = (function() {
 	function Entry(x, y, down, length, target) {
 		this.set = function(x, y, down, length, target) {
 			this.x = x;
@@ -733,9 +733,7 @@ var GridModule = (function() {
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
 	 * Since it's enabled, we can remove the link and provide some buttons instead. */
-	function ButtonBox(grid) {
-		var div;
-		
+	var makeButtonBox = function(grid, div) {
 		var checkButton = document.createElement('button');
 		checkButton.innerHTML = 'Check';
 		checkButton.addEventListener('click', function() {
@@ -776,20 +774,17 @@ var GridModule = (function() {
 			div.appendChild(solutionButton);
 		});
 
-		this.insertButtons = function(d) {
-			div = d;
-			div.innerHTML = '';
-			div.appendChild(checkButton);
-			div.appendChild(peekButton);
-			div.appendChild(printButton);
-			div.appendChild(checkAllButton);
-			div.appendChild(solutionButton);
-		};
-	}
+		div.innerHTML = '';
+		div.appendChild(checkButton);
+		div.appendChild(peekButton);
+		div.appendChild(printButton);
+		div.appendChild(checkAllButton);
+		div.appendChild(solutionButton);
+	};
 
 	return {
 		Grid: Grid,
 		GridInput: GridInput,
-		ButtonBox: ButtonBox,
+		makeButtonBox: makeButtonBox,
 	};
 })();

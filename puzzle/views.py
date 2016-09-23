@@ -139,6 +139,7 @@ def index(request):
     context = {'puzzles': info}
     return render(request, 'puzzle/index.html', context)
 
+@gzip_page
 def create(request):
     blanks = Blank.objects.all().order_by('display_order', 'id');
     thumbs = []
