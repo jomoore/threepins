@@ -1,7 +1,7 @@
 from re import sub
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from django.http import Http404, JsonResponse
+from django.http import Http404
 from django.views.decorators.gzip import gzip_page
 from django.contrib.admin.views.decorators import staff_member_required
 from puzzle.models import Author, Puzzle, Entry, Blank, Block
@@ -42,15 +42,15 @@ def create_grid(puzzle, size):
     return grid
 
 def create_thumbnail(blank, square_size):
-    svg = '<svg width="%d" height="%d" data-id="%d">' % (blank.size * square_size, blank.size * square_size, blank.id)
+    svg = '<svg width="%d" height="%d">' % (blank.size * square_size, blank.size * square_size)
     for y in range(0, blank.size):
         for x in range(0, blank.size):
             if (Block.objects.filter(blank=blank.id, x=x, y=y).exists()):
                 fill = '0,0,0'
             else:
                 fill = '255,255,255'
-            svg += '<rect x="%d" y="%d" width="%d" height="%d" style="fill:rgb(%s);stroke-width:1;stroke:rgb(0,0,0)" />' % \
-                   (x * square_size, y * square_size, square_size, square_size, fill)
+            svg += '<rect y="%d" x="%d" width="%d" height="%d" style="fill:rgb(%s);stroke-width:1;stroke:rgb(0,0,0)" />' % \
+                   (y * square_size, x * square_size, square_size, square_size, fill)
     svg += '</svg>'
     return svg
 
@@ -146,11 +146,3 @@ def create(request):
         thumbs.append(create_thumbnail(b, 10))
     context = {'thumbs': thumbs}
     return render(request, 'puzzle/create.html', context)
-
-def blank(request, number):
-    blank = get_object_or_404(Blank, id=number)
-    isBlock = []
-    for y in range(blank.size):
-        for x in range(blank.size):
-            isBlock.append(Block.objects.filter(blank=blank.id, x=x, y=y).exists())
-    return JsonResponse({'size': blank.size, 'isBlock': isBlock})

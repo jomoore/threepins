@@ -31,14 +31,27 @@ var GridCreator = (function() {
 		container.appendChild(input);
 	};
 
-	var populateGridContainer = function(json, container) {
-		var number = 1;
-		var g = JSON.parse(json);
-		
+	var showSelectGridInstruction = function(container) {
 		clearGridContainer(container);
-		for (var i = 0; i < g.isBlock.length; i++) {
-			var x = i % g.size;
-			var y = Math.floor(i / g.size);
+		var p = document.createElement('p');
+		p.classList.add('instruction');
+		p.innerHTML = 'CHOOSE YOUR GRID &rarr;';
+		container.appendChild(p);
+	};
+
+	var createBlankGrid = function(svg, container) {
+		var number = 1;
+		var rects = svg.getElementsByTagName('rect');
+		var size = Math.sqrt(rects.length);
+
+		var isBlock = [];
+		for (var i = 0; i < rects.length; i++)
+			isBlock.push(rects[i].style.fill.replace(/ /g, '') === 'rgb(0,0,0)');
+
+		clearGridContainer(container);
+		for (var i = 0; i < rects.length; i++) {
+			var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;;
+			var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;;
 
 			// Create a square
 			var sq = document.createElement('div');
@@ -48,15 +61,15 @@ var GridCreator = (function() {
 				sq.classList.add('leftmost');
 			if (y == 0)
 				sq.classList.add('topmost');
-			if (g.isBlock[i])
+			if (isBlock[i])
 				sq.classList.add('block');
 			else
 				sq.classList.add('light');
 
 			// Add clue number
-			if (!g.isBlock[i]) {
-				var headAcross = ((x < g.size - 1) && !g.isBlock[i + 1] && (x == 0 || g.isBlock[i - 1]));
-				var headDown = ((y < g.size - 1) && !g.isBlock[i + g.size] && (y == 0 || g.isBlock[i - g.size]));
+			if (!isBlock[i]) {
+				var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
+				var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
 				if (headAcross || headDown) {
 					var gn = document.createElement('div');
 					gn.innerHTML = number++;
@@ -67,34 +80,6 @@ var GridCreator = (function() {
 
 			container.appendChild(sq);
 		}
-	};
-
-	function ConfirmButton(callback) {
-		var button = document.createElement('button');
-
-		var confirm = function() {
-			button.parentNode.removeChild(button);
-			callback();
-		};
-
-		this.append = function(box) {
-			button.innerHTML = "OK, USE THIS ONE"
-			button.classList.add('select-grid-button');
-			button.addEventListener('click', confirm);
-			box.innerHTML = '';
-			box.appendChild(button);
-		};
-	}
-
-	var createBlankGrid = function(id, target, buttonBox, callback) {
-		var xhttp = new XMLHttpRequest();
-		xhttp.onload = function(e) {
-			populateGridContainer(xhttp.responseText, target);
-			var confirmButton = new ConfirmButton(callback)
-			confirmButton.append(buttonBox);
-		};
-		xhttp.open("GET", "blank/" + id);
-		xhttp.send();
 	};
 
 	/* --- Display context --- */
@@ -186,8 +171,8 @@ var GridCreator = (function() {
 				if (count == 0) {
 					var warning = document.createElement('span');
 					warning.classList.add('warning');
-					warning.innerHTML = 'SORRY, NOTHING FITS HERE'
-					box.appendChild(warning);
+					warning.innerHTML = 'SORRY, NOTHING FITS HERE - '
+					box.insertBefore(warning, box.firstChild);
 				}
 			}
 		};
@@ -203,6 +188,7 @@ var GridCreator = (function() {
 	}
 
 	return {
+		showSelectGridInstruction: showSelectGridInstruction,
 		createBlankGrid: createBlankGrid,
 		showHelpText: showHelpText,
 		Suggestor: Suggestor,

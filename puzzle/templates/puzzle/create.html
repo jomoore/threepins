@@ -60,6 +60,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var clearHandler = function() {
         grid.resetActiveEntry();
         ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
+        suggestor.showSuggestions(grid.getActiveEntry());
     };
 
  	var suggestor = new GridCreator.Suggestor(contextBox, clearHandler, function(suggestion) {
@@ -107,13 +108,23 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
         });
 	};
 
-	var thumbs = document.querySelectorAll('svg');
-	var instruction = document.getElementsByClassName('instruction')[0];
-	instruction.innerHTML = 'CHOOSE YOUR GRID &rarr;';
+ 	var showInstruction = function() {
+        GridCreator.showSelectGridInstruction(gridBox);
+    };
+
+ 	showInstruction();
+ 	var thumbs = document.querySelectorAll('svg');
 	for (var i = 0; i < thumbs.length; i++) {
-		thumbs[i].addEventListener('mousedown', function(e) {
-			instruction.innerHTML = 'LOADING...';
-			GridCreator.createBlankGrid(this.getAttribute('data-id'), gridBox, contextBox, connectControls);
+		thumbs[i].addEventListener('mouseenter', function(e) {
+			GridCreator.createBlankGrid(this, gridBox);
+		});
+
+		thumbs[i].addEventListener('mouseleave', showInstruction);
+        
+		thumbs[i].addEventListener('click', function(e) {
+            this.removeEventListener('mouseleave', showInstruction);
+			GridCreator.createBlankGrid(this, gridBox);
+            connectControls();
 		});
 	}
 	// @license-end
