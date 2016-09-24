@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from puzzle.models import Author, Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed
 from puzzle.views import create_grid, create_thumbnail, get_clues, get_date_string
-from puzzle.admin import import_from_xml
+from puzzle.admin import import_from_xml, import_blank_from_ipuz
 from visitors.models import Visitor
 
 def create_small_puzzle():
@@ -352,6 +352,35 @@ class PuzzleAdminTests(TestCase):
         self.verify_entry(entries[1], p, '3a', 'xyz', 0, 2, False)
         self.verify_entry(entries[2], p, '1d', 'amx', 0, 0, True)
         self.verify_entry(entries[3], p, '2d', 'c-nz', 2, 0, True)
+
+    def verify_block(self, block, blank, x, y):
+        self.assertEqual(block.blank, blank)
+        self.assertEqual(block.x, x)
+        self.assertEqual(block.y, y)
+
+    def verify_blocks_in_row(self, blocks, blank, row, cols):
+        for i,x in enumerate(cols):
+            self.verify_block(blocks[i], blank, x, row)
+        
+    def test_import_from_ipuz(self):
+        a = Author.objects.create(name='Test Author')
+        b = Blank.objects.create()
+        f = open('puzzle/test_data/ettu.ipuz', 'rb')
+        import_blank_from_ipuz(f, b)
+        blocks = Block.objects.order_by('y', 'x')
+        self.verify_blocks_in_row(blocks[0:1], b, 0, [11])
+        self.verify_blocks_in_row(blocks[1:8], b, 1, [1, 3, 5, 7, 9, 11, 13])
+        self.verify_blocks_in_row(blocks[8:15], b, 3, [1, 3, 5, 7, 9, 11, 13])
+        self.verify_blocks_in_row(blocks[15:16], b, 4, [5])
+        self.verify_blocks_in_row(blocks[16:25], b, 5, [0, 1, 3, 4, 5, 7, 9, 11, 13])
+        self.verify_blocks_in_row(blocks[25:26], b, 6, [6])
+        self.verify_blocks_in_row(blocks[26:35], b, 7, [1, 2, 3, 5, 7, 9, 11, 12, 13])
+        self.verify_blocks_in_row(blocks[35:36], b, 8, [8])
+        self.verify_blocks_in_row(blocks[36:45], b, 9, [1, 3, 5, 7, 9, 10, 11, 13, 14])
+        self.verify_blocks_in_row(blocks[46:53], b, 11, [1, 3, 5, 7, 9, 11, 13])
+        self.verify_blocks_in_row(blocks[53:60], b, 13, [1, 3, 5, 7, 9, 11, 13])
+        self.verify_blocks_in_row(blocks[60:], b, 14, [3])
+        f.close()
 
 class VisitorLogTests(TestCase):
     def test_log_visitor(self):

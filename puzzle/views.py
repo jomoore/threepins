@@ -43,8 +43,8 @@ def create_grid(puzzle, size):
 
 def create_thumbnail(blank, square_size):
     svg = '<svg width="%d" height="%d">' % (blank.size * square_size, blank.size * square_size)
-    for y in range(0, blank.size):
-        for x in range(0, blank.size):
+    for y in range(blank.size):
+        for x in range(blank.size):
             if (Block.objects.filter(blank=blank.id, x=x, y=y).exists()):
                 fill = '0,0,0'
             else:

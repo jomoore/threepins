@@ -3,6 +3,7 @@ from django.db.models import CharField
 from django.forms import TextInput, FileField, ModelForm
 from xml.etree import ElementTree
 from puzzle.models import Author, Puzzle, Entry, Blank, Block
+import json
 
 XMLNS = '{http://crossword.info/xml/rectangular-puzzle}'
 
@@ -29,6 +30,14 @@ def import_from_xml(xml, puzzle):
         entry = Entry(puzzle=puzzle, clue=clue, answer=answer, x=x, y=y, down=down)
         entry.save()
 
+def import_blank_from_ipuz(ipuz, blank):
+    data = json.loads(ipuz.read().decode('latin_1'))
+    for y,row in enumerate(data['puzzle']):
+        for x,cell in enumerate(row):
+            if cell == "#":
+                block = Block(blank=blank, x=x, y=y)
+                block.save()
+
 class PuzzleImportForm(ModelForm):
     file_import = FileField(label='Import from XML', required=False)
     class Meta:
@@ -49,12 +58,25 @@ class PuzzleAdmin(admin.ModelAdmin):
         if xml_file:
             import_from_xml(xml_file, obj)
 
+class BlankImportForm(ModelForm):
+    file_import = FileField(label='Import from ipuz', required=False)
+    class Meta:
+        model = Blank
+        fields = ['display_order']
+
 class BlockInline(admin.TabularInline):
     model = Block
 
 class BlankAdmin(admin.ModelAdmin):
+    form = BlankImportForm
     inlines = [BlockInline]
     save_as = True
+
+    def save_model(self, request, obj, form, change):
+        super(BlankAdmin, self).save_model(request, obj, form, change)
+        ipuz_file = form.cleaned_data.get('file_import', None)
+        if ipuz_file:
+            import_blank_from_ipuz(ipuz_file, obj)
     
 admin.site.site_header = "Three Pins Administration"
 admin.site.site_title = "Three Pins"
