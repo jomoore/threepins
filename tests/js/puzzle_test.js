@@ -147,6 +147,12 @@ QUnit.assert.noLetter = function(div, message) {
 	this.push(letter == null, letter, null, message);
 };
 
+// Add a helper function to our nodeLists so that we can get elements by co-ordinate.
+// Not compatible with all browsers, but this isn't public-facing code.
+NodeList.prototype.gridItem = function(x, y) {
+	return this.item(y * Math.sqrt(this.length) + x);
+};
+
 QUnit.module("Builder functions");
 QUnit.test("Map node list to co-ordinates", function(assert) {
 	for (var size = 3; size <= 15; size++)
@@ -154,11 +160,11 @@ QUnit.test("Map node list to co-ordinates", function(assert) {
 		var nodeList = Builder.createEmpty(size);
 
 		assert.equal(nodeList.length, size * size, "Create empty grid size " + size);
-		assert.equalCoord(nodeList[0], {x: 0, y: 0}, "First cell");
-		assert.equalCoord(nodeList[1], {x: 1, y: 0}, "Second cell");
-		assert.equalCoord(nodeList[size], {x: 0, y: 1}, "Second row");
-		assert.equalCoord(nodeList[2 * size + 1], {x: 1, y: 2}, "Third row");
-		assert.equalCoord(nodeList[nodeList.length - 1], {x: size - 1, y: size - 1}, "Last cell");
+		assert.equalCoord(nodeList.gridItem(0, 0), {x: 0, y: 0}, "First cell");
+		assert.equalCoord(nodeList.gridItem(1, 0), {x: 1, y: 0}, "Second cell");
+		assert.equalCoord(nodeList.gridItem(0, 1), {x: 0, y: 1}, "Second row");
+		assert.equalCoord(nodeList.gridItem(1, 2), {x: 1, y: 2}, "Third row");
+		assert.equalCoord(nodeList.gridItem(size - 1, size - 1), {x: size - 1, y: size - 1}, "Last cell");
 
 		Builder.reset();
 	}
@@ -170,15 +176,15 @@ QUnit.test("Build even grid", function(assert) {
 
 	/* Check block/light pattern */
 	assert.equal(nodeList.length, size * size, "Create even grid size " + size);
-	assert.light(nodeList[0], "Row 0, Col 0");
-	assert.light(nodeList[1], "Row 0, Col 1");
-	assert.light(nodeList[size], "Row 1, Col 0");
-	assert.block(nodeList[size + 1], "Row 1, Col 1");
-	assert.light(nodeList[size + 2], "Row 1, Col 2");
-	assert.block(nodeList[size + 3], "Row 1, Col 3");
-	assert.light(nodeList[size + 4], "Row 1, Col 4");
-	assert.light(nodeList[nodeList.length - 2], "Row 4, Col 3");
-	assert.light(nodeList[nodeList.length - 1], "Row 4, Col 4");
+	assert.light(nodeList.gridItem(0, 0), "Row 0, Col 0");
+	assert.light(nodeList.gridItem(1, 0), "Row 0, Col 1");
+	assert.light(nodeList.gridItem(0, 1), "Row 1, Col 0");
+	assert.block(nodeList.gridItem(1, 1), "Row 1, Col 1");
+	assert.light(nodeList.gridItem(2, 1), "Row 1, Col 2");
+	assert.block(nodeList.gridItem(3, 1), "Row 1, Col 3");
+	assert.light(nodeList.gridItem(4, 1), "Row 1, Col 4");
+	assert.light(nodeList.gridItem(3, 4), "Row 4, Col 3");
+	assert.light(nodeList.gridItem(4, 4), "Row 4, Col 4");
 
 	/* Check clue numbers */
 	for (var i = 0; i < size; i++) {
@@ -202,15 +208,15 @@ QUnit.test("Build odd grid", function(assert) {
 
 	/* Check block/light pattern */
 	assert.equal(nodeList.length, size * size, "Create odd grid size " + size);
-	assert.block(nodeList[0], "Row 0, Col 0");
-	assert.light(nodeList[1], "Row 0, Col 1");
-	assert.block(nodeList[2], "Row 0, Col 2");
-	assert.light(nodeList[3], "Row 0, Col 3");
-	assert.block(nodeList[4], "Row 0, Col 4");
-	assert.light(nodeList[size], "Row 1, Col 0");
-	assert.light(nodeList[size + 1], "Row 1, Col 1");
-	assert.light(nodeList[nodeList.length - 2], "Row 4, Col 3");
-	assert.block(nodeList[nodeList.length - 1], "Row 4, Col 4");
+	assert.block(nodeList.gridItem(0, 0), "Row 0, Col 0");
+	assert.light(nodeList.gridItem(1, 0), "Row 0, Col 1");
+	assert.block(nodeList.gridItem(2, 0), "Row 0, Col 2");
+	assert.light(nodeList.gridItem(3, 0), "Row 0, Col 3");
+	assert.block(nodeList.gridItem(4, 0), "Row 0, Col 4");
+	assert.light(nodeList.gridItem(0, 1), "Row 1, Col 0");
+	assert.light(nodeList.gridItem(1, 1), "Row 1, Col 1");
+	assert.light(nodeList.gridItem(3, 4), "Row 4, Col 3");
+	assert.block(nodeList.gridItem(4, 4), "Row 4, Col 4");
 
 	/* Check clue numbers */
 	for (var i = 0; i < size; i++) {
@@ -238,25 +244,25 @@ QUnit.test("Build bordered even grid", function(assert) {
 
 	/* Check block/light pattern */
 	assert.equal(nodeList.length, size * size, "Create bordered even grid size " + size);
-	assert.block(nodeList[0], "Row 0, Col 0");
-	assert.block(nodeList[1], "Row 0, Col 1");
-	assert.block(nodeList[4], "Row 0, Col 4");
-	assert.block(nodeList[size], "Row 1, Col 0");
-	assert.block(nodeList[size + 1], "Row 1, Col 1");
-	assert.light(nodeList[size + 2], "Row 1, Col 2");
-	assert.block(nodeList[size + 3], "Row 1, Col 3");
-	assert.block(nodeList[size + 4], "Row 1, Col 4");
-	assert.block(nodeList[2 * size], "Row 2, Col 0");
-	assert.light(nodeList[2 * size + 1], "Row 2, Col 1");
-	assert.light(nodeList[2 * size + 2], "Row 2, Col 2");
-	assert.light(nodeList[2 * size + 3], "Row 2, Col 3");
-	assert.block(nodeList[2 * size + 4], "Row 2, Col 4");
-	assert.block(nodeList[nodeList.length - 2], "Row 4, Col 3");
-	assert.block(nodeList[nodeList.length - 1], "Row 4, Col 4");
+	assert.block(nodeList.gridItem(0, 0), "Row 0, Col 0");
+	assert.block(nodeList.gridItem(1, 0), "Row 0, Col 1");
+	assert.block(nodeList.gridItem(4, 0), "Row 0, Col 4");
+	assert.block(nodeList.gridItem(0, 1), "Row 1, Col 0");
+	assert.block(nodeList.gridItem(1, 1), "Row 1, Col 1");
+	assert.light(nodeList.gridItem(2, 1), "Row 1, Col 2");
+	assert.block(nodeList.gridItem(3, 1), "Row 1, Col 3");
+	assert.block(nodeList.gridItem(4, 1), "Row 1, Col 4");
+	assert.block(nodeList.gridItem(0, 2), "Row 2, Col 0");
+	assert.light(nodeList.gridItem(1, 2), "Row 2, Col 1");
+	assert.light(nodeList.gridItem(2, 2), "Row 2, Col 2");
+	assert.light(nodeList.gridItem(3, 2), "Row 2, Col 3");
+	assert.block(nodeList.gridItem(4, 2), "Row 2, Col 4");
+	assert.block(nodeList.gridItem(3, 4), "Row 4, Col 3");
+	assert.block(nodeList.gridItem(4, 4), "Row 4, Col 4");
 
 	/* Check clue numbers */
-	assert.numbered(nodeList[size + 2], "Down entry numbered");
-	assert.numbered(nodeList[2 * size + 1], "Across entry numbered");
+	assert.numbered(nodeList.gridItem(2, 1), "Down entry numbered");
+	assert.numbered(nodeList.gridItem(1, 2), "Across entry numbered");
 });
 
 QUnit.test("Build bordered odd grid", function(assert) {
@@ -269,26 +275,26 @@ QUnit.test("Build bordered odd grid", function(assert) {
 
 	/* Check block/light pattern */
 	assert.equal(nodeList.length, size * size, "Create bordered odd grid size " + size);
-	assert.block(nodeList[0], "Row 0, Col 0");
-	assert.block(nodeList[1], "Row 0, Col 1");
-	assert.block(nodeList[4], "Row 0, Col 4");
-	assert.block(nodeList[size], "Row 1, Col 0");
-	assert.light(nodeList[size + 1], "Row 1, Col 1");
-	assert.light(nodeList[size + 2], "Row 1, Col 2");
-	assert.light(nodeList[size + 3], "Row 1, Col 3");
-	assert.block(nodeList[size + 4], "Row 1, Col 4");
-	assert.block(nodeList[2 * size], "Row 2, Col 0");
-	assert.light(nodeList[2 * size + 1], "Row 2, Col 1");
-	assert.block(nodeList[2 * size + 2], "Row 2, Col 2");
-	assert.light(nodeList[2 * size + 3], "Row 2, Col 3");
-	assert.block(nodeList[2 * size + 4], "Row 2, Col 4");
-	assert.block(nodeList[nodeList.length - 2], "Row 4, Col 3");
-	assert.block(nodeList[nodeList.length - 1], "Row 4, Col 4");
+	assert.block(nodeList.gridItem(0, 0), "Row 0, Col 0");
+	assert.block(nodeList.gridItem(1, 0), "Row 0, Col 1");
+	assert.block(nodeList.gridItem(4, 0), "Row 0, Col 4");
+	assert.block(nodeList.gridItem(0, 1), "Row 1, Col 0");
+	assert.light(nodeList.gridItem(1, 1), "Row 1, Col 1");
+	assert.light(nodeList.gridItem(2, 1), "Row 1, Col 2");
+	assert.light(nodeList.gridItem(3, 1), "Row 1, Col 3");
+	assert.block(nodeList.gridItem(4, 1), "Row 1, Col 4");
+	assert.block(nodeList.gridItem(0, 2), "Row 2, Col 0");
+	assert.light(nodeList.gridItem(1, 2), "Row 2, Col 1");
+	assert.block(nodeList.gridItem(2, 2), "Row 2, Col 2");
+	assert.light(nodeList.gridItem(3, 2), "Row 2, Col 3");
+	assert.block(nodeList.gridItem(4, 2), "Row 2, Col 4");
+	assert.block(nodeList.gridItem(3, 4), "Row 4, Col 3");
+	assert.block(nodeList.gridItem(4, 4), "Row 4, Col 4");
 
 	/* Check clue numbers */
-	assert.numbered(nodeList[size + 1], "Down entry numbered");
-	assert.numbered(nodeList[size + 3], "Down entry numbered");
-	assert.numbered(nodeList[3 * size + 1], "Across entry numbered");
+	assert.numbered(nodeList.gridItem(1, 1), "Down entry numbered");
+	assert.numbered(nodeList.gridItem(3, 1), "Down entry numbered");
+	assert.numbered(nodeList.gridItem(1, 3), "Across entry numbered");
 });
 
 QUnit.module("Grid selection");
@@ -401,8 +407,8 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 
 	for (var i = 0; i < 2; i++) {
 		/* Select first cell - across entry should be highlighted */
-		grid.activateClicked(nodeList[0]);
-		assert.target(nodeList[0], "Target - Row 0, Col 0");
+		grid.activateClicked(nodeList.gridItem(0, 0));
+		assert.target(nodeList.gridItem(0, 0), "Target - Row 0, Col 0");
 		for (var n = 1; n < nodeList.length; n++) {
 			if (n < size)
 				assert.highlighted(nodeList[n], "Highlight - Row 0, Col " + n);
@@ -411,8 +417,8 @@ QUnit.test("Toggle across/down @ (0, 0)", function(assert) {
 		}
 
 		/* Select again - down entry should be highlighted */
-		grid.activateClicked(nodeList[0]);
-		assert.target(nodeList[0], "Target - Row 0, Col 0)");
+		grid.activateClicked(nodeList.gridItem(0, 0));
+		assert.target(nodeList.gridItem(0, 0), "Target - Row 0, Col 0)");
 		for (var n = 1; n < nodeList.length; n++) {
 			if (n % size == 0)
 				assert.highlighted(nodeList[n], "Highlight - Row " + (n / size) + ", Col 0");
@@ -429,7 +435,7 @@ QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
-		grid.activateClicked(nodeList[2 * size]);
+		grid.activateClicked(nodeList.gridItem(0, 2));
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size)
 				assert.target(nodeList[n], "Target - Row 2, Col 0)");
@@ -439,7 +445,7 @@ QUnit.test("Toggle across/down @ (0, 2)", function(assert) {
 				assert.notHighlighted(nodeList[n], "No highlight");
 		}
 
-		grid.activateClicked(nodeList[2 * size]);
+		grid.activateClicked(nodeList.gridItem(0, 2));
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size)
 				assert.target(nodeList[n], "Target - Row 2, Col 0)");
@@ -458,7 +464,7 @@ QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 	assert.ok(grid, "Grid created");
 
 	for (var i = 0; i < 2; i++) {
-		grid.activateClicked(nodeList[2 * size + 2]);
+		grid.activateClicked(nodeList.gridItem(2, 2));
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size + 2)
 				assert.target(nodeList[n], "Target - Row 2, Col 2)");
@@ -468,7 +474,7 @@ QUnit.test("Toggle across/down @ (2, 2)", function(assert) {
 				assert.notHighlighted(nodeList[n], "No highlight");
 		}
 
-		grid.activateClicked(nodeList[2 * size + 2]);
+		grid.activateClicked(nodeList.gridItem(2, 2));
 		for (var n = 0; n < nodeList.length; n++) {
 			if (n == 2 * size + 2)
 				assert.target(nodeList[n], "Target - Row 2, Col 2)");
@@ -486,20 +492,20 @@ QUnit.test("Select next", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[size]);
-	assert.target(nodeList[size], "First across entry");
+	grid.activateClicked(nodeList.gridItem(0, 1));
+	assert.target(nodeList.gridItem(0, 1), "First across entry");
 
 	grid.activateNext();
-	assert.target(nodeList[3 * size], "Second across entry");
+	assert.target(nodeList.gridItem(0, 3), "Second across entry");
 
 	grid.activateNext();
-	assert.target(nodeList[1], "First down entry");
+	assert.target(nodeList.gridItem(1, 0), "First down entry");
 
 	grid.activateNext();
-	assert.target(nodeList[3], "Second down entry");
+	assert.target(nodeList.gridItem(3, 0), "Second down entry");
 
 	grid.activateNext();
-	assert.target(nodeList[size], "First across entry");
+	assert.target(nodeList.gridItem(0, 1), "First across entry");
 });
 
 QUnit.test("Select previous", function(assert) {
@@ -508,20 +514,20 @@ QUnit.test("Select previous", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[size]);
-	assert.target(nodeList[size], "First across entry");
+	grid.activateClicked(nodeList.gridItem(0, 1));
+	assert.target(nodeList.gridItem(0, 1), "First across entry");
 
 	grid.activatePrevious();
-	assert.target(nodeList[3], "Second down entry");
+	assert.target(nodeList.gridItem(3, 0), "Second down entry");
 
 	grid.activatePrevious();
-	assert.target(nodeList[1], "First down entry");
+	assert.target(nodeList.gridItem(1, 0), "First down entry");
 
 	grid.activatePrevious();
-	assert.target(nodeList[3 * size], "Second across entry");
+	assert.target(nodeList.gridItem(0, 3), "Second across entry");
 
 	grid.activatePrevious();
-	assert.target(nodeList[size], "First across entry");
+	assert.target(nodeList.gridItem(0, 1), "First across entry");
 });
 
 QUnit.test("Move target within grid limits", function(assert) {
@@ -530,41 +536,41 @@ QUnit.test("Move target within grid limits", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
-	assert.target(nodeList[0], "Initial selection");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.target(nodeList.gridItem(0, 0), "Initial selection");
 
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[0], "No change");
+	assert.target(nodeList.gridItem(0, 0), "No change");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[0], "No change");
+	assert.target(nodeList.gridItem(0, 0), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[1], "Step right");
+	assert.target(nodeList.gridItem(1, 0), "Step right");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[1], "No change");
+	assert.target(nodeList.gridItem(1, 0), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[1], "No change");
+	assert.target(nodeList.gridItem(1, 0), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[2], "Step right");
+	assert.target(nodeList.gridItem(2, 0), "Step right");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[2], "No change");
+	assert.target(nodeList.gridItem(2, 0), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[size + 2], "Step down");
+	assert.target(nodeList.gridItem(2, 1), "Step down");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[size + 2], "No change");
+	assert.target(nodeList.gridItem(2, 1), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[size + 2], "No change");
+	assert.target(nodeList.gridItem(2, 1), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[2 * size + 2], "Step down");
+	assert.target(nodeList.gridItem(2, 2), "Step down");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[2 * size + 2], "No change");
+	assert.target(nodeList.gridItem(2, 2), "No change");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[2 * size + 1], "Step left");
+	assert.target(nodeList.gridItem(1, 2), "Step left");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[2 * size], "Step left");
+	assert.target(nodeList.gridItem(0, 2), "Step left");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[size], "Step up");
+	assert.target(nodeList.gridItem(0, 1), "Step up");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[0], "Step up");
+	assert.target(nodeList.gridItem(0, 0), "Step up");
 });
 
 QUnit.test("Move target within blocks", function(assert) {
@@ -578,41 +584,41 @@ QUnit.test("Move target within blocks", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[size + 1]);
-	assert.target(nodeList[size + 1], "Initial selection");
+	grid.activateClicked(nodeList.gridItem(1, 1));
+	assert.target(nodeList.gridItem(1, 1), "Initial selection");
 
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[size + 1], "No change");
+	assert.target(nodeList.gridItem(1, 1), "No change");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[size + 1], "No change");
+	assert.target(nodeList.gridItem(1, 1), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[size + 2], "Step right");
+	assert.target(nodeList.gridItem(2, 1), "Step right");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[size + 2], "No change");
+	assert.target(nodeList.gridItem(2, 1), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[size + 2], "No change");
+	assert.target(nodeList.gridItem(2, 1), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[size + 3], "Step right");
+	assert.target(nodeList.gridItem(3, 1), "Step right");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[size + 3], "No change");
+	assert.target(nodeList.gridItem(3, 1), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[2 * size + 3], "Step down");
+	assert.target(nodeList.gridItem(3, 2), "Step down");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[2 * size + 3], "No change");
+	assert.target(nodeList.gridItem(3, 2), "No change");
 	grid.moveTarget(1, 0);
-	assert.target(nodeList[2 * size + 3], "No change");
+	assert.target(nodeList.gridItem(3, 2), "No change");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[3 * size + 3], "Step down");
+	assert.target(nodeList.gridItem(3, 3), "Step down");
 	grid.moveTarget(0, 1);
-	assert.target(nodeList[3 * size + 3], "No change");
+	assert.target(nodeList.gridItem(3, 3), "No change");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[3 * size + 2], "Step left");
+	assert.target(nodeList.gridItem(2, 3), "Step left");
 	grid.moveTarget(-1, 0);
-	assert.target(nodeList[3 * size + 1], "Step left");
+	assert.target(nodeList.gridItem(1, 3), "Step left");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[2 * size + 1], "Step up");
+	assert.target(nodeList.gridItem(1, 2), "Step up");
 	grid.moveTarget(0, -1);
-	assert.target(nodeList[size + 1], "Step up");
+	assert.target(nodeList.gridItem(1, 1), "Step up");
 });
 
 QUnit.module("Text entry");
@@ -622,8 +628,8 @@ QUnit.test("Add text", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
-	assert.target(nodeList[0], "Initial selection");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.target(nodeList.gridItem(0, 0), "Initial selection");
 
 	grid.updateLetters('...', '...a');
 	grid.updateLetters('...a', '...ab');
@@ -632,11 +638,11 @@ QUnit.test("Add text", function(assert) {
 	grid.updateLetters('...abcd', '...abcde');
 	grid.updateLetters('...abcde', '...abcdef');
 
-	assert.letterEqual(nodeList[0], 'A', "Content A");
-	assert.letterEqual(nodeList[1], 'B', "Content B");
-	assert.letterEqual(nodeList[2], 'C', "Content C");
-	assert.letterEqual(nodeList[3], 'D', "Content D");
-	assert.letterEqual(nodeList[4], 'F', "Content F");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Content A");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'B', "Content B");
+	assert.letterEqual(nodeList.gridItem(2, 0), 'C', "Content C");
+	assert.letterEqual(nodeList.gridItem(3, 0), 'D', "Content D");
+	assert.letterEqual(nodeList.gridItem(4, 0), 'F', "Content F");
 });
 
 QUnit.test("Delete text", function(assert) {
@@ -646,33 +652,33 @@ QUnit.test("Delete text", function(assert) {
 	assert.ok(grid, "Grid created");
 
 	/* Set up some text to delete */
-	grid.activateClicked(nodeList[0]);
-	assert.target(nodeList[0], "Initial selection");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.target(nodeList.gridItem(0, 0), "Initial selection");
 	grid.updateLetters('...', '...abcde');
-	assert.letterEqual(nodeList[0], 'A', "Content A");
-	assert.letterEqual(nodeList[1], 'B', "Content B");
-	assert.letterEqual(nodeList[2], 'C', "Content C");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Content A");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'B', "Content B");
+	assert.letterEqual(nodeList.gridItem(2, 0), 'C', "Content C");
 
 	/* Deleted upwards starting from an empty square */
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.updateLetters('...', '..');
-	assert.target(nodeList[0], "Backspace from empty square");
-	assert.letterEqual(nodeList[0], 'A', "First square has letter");
+	assert.target(nodeList.gridItem(0, 0), "Backspace from empty square");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "First square has letter");
 	grid.updateLetters('..', '.');
-	assert.target(nodeList[0], "Backspace from first square");
-	assert.noLetter(nodeList[0], "First letter deleted");
+	assert.target(nodeList.gridItem(0, 0), "Backspace from first square");
+	assert.noLetter(nodeList.gridItem(0, 0), "First letter deleted");
 	grid.updateLetters('.', '');
-	assert.target(nodeList[0], "No change");
+	assert.target(nodeList.gridItem(0, 0), "No change");
 
 	/* Deleted leftwards starting from a populated square */
-	grid.activateClicked(nodeList[2]);
-	grid.activateClicked(nodeList[2]);
+	grid.activateClicked(nodeList.gridItem(2, 0));
+	grid.activateClicked(nodeList.gridItem(2, 0));
 	grid.updateLetters('...', '..');
-	assert.target(nodeList[1], "Backspace from populated square");
-	assert.noLetter(nodeList[2], "Backspace from populated square");
+	assert.target(nodeList.gridItem(1, 0), "Backspace from populated square");
+	assert.noLetter(nodeList.gridItem(2, 0), "Backspace from populated square");
 	grid.updateLetters('..', '.');
-	assert.target(nodeList[0], "Second backspace from populated square");
-	assert.noLetter(nodeList[1], "Second backspace from populated square");
+	assert.target(nodeList.gridItem(0, 0), "Second backspace from populated square");
+	assert.noLetter(nodeList.gridItem(1, 0), "Second backspace from populated square");
 });
 
 QUnit.test("Check answer", function(assert) {
@@ -681,15 +687,15 @@ QUnit.test("Check answer", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.updateLetters('', 'aabba');
 	grid.checkAnswer();
 	
-	assert.letterEqual(nodeList[0], 'A', "Correct letter");
-	assert.letterEqual(nodeList[1], 'A', "Correct letter");
-	assert.noLetter(nodeList[2], "Incorrect letter");
-	assert.noLetter(nodeList[3], "Incorrect letter");
-	assert.letterEqual(nodeList[4], 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'A', "Correct letter");
+	assert.noLetter(nodeList.gridItem(2, 0), "Incorrect letter");
+	assert.noLetter(nodeList.gridItem(3, 0), "Incorrect letter");
+	assert.letterEqual(nodeList.gridItem(4, 0), 'A', "Correct letter");
 });
 
 QUnit.test("Check all", function (assert) {
@@ -698,23 +704,23 @@ QUnit.test("Check all", function (assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.updateLetters('', 'aabba');
-	grid.activateClicked(nodeList[2 * size]);
+	grid.activateClicked(nodeList.gridItem(0, 2));
 	grid.updateLetters('', 'aabba');
 	grid.checkAll();
 
-	assert.letterEqual(nodeList[0], 'A', "Correct letter");
-	assert.letterEqual(nodeList[1], 'A', "Correct letter");
-	assert.noLetter(nodeList[2], "Incorrect letter");
-	assert.noLetter(nodeList[3], "Incorrect letter");
-	assert.letterEqual(nodeList[4], 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'A', "Correct letter");
+	assert.noLetter(nodeList.gridItem(2, 0), "Incorrect letter");
+	assert.noLetter(nodeList.gridItem(3, 0), "Incorrect letter");
+	assert.letterEqual(nodeList.gridItem(4, 0), 'A', "Correct letter");
 
-	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
-	assert.letterEqual(nodeList[2 * size + 1], 'A', "Correct letter");
-	assert.noLetter(nodeList[2 * size + 2], "Incorrect letter");
-	assert.noLetter(nodeList[2 * size + 3], "Incorrect letter");
-	assert.letterEqual(nodeList[2 * size + 4], 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(0, 2), 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(1, 2), 'A', "Correct letter");
+	assert.noLetter(nodeList.gridItem(2, 2), "Incorrect letter");
+	assert.noLetter(nodeList.gridItem(3, 2), "Incorrect letter");
+	assert.letterEqual(nodeList.gridItem(4, 2), 'A', "Correct letter");
 });
 
 QUnit.test("Show answer", function(assert) {
@@ -723,7 +729,7 @@ QUnit.test("Show answer", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.showAnswer();
 
 	for (var i = 0; i < size; i++) {
@@ -759,8 +765,8 @@ QUnit.test("Clear all", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
-	assert.target(nodeList[0], "Initial selection");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.target(nodeList.gridItem(0, 0), "Initial selection");
 	grid.updateLetters('...', '...abcde');
 	grid.clearAll();
 
@@ -798,9 +804,9 @@ QUnit.test("Get text", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.updateLetters('...', '...HI');
-	grid.activateClicked(nodeList[3]);
+	grid.activateClicked(nodeList.gridItem(3, 0));
 	grid.updateLetters('...', '...MA');
 
 	var entry = grid.getActiveEntry();
@@ -813,13 +819,13 @@ QUnit.test("Get index", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	assert.equal(grid.getActiveIndex(), 0, "First across");
 	assert.equal(grid.getActiveDirection(), false, "Correct direction");
-	grid.activateClicked(nodeList[2 * size]);
+	grid.activateClicked(nodeList.gridItem(0, 2));
 	assert.equal(grid.getActiveIndex(), 1, "Second across");
 	assert.equal(grid.getActiveDirection(), false, "Correct direction");
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	assert.equal(grid.getActiveIndex(), 0, "First down");
 	assert.equal(grid.getActiveDirection(), true, "Correct direction");
 	grid.activateClicked(nodeList[size - 1]);
@@ -833,10 +839,10 @@ QUnit.test("Set text", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(nodeList[1]);
+	grid.activateClicked(nodeList.gridItem(1, 0));
 	grid.setActiveEntry('FROGS');
-	assert.letterEqual(nodeList[0], 'F', "First letter set");
-	assert.letterEqual(nodeList[4], 'S', "Last letter set");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'F', "First letter set");
+	assert.letterEqual(nodeList.gridItem(4, 0), 'S', "Last letter set");
 });
 
 QUnit.test("Reset text", function(assert) {
@@ -845,23 +851,23 @@ QUnit.test("Reset text", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.setActiveEntry('FROGS');
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.setActiveEntry('FLAME');
-	grid.activateClicked(nodeList[1]);
+	grid.activateClicked(nodeList.gridItem(1, 0));
 	grid.resetActiveEntry();
 
-	assert.letterEqual(nodeList[0], 'F', "Checked letter preserved");
-	assert.noLetter(nodeList[1], "Unchecked letter removed");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'F', "Checked letter preserved");
+	assert.noLetter(nodeList.gridItem(1, 0), "Unchecked letter removed");
 	assert.noLetter(nodeList[size - 1], "Unchecked letter removed");
 
 	grid.activateClicked(nodeList[size * 2 + 1]);
 	grid.setActiveEntry('APPLE');
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.resetActiveEntry();
 
-	assert.noLetter(nodeList[0], "Unchecked letter removed");
+	assert.noLetter(nodeList.gridItem(0, 0), "Unchecked letter removed");
 	assert.letterEqual(nodeList[size * 2], 'A', "Checked letter preserved");
 	assert.noLetter(nodeList[size * (size - 1)], "Unchecked letter removed");
 });
@@ -889,12 +895,12 @@ QUnit.test("Remember letter", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 	
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.updateLetters('...', '...Z');
-	assert.letterEqual(nodeList[size], 'Z', "Set letter");
+	assert.letterEqual(nodeList.gridItem(0, 1), 'Z', "Set letter");
 
 	grid = recreateGrid(size, nodeList, assert);
-	assert.letterEqual(nodeList[size], 'Z', "Remembered letter");
+	assert.letterEqual(nodeList.gridItem(0, 1), 'Z', "Remembered letter");
 });
 
 QUnit.test("Remember solution", function(assert) {
@@ -935,16 +941,16 @@ QUnit.test("Remember check", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.updateLetters('...', '...ZA');
 	grid.checkAnswer();
-	assert.noLetter(nodeList[size]);
-	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
+	assert.noLetter(nodeList.gridItem(0, 1));
+	assert.letterEqual(nodeList.gridItem(0, 2), 'A', "Correct letter");
 
 	grid = recreateGrid(size, nodeList, assert);
 	assert.ok(grid, "Grid recreated");
-	assert.noLetter(nodeList[size], "Incorrect letter removed");
-	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter preserved");
+	assert.noLetter(nodeList.gridItem(0, 1), "Incorrect letter removed");
+	assert.letterEqual(nodeList.gridItem(0, 2), 'A', "Correct letter preserved");
 });
 
 QUnit.test("Remember check all", function(assert) {
@@ -953,15 +959,15 @@ QUnit.test("Remember check all", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[size]);
+	grid.activateClicked(nodeList.gridItem(0, 1));
 	grid.updateLetters('...', '...ZA');
 	grid.checkAll();
-	assert.noLetter(nodeList[size]);
-	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter");
+	assert.noLetter(nodeList.gridItem(0, 1));
+	assert.letterEqual(nodeList.gridItem(0, 2), 'A', "Correct letter");
 
 	grid = recreateGrid(size, nodeList, assert);
-	assert.noLetter(nodeList[size], "Incorrect letter removed");
-	assert.letterEqual(nodeList[2 * size], 'A', "Correct letter preserved");
+	assert.noLetter(nodeList.gridItem(0, 1), "Incorrect letter removed");
+	assert.letterEqual(nodeList.gridItem(0, 2), 'A', "Correct letter preserved");
 });
 
 QUnit.test("Remember peek", function(assert) {
@@ -970,11 +976,11 @@ QUnit.test("Remember peek", function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, "Grid created");
 
-	grid.activateClicked(nodeList[0]);
+	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.showAnswer();
-	assert.letterEqual(nodeList[0], 'A', "Correct letter");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Correct letter");
 
 	grid = recreateGrid(size, nodeList, assert);
 	assert.ok(grid, "Grid recreated");
-	assert.letterEqual(nodeList[0], 'A', "Correct letter preserved");
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Correct letter preserved");
 });
