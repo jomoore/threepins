@@ -872,6 +872,41 @@ QUnit.test("Reset text", function(assert) {
 	assert.noLetter(nodeList[size * (size - 1)], "Unchecked letter removed");
 });
 
+QUnit.test("Get ipuz puzzle", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	var puzzle = grid.getIpuzPuzzle();
+	assert.deepEqual(puzzle, [[1, 0, 2, 0, 3],
+							  [0, '#', 0, '#', 0],
+							  [4, 0, 0, 0, 0],
+							  [0, '#', 0, '#', 0],
+							  [5, 0, 0, 0, 0]]);
+
+});
+
+QUnit.test("Get ipuz solution", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	grid.setActiveEntry('FROGS');
+	grid.activateClicked(nodeList.gridItem(0, 1));
+	grid.setActiveEntry('FLAME');
+
+	var solution = grid.getIpuzSolution();
+	assert.deepEqual(solution, [['F', 'R', 'O', 'G', 'S'],
+								['L', '#', 0 , '#', 0],
+								['A', 0, 0, 0, 0],
+								['M', '#', 0, '#', 0],
+								['E', 0, 0, 0, 0]]);
+
+});
+
 QUnit.module("Local storage");
 
 // Helper function to remove all inserted letters and recreate the GridModule
