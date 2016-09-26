@@ -47,7 +47,7 @@ QUnit.test("Create blank grid", function(assert) {
 	var svg = createAlternatingSvg(size);
 	assert.equal(svg.getElementsByTagName('rect').length, 9, "SVG created");
 
-	GridCreator.createBlankGrid(svg, fixture);
+	GridCreator.createBlankGrid(svg, fixture, 'dummy/url');
 	var squares = fixture.querySelectorAll('.block, .light');
 	assert.equal(squares.length, 9, "Squares created");
 
@@ -64,9 +64,10 @@ QUnit.test("Create blank grid", function(assert) {
 		else
 			assert.notOk(ClassShim.hasClass(squares[i], 'leftmost'), "Other squares not marked");
 
-		if (i == 4)
+		if (i == 4) {
 			assert.block(squares[i], "Middle square blocked");
-		else
+			assert.ok(squares[i].getElementsByTagName('img').length, "Block image attached");
+		} else
 			assert.light(squares[i], "Other squares light");
 
 		if (i == 0 || i == 2 || i == 6)

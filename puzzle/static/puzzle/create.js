@@ -40,7 +40,7 @@ var GridCreator = (function() {
 		container.appendChild(p);
 	};
 
-	var createBlankGrid = function(svg, container) {
+	var createBlankGrid = function(svg, container, blockImgUrl) {
 		var number = 1;
 		var rects = svg.getElementsByTagName('rect');
 		var size = Math.sqrt(rects.length);
@@ -67,8 +67,8 @@ var GridCreator = (function() {
 			else
 				ClassShim.addClass(sq, 'light');
 
-			// Add clue number
 			if (!isBlock[i]) {
+				// Add clue number
 				var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
 				var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
 				if (headAcross || headDown) {
@@ -77,6 +77,12 @@ var GridCreator = (function() {
 					ClassShim.addClass(gn, 'grid-number');
 					sq.appendChild(gn);
 				}
+			} else if (blockImgUrl) {
+				// Add image for print
+				var img = document.createElement('img');
+				img.src = blockImgUrl;
+				img.alt = 'block';
+				sq.appendChild(img);
 			}
 
 			container.appendChild(sq);
