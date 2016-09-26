@@ -36,7 +36,7 @@ var GridCreator = (function() {
 		clearGridContainer(container);
 		var p = document.createElement('p');
 		ClassShim.addClass(p, 'instruction');
-		p.innerHTML = 'CHOOSE YOUR GRID &rarr;';
+		p.innerHTML = 'CHOOSE YOUR GRID ';
 		container.appendChild(p);
 	};
 
@@ -93,7 +93,7 @@ var GridCreator = (function() {
 
 		helpText = document.createElement('p');
 		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT &nearr;'
+		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT '
 		box.appendChild(helpText);
 	};
 

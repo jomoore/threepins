@@ -51,13 +51,10 @@ nav li { display: inline; white-space: nowrap; }
 
 /* Grid Creator */
 #grid > p { line-height: 436px; font-family: "Patrick Hand SC"; font-size: 1.5em; color: #336600; }
-.blanks { display: inline-block; vertical-align: top; width: 900px; height: 490px; overflow: auto; }
+.blanks { display: inline-block; vertical-align: top; overflow: auto; }
 .blanks > svg { float: left; padding: 2px; border: 5px solid transparent; }
 .blanks > svg:hover { border: 5px solid #336600; cursor: pointer; }
-#create { text-align: center; width: 436px; height: 8em; margin: 10px 0px 0px 30px; overflow: auto; }
-#create > button { background: #336600; color: white; border: 2px solid #336600; border-radius: 10px;
-                   font-family: "Patrick Hand SC", Tahoma, sans-serif; font-size: 1.5em; padding: 0.3em; margin-top: 0.6em; }
-#create > button:hover { background: white; color: #336600; cursor: pointer; }
+#create { text-align: center; height: 8em; margin-top: 10px; overflow: auto; }
 #create > .help-text { font-family: "Patrick Hand SC", Tahoma, sans-serif; font-size: 1.2em; color: #336600; margin-bottom: 0.7em; }
 #create > .suggestion { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; font-size: 0.8em;
                         padding: 0em 0.2em 0em 0.2em; border-radius: 5px; white-space: nowrap; }
@@ -91,6 +88,11 @@ footer { border-top: 1px solid; clear: both; }
 	.grid-number { top: 0px; font-size: 9px; }
 	.clues { display: inline-block; }
 	.clue-box { width: 280px; }
+    #create { width: 301px; }
+    .blanks { width: 100%; }
+    .blanks > svg { margin-left: 30px; }
+    #grid > p:after { content: "\2193" }
+    #create > p:nth-child(2):after { content: "\2193"; }
 }
 
 @media screen and (min-width: 500px) {
@@ -99,24 +101,44 @@ footer { border-top: 1px solid; clear: both; }
 	#grid { width: 436px; height: 436px; margin-left: 30px; }
 	#grid > div { width: 28px; height: 28px; line-height: 28px; }
 	.grid-number { font-size: 11px; }
+    #create { width: 436px; margin-left: 30px; }
+    .blanks > svg { margin-left: 0px; }
 }
 
 @media screen and (min-width: 580px) {
-	nav { font-size: 1.4em; }
-	nav li { padding: 15px; }
 	.clue-box { width: 300px; }
 }
 
+@media screen and (min-width: 680px) {
+	nav { font-size: 1.4em; }
+	nav li { padding: 15px; }
+    .blanks { width: 180px; height: 490px; }
+    #grid > p:after { content: "\2192" }
+}
+
 @media screen and (min-width: 720px) {
-	nav { font-size: 1.8em; }
-	nav li { padding: 20px; }
 	#contact p { padding-left: 5em; }
 	#contact label { text-align: right; margin-left: 0em; }
 	#contact input.send-button { margin-right: 1em; }
 }
 
+@media screen and (min-width: 850px) {
+	nav { font-size: 1.8em; }
+	nav li { padding: 20px; }
+    .blanks { width: 350px; }
+}
+
+@media screen and (min-width: 1020px) {
+    .blanks { width: 520px; }
+}
+
+@media screen and (min-width: 1202px) {
+    #create > p:nth-child(2):after { content: "\2197"; }
+}
+
 @media screen and (min-width: 1280px) {
 	.clue-box { width: 320px; }
+    .blanks { width: 700px; }
 }
 
 @media print {
