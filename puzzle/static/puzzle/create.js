@@ -28,13 +28,14 @@ var GridCreator = (function() {
 	var clearGridContainer = function(container) {
 		var input = container.getElementsByTagName('input')[0];
 		container.innerHTML = '';
-		container.appendChild(input);
+		if (input)
+			container.appendChild(input);
 	};
 
 	var showSelectGridInstruction = function(container) {
 		clearGridContainer(container);
 		var p = document.createElement('p');
-		p.classList.add('instruction');
+		ClassShim.addClass(p, 'instruction');
 		p.innerHTML = 'CHOOSE YOUR GRID &rarr;';
 		container.appendChild(p);
 	};
@@ -58,13 +59,13 @@ var GridCreator = (function() {
 			sq.setAttribute('data-x', x);
 			sq.setAttribute('data-y', y);
 			if (x == 0)
-				sq.classList.add('leftmost');
+				ClassShim.addClass(sq, 'leftmost');
 			if (y == 0)
-				sq.classList.add('topmost');
+				ClassShim.addClass(sq, 'topmost');
 			if (isBlock[i])
-				sq.classList.add('block');
+				ClassShim.addClass(sq, 'block');
 			else
-				sq.classList.add('light');
+				ClassShim.addClass(sq, 'light');
 
 			// Add clue number
 			if (!isBlock[i]) {
@@ -73,7 +74,7 @@ var GridCreator = (function() {
 				if (headAcross || headDown) {
 					var gn = document.createElement('div');
 					gn.innerHTML = number++;
-					gn.classList.add('grid-number');
+					ClassShim.addClass(gn, 'grid-number');
 					sq.appendChild(gn);
 				}
 			}
@@ -86,12 +87,12 @@ var GridCreator = (function() {
 
 	var showHelpText = function(box) {
 		var helpText = document.createElement('p');
-		helpText.classList.add('help-text');
+		ClassShim.addClass(helpText, 'help-text');
 		helpText.innerHTML = '&uarr;<br>CLICK AND TYPE TO FILL IN THE GRID'
 		box.appendChild(helpText);
 
 		helpText = document.createElement('p');
-		helpText.classList.add('help-text');
+		ClassShim.addClass(helpText, 'help-text');
 		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT &nearr;'
 		box.appendChild(helpText);
 	};
@@ -104,7 +105,7 @@ var GridCreator = (function() {
 		var appendClearButton = function() {
 			var clearButton = document.createElement('span');
 			clearButton.textContent = '*CLEAR*';
-			clearButton.classList.add('suggestion');
+			ClassShim.addClass(clearButton, 'suggestion');
 			clearButton.addEventListener('click', function(e) {
 				clearHandler();
 			});
@@ -119,8 +120,8 @@ var GridCreator = (function() {
 				var suggestion = document.createElement('span');
 				var spacer = document.createTextNode(' ');
 
-				suggestion.classList.add('suggestion');
-				suggestion.innerHTML = result[0].toUpperCase();
+				ClassShim.addClass(suggestion, 'suggestion');
+				suggestion.innerHTML = result[0].toUpperCase().trim();
 				suggestion.addEventListener('click', function(e) {
 					clickHandler(this.innerHTML);
 				});
@@ -139,7 +140,7 @@ var GridCreator = (function() {
 				re.lastIndex = lastIndex;
 
 				var continuation = document.createElement('span');
-				continuation.classList.add('suggestion');
+				ClassShim.addClass(continuation, 'suggestion');
 				continuation.innerHTML = '<br>more...';
 				continuation.addEventListener('click', function(e) {
 					box.removeChild(this);
@@ -170,7 +171,7 @@ var GridCreator = (function() {
 
 				if (count == 0) {
 					var warning = document.createElement('span');
-					warning.classList.add('warning');
+					ClassShim.addClass(warning, 'warning');
 					warning.innerHTML = 'SORRY, NOTHING FITS HERE - '
 					box.insertBefore(warning, box.firstChild);
 				}
@@ -184,6 +185,11 @@ var GridCreator = (function() {
 			};
 			xhttp.open("GET", url);
 			xhttp.send();
+		};
+
+		// Test hook
+		this._setWordList = function(w) {
+			wordList = w.split('$');
 		};
 	}
 
@@ -206,20 +212,21 @@ var ClueCreator = (function() {
 			input = e.target;
 			if (input.value) {
 				var text = document.createElement('span');
-				text.classList.add('clue-text');
+				ClassShim.addClass(text, 'clue-text');
 				text.textContent = input.value;
 				li.insertBefore(text, input);
 			} else
-				li.classList.add('blank-clue');
+				ClassShim.addClass(li, 'blank-clue');
 
 			li.removeChild(input);
-			li.classList.add('select-clue');
+			ClassShim.addClass(li, 'select-clue');
 			li.addEventListener('click', editClue);
 		};
 
 		var editClue = function(e) {
 			selectionCallback();
-			li.classList.remove('select-clue', 'blank-clue');
+			ClassShim.removeClass(li, 'select-clue');
+			ClassShim.removeClass(li, 'blank-clue');
 			li.removeEventListener('click', editClue);
 
 			var input = document.createElement('input');
@@ -246,7 +253,9 @@ var ClueCreator = (function() {
 			input.focus();
 		};
 
-		li.classList.add('user-clue', 'select-clue', 'blank-clue');
+		ClassShim.addClass(li, 'user-clue');
+		ClassShim.addClass(li, 'select-clue');
+		ClassShim.addClass(li, 'blank-clue');
 		li.innerHTML = '<span class="clue-number">' + clueNum + ' </span><span class="numeration"> (' + wordLength + ')</span>';
 		li.addEventListener('click', editClue);
 	}
