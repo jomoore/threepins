@@ -245,7 +245,7 @@ var ClueCreator = (function() {
 			var inputWidth = li.clientWidth;
 			for (i = 0; i < li.childNodes.length; i++)
 				inputWidth -= li.childNodes[i].offsetWidth;
-			input.style.width = (inputWidth - 6) + 'px';
+			input.style.width = (inputWidth - 8) + 'px';
 
 			li.insertBefore(input, li.lastChild);
 			input.addEventListener('blur', freezeClue);
