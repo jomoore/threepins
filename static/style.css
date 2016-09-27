@@ -112,8 +112,6 @@ footer { border-top: 1px solid; clear: both; }
 @media screen and (min-width: 680px) {
 	nav { font-size: 1.4em; }
 	nav li { padding: 15px; }
-    .blanks { width: 180px; height: 490px; }
-    #grid > p:after { content: "\2192" }
 }
 
 @media screen and (min-width: 720px) {
@@ -122,10 +120,11 @@ footer { border-top: 1px solid; clear: both; }
 	#contact input.send-button { margin-right: 1em; }
 }
 
-@media screen and (min-width: 850px) {
+@media screen and (min-width: 870px) {
 	nav { font-size: 1.8em; }
 	nav li { padding: 20px; }
-    .blanks { width: 350px; }
+    .blanks { width: 350px; height: 490px; }
+    #grid > p:after { content: "\2192" }
 }
 
 @media screen and (min-width: 1020px) {
