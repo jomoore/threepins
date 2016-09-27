@@ -59,7 +59,10 @@ nav li { display: inline; white-space: nowrap; }
 #create > .suggestion { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; font-size: 0.8em;
                         padding: 0em 0.2em 0em 0.2em; border-radius: 5px; white-space: nowrap; }
 #create > .suggestion:hover { background: #ffffba; cursor: pointer; }
+#create > .padding { padding-bottom: 2em; }
 #create > .warning { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: red; }
+.fade { position: relative; bottom: 2em; height: 2em; pointer-events: none;
+        background-image: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%); }
 #create-controls { margin-right: 10px; }
 
 /* Clue Creator */
@@ -147,6 +150,7 @@ footer { border-top: 1px solid; clear: both; }
 	header img { display: none; }
 	nav { display: none; }
     #create { display: none; }
+    .fade { display: none; }
 
 	#grid-wrapper { display: block; margin: auto; padding: 15px 0px 30px 0px; width: 376px; }
 	#grid { width: 376px; height: 376px; }

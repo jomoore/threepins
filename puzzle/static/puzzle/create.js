@@ -107,6 +107,7 @@ var GridCreator = (function() {
 		var wordList = null;
 		var re;
 		var pattern;
+		var timeoutId;
 
 		var appendClearButton = function() {
 			var clearButton = document.createElement('span');
@@ -116,6 +117,13 @@ var GridCreator = (function() {
 				clearHandler();
 			});
 			box.appendChild(clearButton);
+		};
+		
+		var appendPadding = function() {
+			var padding = document.createElement('span');
+			padding.innerHTML = '&nbsp;';
+			ClassShim.addClass(padding, 'padding');
+			box.appendChild(padding);
 		};
 
 		var appendSuggestions = function(maxNum) {
@@ -137,25 +145,14 @@ var GridCreator = (function() {
 				++count;
 			}
 
+			if (count < maxNum) {
+				appendPadding();
+				timeoutId = undefined;
+			} else
+				timeoutId = window.setTimeout(appendSuggestions, 100, maxNum);
+
 			return count;
 		};
-
-		var appendContinuation = function() {
-			var lastIndex = re.lastIndex;
-			if (re.test(wordList[pattern.length])) {
-				re.lastIndex = lastIndex;
-
-				var continuation = document.createElement('span');
-				ClassShim.addClass(continuation, 'suggestion');
-				continuation.innerHTML = '<br>more...';
-				continuation.addEventListener('click', function(e) {
-					box.removeChild(this);
-					appendSuggestions(100000);
-				});
-
-				box.appendChild(continuation);
-			}
-		}
 
 		this.clearSuggestions = function() {
 			box.innerHTML = '';
@@ -167,13 +164,15 @@ var GridCreator = (function() {
 			var max = 200;
 
 			if (wordList && pattern.search('[^\\.]') != -1) {
+				if (timeoutId) {
+					window.clearTimeout(timeoutId);
+					timeoutId = undefined;
+				}
+				
 				appendClearButton();
 
 				re = new RegExp('^' + pattern.replace(/./g, '$&\\W?') + '$', "gim");
 				var count = appendSuggestions(max);
-
-				if (count == max)
-					appendContinuation();
 
 				if (count == 0) {
 					var warning = document.createElement('span');
