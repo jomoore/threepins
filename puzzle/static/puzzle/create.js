@@ -33,11 +33,26 @@ var GridCreator = (function() {
 	};
 
 	var showSelectGridInstruction = function(container) {
+		var p;
+		var div;
+			
 		clearGridContainer(container);
-		var p = document.createElement('p');
-		ClassShim.addClass(p, 'instruction');
-		p.innerHTML = 'CHOOSE YOUR GRID ';
-		container.appendChild(p);
+		div = document.createElement('div');
+		ClassShim.addClass(div, 'instructions');
+
+		p = document.createElement('p');
+		p.innerHTML = 'WELCOME TO THE CROSSWORD COMPOSER!';
+		div.appendChild(p);
+
+		p = document.createElement('p');
+		p.innerHTML = 'HERE, YOU CAN CONSTRUCT YOUR OWN CROSSWORD ONLINE.';
+		div.appendChild(p);
+
+		p = document.createElement('p');
+		p.innerHTML = 'TO BEGIN, CHOOSE YOUR GRID ';
+		div.appendChild(p);
+
+		container.appendChild(div);
 	};
 
 	var createBlankGrid = function(svg, container, blockImgUrl) {
@@ -94,12 +109,12 @@ var GridCreator = (function() {
 	var showHelpText = function(box) {
 		var helpText = document.createElement('p');
 		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = '&uarr;<br>CLICK AND TYPE TO FILL IN THE GRID'
+		helpText.innerHTML = "&uarr;<br>CLICK AND TYPE TO FIT SOME WORDS TOGETHER."
 		box.appendChild(helpText);
 
 		helpText = document.createElement('p');
 		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT '
+		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT. HAVE FUN! '
 		box.appendChild(helpText);
 	};
 
@@ -111,7 +126,7 @@ var GridCreator = (function() {
 
 		var appendClearButton = function() {
 			var clearButton = document.createElement('span');
-			clearButton.textContent = '*CLEAR*';
+			clearButton.textContent = '--CLEAR--';
 			ClassShim.addClass(clearButton, 'suggestion');
 			clearButton.addEventListener('click', function(e) {
 				clearHandler();

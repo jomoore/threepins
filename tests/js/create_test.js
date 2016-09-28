@@ -4,7 +4,7 @@ QUnit.test("Show select grid", function(assert) {
 	GridCreator.showSelectGridInstruction(fixture);
 	var instruction = fixture.childNodes[0];
 	assert.ok(instruction, "Node is present");
-	assert.ok(instruction.classList.contains('instruction'), "Node has instruction class");
+	assert.ok(instruction.classList.contains('instructions'), "Node has instruction class");
 	assert.notEqual(instruction.innerHTML.indexOf('CHOOSE YOUR GRID'), -1, "Node has instruction text");
 });
 
@@ -14,7 +14,7 @@ QUnit.test("Input field preserved", function(assert) {
 	fixture.appendChild(input);
 	GridCreator.showSelectGridInstruction(fixture);
 	assert.equal(fixture.childNodes[0].tagName.toLowerCase(), 'input', "Input field preserved");
-	assert.equal(fixture.childNodes[1].tagName.toLowerCase(), 'p', "Instruction appended");
+	assert.equal(fixture.childNodes[1].tagName.toLowerCase(), 'div', "Instruction appended");
 });
 
 var createAlternatingSvg = function(size) {
