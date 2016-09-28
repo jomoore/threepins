@@ -813,6 +813,26 @@ QUnit.test("Get text", function(assert) {
 	assert.equal(entry, 'HI.MA', "Got active text");
 });
 
+QUnit.test("Get checkers", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked(nodeList.gridItem(1, 0));
+	grid.setActiveEntry('FROGS');
+	grid.activateClicked(nodeList.gridItem(0, 1));
+	grid.setActiveEntry('FLAME');
+	grid.activateClicked(nodeList.gridItem(2, 1));
+	grid.setActiveEntry('OGLES');
+	grid.activateClicked(nodeList.gridItem(4, 1));
+	grid.setActiveEntry('SHRUB');
+
+	grid.activateClicked(nodeList.gridItem(1, 0));
+	var entry = grid.getActiveCheckers();
+	assert.equal(entry, 'F.O.S');
+});
+
 QUnit.test("Get index", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
@@ -892,9 +912,11 @@ QUnit.test("Change listener", function(assert) {
 	var nodeList = Builder.createAlternating(size, 1);
 	var callCount = 0;
 	var expectedCount = 0;
+	var changeType;
 
-	var listener = function() {
+	var listener = function(c) {
 		++callCount;
+		changeType = c;
 	};
 
 	var grid = new GridModule.Grid(size, listener);
@@ -903,31 +925,40 @@ QUnit.test("Change listener", function(assert) {
 
 	grid.activateClicked(nodeList.gridItem(1, 0));
 	assert.equal(callCount, ++expectedCount, "Listener called on initial selection");
+	assert.equal(changeType, 'move', "Change type move");
 	grid.activateClicked(nodeList.gridItem(0, 0));
 	assert.equal(callCount, expectedCount, "Listener not called when selecting square within the same entry");
 	grid.activateClicked(nodeList.gridItem(0, 0));
 	assert.equal(callCount, ++expectedCount, "Listener called when selection changes to down entry");
+	assert.equal(changeType, 'move', "Change type move");
 	grid.activateClicked(nodeList.gridItem(4, 0));
 	assert.equal(callCount, ++expectedCount, "Listener called when selection changes to entirely different entry");
+	assert.equal(changeType, 'move', "Change type move");
 
 	grid.updateLetters('...', '...H');
 	assert.equal(callCount, ++expectedCount, "Listener called when text is added");
+	assert.equal(changeType, 'text', "Change type text");
 	grid.updateLetters('...', '..');
 	assert.equal(callCount, expectedCount, "Listener not called when no text is removed");
 	grid.updateLetters('...', '..');
 	assert.equal(callCount, ++expectedCount, "Listener called when text is removed");
+	assert.equal(changeType, 'text', "Change type text");
 
 	grid.activatePrevious();
 	assert.equal(callCount, ++expectedCount, "Listener called when moving to previous entry");
+	assert.equal(changeType, 'move', "Change type move");
 	grid.activateNext();
 	assert.equal(callCount, ++expectedCount, "Listener called when moving to next entry");
+	assert.equal(changeType, 'move', "Change type move");
 	grid.clearActive();				 
 	assert.equal(callCount, ++expectedCount, "Listener called when clearing entry");
+	assert.equal(changeType, 'move', "Change type move");
 
 	grid.activateClicked(nodeList.gridItem(0, 0));
 	assert.equal(callCount, ++expectedCount, "Reset to known position");
 	grid.moveTarget(0, 1);
 	assert.equal(callCount, ++expectedCount, "Listener called on arrow key move to different entry");
+	assert.equal(changeType, 'move', "Change type move");
 	grid.moveTarget(0, 1);
 	assert.equal(callCount, expectedCount, "Listener not called on arrow key within an entry");
 
@@ -937,6 +968,7 @@ QUnit.test("Change listener", function(assert) {
 	assert.equal(callCount, expectedCount, "Listener not called when there is no letter to delete");
 	grid.deleteTargetLetter(true);
 	assert.equal(callCount, ++expectedCount, "Listener called when there is a letter to delete");
+	assert.equal(changeType, 'text', "Change type text");
 
 	grid.setActiveEntry('LATHE');
 	assert.equal(callCount, expectedCount, "Listener not called on setActiveEntry");

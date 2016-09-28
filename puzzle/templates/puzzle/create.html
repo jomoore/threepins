@@ -58,9 +58,19 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var clueLists = clueBox.getElementsByTagName('ul');
  	var ipuzButton = document.getElementById('ipuz');
 
-	var grid = new GridModule.Grid(15, function() {
+	var grid = new GridModule.Grid(15, function(changeType) {
 	    // New input
-	    suggestor.showSuggestions(grid.getActiveEntry());
+        var entry = grid.getActiveEntry();
+        var checkers;
+
+        // If the entry is complete, show alternatives
+        if (entry.indexOf('.') == -1 && changeType == 'move') {
+            checkers = grid.getActiveCheckers();
+            if (checkers.search('[^\\.]') != -1)
+                entry = checkers;
+        }
+
+	    suggestor.showSuggestions(entry);
     });
 
 	var clearHandler = function() {

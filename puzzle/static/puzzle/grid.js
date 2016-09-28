@@ -200,7 +200,7 @@ var GridModule = (function() {
 			}
 
 			if (changeListener && (active.x != old.x || active.y != old.y || active.down != old.down))
-				changeListener();
+				changeListener('move');
 		};
 
 		var doClearActive = function() {
@@ -211,7 +211,7 @@ var GridModule = (function() {
 		this.clearActive = function() {
 			doClearActive();
 			if (changeListener)
-				changeListener();
+				changeListener('move');
 		};
 
 		this.activateClicked = function(div) {
@@ -357,7 +357,7 @@ var GridModule = (function() {
 			}
 
 			if (changeListener)
-				changeListener();
+				changeListener('text');
 		};
 
 		var clearTargetLetter = function(backpedal) {
@@ -374,7 +374,7 @@ var GridModule = (function() {
 			}
 
 			if (changeListener && deletion)
-				changeListener();
+				changeListener('text');
 		};
 
 		var saveLetters = function(grid) {
@@ -448,6 +448,13 @@ var GridModule = (function() {
 			return grid[x][y].div.getElementsByClassName('grid-number')[0].textContent;
 		};
 
+		var hasChecker = function(x, y, down) {
+			return ((down && x > 0 && getLetter(x - 1, y)) ||
+					(down && x < (size - 1) && getLetter(x + 1, y)) ||
+					(!down && y > 0 && getLetter(x, y - 1)) ||
+					(!down && y < (size - 1) && getLetter(x, y + 1)))
+		};
+
 		this.getClueNums = function() {
 			var clueNums = {across: [], down: []};
 			iterateLights(function(x, y) {
@@ -495,6 +502,20 @@ var GridModule = (function() {
 			return entry;
 		};
 
+		this.getActiveCheckers = function() {
+			var entry = '';
+			var letter;
+			active.iterate(function(x, y) {
+				if (hasChecker(x, y, active.down)) {
+					letter = getLetter(x, y);
+					entry += letter ? letter : '.';
+				} else
+					entry += '.';
+			});
+
+			return entry;
+		};
+
 		this.getActiveDirection = function() {
 			return active.down;
 		};
@@ -522,12 +543,8 @@ var GridModule = (function() {
 
 		this.resetActiveEntry = function() {
 			active.iterate(function(x, y) {
-				if (!((active.down && x > 0 && getLetter(x - 1, y)) ||
-					  (active.down && x < (size - 1) && getLetter(x + 1, y)) ||
-					  (!active.down && y > 0 && getLetter(x, y - 1)) ||
-					  (!active.down && y < (size - 1) && getLetter(x, y + 1)))) {
+				if (!hasChecker(x, y, active.down))
 					clearLetter(x, y);
-				}
 			});
 		};
 
