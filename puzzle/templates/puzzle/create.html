@@ -58,7 +58,10 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var clueLists = clueBox.getElementsByTagName('ul');
  	var ipuzButton = document.getElementById('ipuz');
 
-	var grid = new GridModule.Grid(15);
+	var grid = new GridModule.Grid(15, function() {
+	    // New input
+	    suggestor.showSuggestions(grid.getActiveEntry());
+    });
 
 	var clearHandler = function() {
         grid.resetActiveEntry();
@@ -76,19 +79,13 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		grid.loadGrid(gridBox);
 
 		var input = new GridModule.GridInput(grid);
-		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'), function() {
-			// New input
-			suggestor.showSuggestions(grid.getActiveEntry());
-		});
+		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
 
 		var squares = document.querySelectorAll('.block, .light');
 		for (var i = 0; i < squares.length; i++) {
 			squares[i].addEventListener('mousedown', function(e) {
-				if (grid.activateClicked(this)) {
+				if (grid.activateClicked(this))
 					input.reset();
-					suggestor.showSuggestions(grid.getActiveEntry());
-				} else
-					suggestor.clearSuggestions();
 				e.preventDefault();
 				return false;
 			});

@@ -87,7 +87,7 @@ var GridModule = (function() {
 		this.div = null;
 	}
 
-	function Grid(size) {
+	function Grid(size, changeListener) {
 		var grid = [];
 		var storageName;
 		var active = new Entry();
@@ -166,6 +166,7 @@ var GridModule = (function() {
 		};
 
 		var setActive = function(x, y, down) {
+			var old = {x: active.x, y: active.y, down: active.down};
 			clearHighlights();
 			active.set(x, y, down, 1, 0);
 			ClassShim.addClass(grid[x][y].div, 'target');
@@ -197,6 +198,9 @@ var GridModule = (function() {
 					ClassShim.addClass(grid[x][y].div, 'highlight');
 				}
 			}
+
+			if (changeListener && (active.x != old.x || active.y != old.y || active.down != old.down))
+				changeListener();
 		};
 
 		var doClearActive = function() {
@@ -206,6 +210,8 @@ var GridModule = (function() {
 
 		this.clearActive = function() {
 			doClearActive();
+			if (changeListener)
+				changeListener();
 		};
 
 		this.activateClicked = function(div) {
@@ -309,8 +315,11 @@ var GridModule = (function() {
 
 		var clearLetter = function(x, y) {
 			var elList = grid[x][y].div.getElementsByClassName('letter');
-			if (elList.length)
+			if (elList.length) {
 				grid[x][y].div.removeChild(elList[0]);
+				return true;
+			} else
+				return false;
 		};
 
 		var setLetter = function(x, y, letter) {
@@ -346,11 +355,14 @@ var GridModule = (function() {
 
 				setActive(target.x, target.y, active.down);
 			}
+
+			if (changeListener)
+				changeListener();
 		};
 
 		var clearTargetLetter = function(backpedal) {
 			var target = getTarget();
-			clearLetter(target.x, target.y);
+			var deletion = clearLetter(target.x, target.y);
 
 			if (backpedal && active.target > 0) {
 				if (active.down)
@@ -360,6 +372,9 @@ var GridModule = (function() {
 
 				setActive(target.x, target.y, active.down);
 			}
+
+			if (changeListener && deletion)
+				changeListener();
 		};
 
 		var saveLetters = function(grid) {
@@ -645,12 +660,11 @@ var GridModule = (function() {
 			resetInput();
 		};
 
-		var addInputEventListener = function(callback) {
+		var addInputEventListener = function() {
 			input.addEventListener('input', function(e) {
 				if (grid.isActive()) {
 					var newInput = input.value.replace(/ /g, '');
 					grid.updateLetters(prevInput, newInput);
-					if (callback) callback();
 					prevInput = newInput;
 					positionToTarget();
 					e.preventDefault();
@@ -659,7 +673,7 @@ var GridModule = (function() {
 			});
 		};
 
-		var addKeydownEventListener = function(antiqueIE, callback) {
+		var addKeydownEventListener = function(antiqueIE) {
 			/* If there's a real keyboard, we can handle a few extra key events */
 			input.addEventListener('keydown', function(e) {
 				if (grid.isActive()) {
@@ -668,7 +682,6 @@ var GridModule = (function() {
 						/* IE8 and 9 don't fire an input event on backspace. Catch the keypress instead. */
 						if (antiqueIE) {
 							grid.deleteTargetLetter(true);
-							if (callback) callback();
 							resetInput();
 							e.preventDefault();
 							return false;
@@ -679,43 +692,36 @@ var GridModule = (function() {
 							grid.activatePrevious();
 						else
 							grid.activateNext();
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 13: /* Return */
 					case 27: /* Escape */
 						grid.clearActive();
-						if (callback) callback();
 						e.preventDefault();
 						return false;
 					case 37: /* Left arrow */
 						grid.moveTarget(-1, 0);
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 38: /* Up arrow */
 						grid.moveTarget(0, -1);
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 39: /* Right arrow */
 						grid.moveTarget(1, 0);
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 40: /* Down arrow */
 						grid.moveTarget(0, 1);
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
 					case 46: /* Delete */
 						grid.deleteTargetLetter(false);
-						if (callback) callback();
 						resetInput();
 						e.preventDefault();
 						return false;
@@ -724,10 +730,10 @@ var GridModule = (function() {
 			});
 		};
 
-		this.registerControl = function(inputControl, antiqueIE, inputCallback) {
+		this.registerControl = function(inputControl, antiqueIE) {
 			input = inputControl;
-			addInputEventListener(inputCallback);
-			addKeydownEventListener(antiqueIE, inputCallback);
+			addInputEventListener();
+			addKeydownEventListener(antiqueIE);
 		};
 	}
 

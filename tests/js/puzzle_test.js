@@ -887,6 +887,63 @@ QUnit.test("Get ipuz puzzle", function(assert) {
 
 });
 
+QUnit.test("Change listener", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var callCount = 0;
+	var expectedCount = 0;
+
+	var listener = function() {
+		++callCount;
+	};
+
+	var grid = new GridModule.Grid(size, listener);
+	grid.loadGrid(Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	grid.activateClicked(nodeList.gridItem(1, 0));
+	assert.equal(callCount, ++expectedCount, "Listener called on initial selection");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.equal(callCount, expectedCount, "Listener not called when selecting square within the same entry");
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.equal(callCount, ++expectedCount, "Listener called when selection changes to down entry");
+	grid.activateClicked(nodeList.gridItem(4, 0));
+	assert.equal(callCount, ++expectedCount, "Listener called when selection changes to entirely different entry");
+
+	grid.updateLetters('...', '...H');
+	assert.equal(callCount, ++expectedCount, "Listener called when text is added");
+	grid.updateLetters('...', '..');
+	assert.equal(callCount, expectedCount, "Listener not called when no text is removed");
+	grid.updateLetters('...', '..');
+	assert.equal(callCount, ++expectedCount, "Listener called when text is removed");
+
+	grid.activatePrevious();
+	assert.equal(callCount, ++expectedCount, "Listener called when moving to previous entry");
+	grid.activateNext();
+	assert.equal(callCount, ++expectedCount, "Listener called when moving to next entry");
+	grid.clearActive();				 
+	assert.equal(callCount, ++expectedCount, "Listener called when clearing entry");
+
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.equal(callCount, ++expectedCount, "Reset to known position");
+	grid.moveTarget(0, 1);
+	assert.equal(callCount, ++expectedCount, "Listener called on arrow key move to different entry");
+	grid.moveTarget(0, 1);
+	assert.equal(callCount, expectedCount, "Listener not called on arrow key within an entry");
+
+	grid.updateLetters('...', '...A');
+	assert.equal(callCount, ++expectedCount, "Add a letter to delete");
+	grid.deleteTargetLetter(true);
+	assert.equal(callCount, expectedCount, "Listener not called when there is no letter to delete");
+	grid.deleteTargetLetter(true);
+	assert.equal(callCount, ++expectedCount, "Listener called when there is a letter to delete");
+
+	grid.setActiveEntry('LATHE');
+	assert.equal(callCount, expectedCount, "Listener not called on setActiveEntry");
+	grid.resetActiveEntry();
+	assert.equal(callCount, expectedCount, "Listener not called on resetActiveEntry");
+});
+
 QUnit.test("Get ipuz solution", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
