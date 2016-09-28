@@ -107,7 +107,7 @@ var GridCreator = (function() {
 		var wordList = null;
 		var re;
 		var pattern;
-		var timeoutId;
+		var requestId = 0;
 
 		var appendClearButton = function() {
 			var clearButton = document.createElement('span');
@@ -126,9 +126,12 @@ var GridCreator = (function() {
 			box.appendChild(padding);
 		};
 
-		var appendSuggestions = function(maxNum) {
+		var appendSuggestions = function(maxNum, req) {
 			var result;
 			var count = 0;
+
+			if (req != requestId)
+				return 0;
 			
 			while (count < maxNum && (result = re.exec(wordList[pattern.length])) !== null) {
 				var suggestion = document.createElement('span');
@@ -145,34 +148,30 @@ var GridCreator = (function() {
 				++count;
 			}
 
-			if (count < maxNum) {
+			if (count < maxNum)
 				appendPadding();
-				timeoutId = undefined;
-			} else
-				timeoutId = window.setTimeout(appendSuggestions, 100, maxNum);
+			else
+				window.setTimeout(appendSuggestions, 100, maxNum, req);
 
 			return count;
 		};
 
 		this.clearSuggestions = function() {
+			++requestId;
 			box.innerHTML = '';
 		}
 
 		this.showSuggestions = function(searchPattern) {
+			++requestId;
 			box.innerHTML = '';
 			pattern = searchPattern;
 			var max = 200;
 
 			if (wordList && pattern.search('[^\\.]') != -1) {
-				if (timeoutId) {
-					window.clearTimeout(timeoutId);
-					timeoutId = undefined;
-				}
-				
 				appendClearButton();
 
 				re = new RegExp('^' + pattern.replace(/./g, '$&\\W?') + '$', "gim");
-				var count = appendSuggestions(max);
+				var count = appendSuggestions(max, requestId);
 
 				if (count == 0) {
 					var warning = document.createElement('span');
