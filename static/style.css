@@ -153,6 +153,7 @@ footer { border-top: 1px solid; clear: both; }
 	nav { display: none; }
     #create { display: none; }
     .fade { display: none; }
+    .hide-solution .letter { display: none; }
 
 	#grid-wrapper { display: block; margin: auto; padding: 15px 0px 30px 0px; width: 376px; }
 	#grid { width: 376px; height: 376px; }

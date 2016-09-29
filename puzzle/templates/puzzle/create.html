@@ -14,7 +14,6 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	<div id="grid-wrapper">
 		<div id="grid">
 			<input id="ip" type="text" autocomplete="off">
-			<p class="instruction">Please make sure Javascript is enabled</p>
 		</div>
 		<div id="create">
 		</div>
@@ -38,6 +37,8 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 			</ul>
 		</div>
         <div id="create-controls" class="buttons">
+            <button id="print-puzzle">Print puzzle</button>
+            <button id="print-solution">Print solution</button>
             <button id="ipuz">Download as ipuz</button>
             <button id="restart">Start over</button>
         </div>
@@ -57,6 +58,8 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var gridBox = document.getElementById('grid');
 	var clueBox = document.getElementsByClassName('clues')[0];
 	var clueLists = clueBox.getElementsByTagName('ul');
+	var printButton = document.getElementById('print-puzzle');
+	var solButton = document.getElementById('print-solution');
  	var ipuzButton = document.getElementById('ipuz');
  	var restartButton = document.getElementById('restart');
 
@@ -98,6 +101,16 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 
  	var suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
 	suggestor.loadWordList(wordListUrl);
+
+	printButton.addEventListener('click', function(e) {
+        ClassShim.addClass(gridBox, 'hide-solution');
+        window.print();
+        ClassShim.removeClass(gridBox, 'hide-solution');
+    });
+
+	solButton.addEventListener('click', function(e) {
+        window.print();
+    });
 
 	ipuzButton.addEventListener('click', function(e) {
         var ipuz = PuzzleCreator.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
