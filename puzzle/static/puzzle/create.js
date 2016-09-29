@@ -49,14 +49,53 @@ var GridCreator = (function() {
 		div.appendChild(p);
 
 		p = document.createElement('p');
-		p.innerHTML = 'TO BEGIN, CHOOSE YOUR GRID ';
+		p.innerHTML = 'TO BEGIN, CHOOSE A GRID ';
 		div.appendChild(p);
 
 		container.appendChild(div);
 	};
 
+	var createSquare = function(x, y, isBlock, blockImgUrl, number, letter) {
+		var sq = document.createElement('div');
+		sq.setAttribute('data-x', x);
+		sq.setAttribute('data-y', y);
+		if (x == 0)
+			ClassShim.addClass(sq, 'leftmost');
+		if (y == 0)
+			ClassShim.addClass(sq, 'topmost');
+
+		if (isBlock) {
+			ClassShim.addClass(sq, 'block');
+			if (blockImgUrl) {
+				// Add image for print
+				var img = document.createElement('img');
+				img.src = blockImgUrl;
+				img.alt = 'block';
+				sq.appendChild(img);
+			}
+		} else {
+			ClassShim.addClass(sq, 'light');
+			if (number) {
+				var gn = document.createElement('div');
+				gn.innerHTML = number;
+				ClassShim.addClass(gn, 'grid-number');
+				sq.appendChild(gn);
+			}
+
+			if (letter) {
+				var el = document.createElement('span');
+				ClassShim.addClass(el, 'letter');
+				el.innerHTML = letter.toUpperCase();
+				sq.appendChild(el);
+			}
+		}
+
+		return sq;
+	};
+
+
 	var createBlankGrid = function(svg, container, blockImgUrl) {
-		var number = 1;
+		var gridNumber = 1;
 		var rects = svg.getElementsByTagName('rect');
 		var size = Math.sqrt(rects.length);
 
@@ -68,39 +107,30 @@ var GridCreator = (function() {
 		for (var i = 0; i < rects.length; i++) {
 			var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;;
 			var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;;
-
-			// Create a square
-			var sq = document.createElement('div');
-			sq.setAttribute('data-x', x);
-			sq.setAttribute('data-y', y);
-			if (x == 0)
-				ClassShim.addClass(sq, 'leftmost');
-			if (y == 0)
-				ClassShim.addClass(sq, 'topmost');
-			if (isBlock[i])
-				ClassShim.addClass(sq, 'block');
-			else
-				ClassShim.addClass(sq, 'light');
+			var number = undefined;
 
 			if (!isBlock[i]) {
 				// Add clue number
 				var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
 				var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
-				if (headAcross || headDown) {
-					var gn = document.createElement('div');
-					gn.innerHTML = number++;
-					ClassShim.addClass(gn, 'grid-number');
-					sq.appendChild(gn);
-				}
-			} else if (blockImgUrl) {
-				// Add image for print
-				var img = document.createElement('img');
-				img.src = blockImgUrl;
-				img.alt = 'block';
-				sq.appendChild(img);
+				if (headAcross || headDown)
+					number = gridNumber++;
 			}
 
-			container.appendChild(sq);
+			container.appendChild(createSquare(x, y, isBlock[i], blockImgUrl, number));
+		}
+	};
+
+	var createIpuzGrid = function(container, puzzle, solution, blockImgUrl) {
+		clearGridContainer(container);
+		for (var row = 0; row < puzzle.length; row++) {
+			for (var col = 0; col < puzzle[row].length; col++) {
+				var isBlock = (puzzle[row][col] === '#');
+				var number = isBlock ? 0 : puzzle[row][col];
+				var letter = solution[row][col];
+
+				container.appendChild(createSquare(col, row, isBlock, blockImgUrl, number, letter));
+			}
 		}
 	};
 
@@ -215,13 +245,17 @@ var GridCreator = (function() {
 	return {
 		showSelectGridInstruction: showSelectGridInstruction,
 		createBlankGrid: createBlankGrid,
+		createIpuzGrid: createIpuzGrid,
 		showHelpText: showHelpText,
 		Suggestor: Suggestor,
 	};
 })();
 
 var ClueCreator = (function() {
-	function ClueInput(clueNum, wordLength, selectionCallback) {
+	var selectionCallback;
+	var changeCallback;
+
+	function ClueInput(clueNum, clueText, wordLength) {
 		var li = document.createElement('li');
 		this.getListItem = function() {
 			return li;
@@ -240,10 +274,15 @@ var ClueCreator = (function() {
 			li.removeChild(input);
 			ClassShim.addClass(li, 'select-clue');
 			li.addEventListener('click', editClue);
+
+			if (changeCallback)
+				changeCallback();
 		};
 
 		var editClue = function(e) {
-			selectionCallback();
+			if (selectionCallback)
+				selectionCallback();
+			
 			ClassShim.removeClass(li, 'select-clue');
 			ClassShim.removeClass(li, 'blank-clue');
 			li.removeEventListener('click', editClue);
@@ -272,23 +311,36 @@ var ClueCreator = (function() {
 			input.focus();
 		};
 
+		var content = '<span class="clue-number">' + clueNum + ' </span>';
+
+		if (clueText.length)
+			content += '<span class="clue-text">' + clueText + '</span>';
+		else
+			ClassShim.addClass(li, 'blank-clue');
+
+		content += '<span class="numeration"> (' + wordLength + ')</span>';
+		
 		ClassShim.addClass(li, 'user-clue');
 		ClassShim.addClass(li, 'select-clue');
-		ClassShim.addClass(li, 'blank-clue');
-		li.innerHTML = '<span class="clue-number">' + clueNum + ' </span><span class="numeration"> (' + wordLength + ')</span>';
+		li.innerHTML = content;
 		li.addEventListener('click', editClue);
 	}
 
-	var createClueLists = function(clueNumArr, lengthArr, box, selectionCallback) {
+	var registerListeners = function(select, change) {
+		selectionCallback = select;
+		changeCallback = change;
+	};
+
+	var createClueLists = function(clueNumArr, lengthArr, box) {
 		for (var i = 0; i < clueNumArr.length; i++) {
-			li = new ClueInput(clueNumArr[i], lengthArr[i], selectionCallback);
+			var li = new ClueInput(clueNumArr[i], '', lengthArr[i]);
 			box.appendChild(li.getListItem());
 		}
 	};
 
-	var createClues = function(clueLists, clueNums, wordLengths, selectionCallback) {
-		createClueLists(clueNums.across, wordLengths.across, clueLists[0], selectionCallback);
-		createClueLists(clueNums.down, wordLengths.down, clueLists[1], selectionCallback);
+	var createClues = function(clueLists, clueNums, wordLengths) {
+		createClueLists(clueNums.across, wordLengths.across, clueLists[0]);
+		createClueLists(clueNums.down, wordLengths.down, clueLists[1]);
 	}
 
 	var setNumeration = function(clueLists, direction, index, answer) {
@@ -315,10 +367,19 @@ var ClueCreator = (function() {
 		return clues;
 	};
 
+	var setIpuzClues = function(clueList, clues) {
+		for (var i = 0; i < clues.length; i++) {
+			var li = new ClueInput(clues[i].number, clues[i].clue, clues[i].enumeration);
+			clueList.appendChild(li.getListItem());
+		}
+	};
+
 	return {
+		registerListeners: registerListeners,
 		createClues: createClues,
 		setNumeration: setNumeration,
 		getIpuzClues: getIpuzClues,
+		setIpuzClues: setIpuzClues,
 	};
 })();
 
@@ -337,7 +398,26 @@ var PuzzleCreator = (function() {
 		return JSON.stringify(ipuz);
 	};
 
+	var saveLocal = function(size, puzzle, solution, acrossClues, downClues) {
+		var json = createIpuz(size, puzzle, solution, acrossClues, downClues);
+		if (window.localStorage) {
+			localStorage.setItem('create', json);
+		}
+	};
+
+	var loadLocal = function() {
+		var json = localStorage.getItem('create');
+		return json && JSON.parse(json);
+	};
+
+	var clearLocal = function() {
+		localStorage.removeItem('create');
+	};
+	
 	return {
 		createIpuz: createIpuz,
+		saveLocal: saveLocal,
+		loadLocal: loadLocal,
+		clearLocal: clearLocal,
 	};
 })();

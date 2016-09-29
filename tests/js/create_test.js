@@ -41,13 +41,7 @@ var createAlternatingSvg = function(size) {
 	return svg;
 };
 
-QUnit.test("Create blank grid", function(assert) {
-	var fixture = document.getElementById('qunit-fixture');
-	var size = 3;
-	var svg = createAlternatingSvg(size);
-	assert.equal(svg.getElementsByTagName('rect').length, 9, "SVG created");
-
-	GridCreator.createBlankGrid(svg, fixture, 'dummy/url');
+var verify_alternating_grid = function(assert, fixture, size) {
 	var squares = fixture.querySelectorAll('.block, .light');
 	assert.equal(squares.length, 9, "Squares created");
 
@@ -75,6 +69,35 @@ QUnit.test("Create blank grid", function(assert) {
 		else
 			assert.notNumbered(squares[i], "Square not numbered");
 	}
+};
+
+QUnit.test("Create blank grid", function(assert) {
+	var fixture = document.getElementById('qunit-fixture');
+	var size = 3;
+	var svg = createAlternatingSvg(size);
+	assert.equal(svg.getElementsByTagName('rect').length, 9, "SVG created");
+
+	GridCreator.createBlankGrid(svg, fixture, 'dummy/url');
+	verify_alternating_grid(assert, fixture, size);
+});
+
+QUnit.test("Create ipuz grid", function(assert) {
+	var fixture = document.getElementById('qunit-fixture');
+	var size = 3;
+	var ipuz = {
+		puzzle: [[1, 0, 2], [0, '#', 0], [3, 0, 0]],
+		solution: [['F', 'I', 'G'], [0, '#', 'A'], [0, 0, 'S']],
+	};
+
+	GridCreator.createIpuzGrid(fixture, ipuz.puzzle, ipuz.solution, 'dummy/url');	
+	verify_alternating_grid(assert, fixture, size);
+
+	var letters = fixture.getElementsByClassName('letter');
+	assert.equal(letters.length, 5, "Correct number of letters filled in");
+	assert.equal(letters[0].textContent, 'F', "First letter correct");
+	assert.equal(letters[4].textContent, 'S', "Last letter correct");
+	assert.equal(letters[4].parentNode.getAttribute('data-x'), 2, "Last letter correctly placed");
+	assert.equal(letters[4].parentNode.getAttribute('data-y'), 2, "Last letter correctly placed");
 });
 
 QUnit.test("Show help text", function(assert) {
@@ -172,6 +195,7 @@ QUnit.test("Edit clue", function(assert) {
 	};
 
 	fixture.appendChild(across);
+	ClueCreator.registerListeners(selectionCallback, null);
 	ClueCreator.createClues([across, down], {across: [1, 3], down: [1, 2]}, {across: [3, 3], down: [3, 3]}, selectionCallback);
 	lis = across.getElementsByTagName('li');
 	lis[0].click();
@@ -223,4 +247,23 @@ QUnit.test("Get ipuz clues", function(assert) {
 	assert.equal(ipuz[1].number, '2', "Clue number");
 	assert.equal(ipuz[1].clue, '', "Clue text");
 	assert.equal(ipuz[1].enumeration, '4', "Enumeration");
+});
+
+QUnit.test("Set ipuz clues", function(assert) {
+	var across = document.createElement('ul');
+	var ipuz = {
+		clues: {Across: [{number: 1, clue: 'Clue 1', enumeration: '5,6'},
+						 {number: 2, clue: '', enumeration: '3'}],
+				Down: []}
+	};
+
+	ClueCreator.setIpuzClues(across, ipuz.clues.Across, null);
+	var lis = across.getElementsByTagName('li');
+	assert.equal(lis.length, 2, "Correct number of list items created");
+	assert.equal(lis[0].getElementsByClassName('clue-number')[0].textContent, '1 ', "First clue number correct");
+	assert.equal(lis[0].getElementsByClassName('clue-text')[0].textContent, 'Clue 1', "First clue text correct");
+	assert.equal(lis[0].getElementsByClassName('numeration')[0].textContent, ' (5,6)', "First numeration correct");
+	assert.equal(lis[1].getElementsByClassName('clue-number')[0].textContent, '2 ', "Second clue number correct");
+	assert.equal(lis[1].getElementsByClassName('clue-text').length, 0, "Second clue has no text");
+	assert.equal(lis[1].getElementsByClassName('numeration')[0].textContent, ' (3)', "Second Numeration correct");
 });

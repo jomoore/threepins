@@ -39,6 +39,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		</div>
         <div id="create-controls" class="buttons">
             <button id="ipuz">Download as ipuz</button>
+            <button id="restart">Start over</button>
         </div>
 	</div>
 </div>
@@ -57,6 +58,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var clueBox = document.getElementsByClassName('clues')[0];
 	var clueLists = clueBox.getElementsByTagName('ul');
  	var ipuzButton = document.getElementById('ipuz');
+ 	var restartButton = document.getElementById('restart');
 
 	var grid = new GridModule.Grid(15, function(changeType) {
 	    // New input
@@ -71,19 +73,45 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
         }
 
 	    suggestor.showSuggestions(entry);
+        
+        if (changeType == 'text')
+            saveAll();
     });
 
-	var clearHandler = function() {
+    var saveAll = function() {
+        PuzzleCreator.saveLocal(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+                                ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+    };
+
+	var suggestionsCleared = function() {
         grid.resetActiveEntry();
         ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
         suggestor.showSuggestions(grid.getActiveEntry());
+        saveAll();
     };
 
- 	var suggestor = new GridCreator.Suggestor(contextBox, clearHandler, function(suggestion) {
+	var suggestionAccepted = function(suggestion) {
 		grid.setActiveEntry(suggestion.replace(/[^A-Z]/g, ''));
 		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), suggestion.replace(/[^- A-Z]/g, ''));
-	});
+        saveAll();
+    };
+
+ 	var suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
 	suggestor.loadWordList(wordListUrl);
+
+	ipuzButton.addEventListener('click', function(e) {
+        var ipuz = PuzzleCreator.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+                                            ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+        var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
+        saveAs(blob, 'ThreePins.ipuz');
+    });
+
+	restartButton.addEventListener('click', function(e) {
+        if (window.confirm('Do you want to discard this puzzle and start over?')) {
+            PuzzleCreator.clearLocal();
+            document.location.reload(false);
+        }
+    });
 
 	var connectControls = function() {
 		grid.loadGrid(gridBox);
@@ -103,40 +131,48 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 
 		document.getElementsByClassName('blanks')[0].style.display = 'none';
 		clueBox.style.display = 'inline-block';
-		ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths(), function() {
-			// Clue selected for editing
-			grid.clearActive();
-			suggestor.clearSuggestions();
-		});
-		GridCreator.showHelpText(contextBox);
-
-        ipuzButton.addEventListener('click', function(e) {
-            var ipuz = PuzzleCreator.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-                                                ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
-            var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
-            saveAs(blob, 'ThreePins.ipuz');
-        });
 	};
 
  	var showInstruction = function() {
         GridCreator.showSelectGridInstruction(gridBox);
     };
 
- 	showInstruction();
- 	var thumbs = document.querySelectorAll('svg');
-	for (var i = 0; i < thumbs.length; i++) {
-		thumbs[i].addEventListener('mouseenter', function(e) {
-			GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-		});
+    var clueSelected = function() {
+		grid.clearActive();
+		suggestor.clearSuggestions();
+    };
 
-		thumbs[i].addEventListener('mouseleave', showInstruction);
-        
-		thumbs[i].addEventListener('click', function(e) {
-            this.removeEventListener('mouseleave', showInstruction);
-			GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-            connectControls();
-		});
-	}
+ 	var clueChanged = function() {
+        saveAll();
+    };
+
+	ClueCreator.registerListeners(clueSelected, clueChanged);
+	var saved = PuzzleCreator.loadLocal();
+	if (saved) {
+		GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
+		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
+		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
+        connectControls();
+    } else {
+ 	    showInstruction();
+ 	    var thumbs = document.getElementsByTagName('svg');
+	    for (var i = 0; i < thumbs.length; i++) {
+		    thumbs[i].addEventListener('mouseenter', function(e) {
+			    GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
+		    });
+
+		    thumbs[i].addEventListener('mouseleave', showInstruction);
+            
+		    thumbs[i].addEventListener('click', function(e) {
+                this.removeEventListener('mouseleave', showInstruction);
+			    GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
+                connectControls();
+		        GridCreator.showHelpText(contextBox);
+		        ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
+                saveAll();
+		    });
+	    }
+    }
 	// @license-end
 </script>
 {% endblock %}
