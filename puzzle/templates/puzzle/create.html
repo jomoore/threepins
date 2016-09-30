@@ -62,6 +62,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var solButton = document.getElementById('print-solution');
 	var ipuzButton = document.getElementById('ipuz');
 	var restartButton = document.getElementById('restart');
+	var showHelp = true;
 
 	var grid = new GridModule.Grid(15, function(changeType) {
 		// New input
@@ -75,10 +76,14 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 				entry = checkers;
 		}
 
-		suggestor.showSuggestions(entry);
+		var found = suggestor.showSuggestions(entry);
+		if (!found && showHelp)
+			GridCreator.showHelpText(contextBox);
 		
-		if (changeType == 'text')
+		if (changeType == 'text') {
 			saveAll();
+			showHelp = false;
+		}
 	});
 
 	var saveAll = function() {
@@ -153,6 +158,9 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var clueSelected = function() {
 		grid.clearActive();
 		suggestor.clearSuggestions();
+
+		if (showHelp)
+			GridCreator.showHelpText(contextBox);
 	};
 
 	var clueChanged = function() {
@@ -166,6 +174,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
 		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
 		connectControls();
+		showHelp = false;
 	} else {
 		showInstruction();
 		var thumbs = document.getElementsByTagName('svg');

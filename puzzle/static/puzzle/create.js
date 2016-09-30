@@ -224,7 +224,11 @@ var GridCreator = (function() {
 					warning.innerHTML = 'SORRY, NOTHING FITS HERE - '
 					box.insertBefore(warning, box.firstChild);
 				}
+
+				return true;
 			}
+				
+			return false;
 		};
 
 		this.loadWordList = function(url) {
