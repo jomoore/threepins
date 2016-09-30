@@ -6,7 +6,7 @@ Create a puzzle
 {% endblock %}
 
 {% block description %}
-Online crossword creator. Create your own 15x15 blocked puzzle here.
+An online crossword composer. Create your own 15x15 blocked puzzle here.
 {% endblock %}
 
 {% block main %}
@@ -36,12 +36,43 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 			<ul>
 			</ul>
 		</div>
-        <div id="create-controls" class="buttons">
-            <button id="print-puzzle">Print puzzle</button>
-            <button id="print-solution">Print solution</button>
-            <button id="ipuz">Download as ipuz</button>
-            <button id="restart">Start over</button>
-        </div>
+		<div id="create-controls" class="buttons">
+			<button onclick="openHelp()">Help</button>
+			<button onclick="printPuzzle()">Print puzzle</button>
+			<button onclick="printSolution()">Print solution</button>
+			<button onclick="downloadIpuz()">Download as ipuz</button>
+			<button onclick="restart()">Start over</button>
+		</div>
+	</div>
+	<div class="help" style="display: none;">
+		<h4>Building the grid</h4>
+		<p>Click on a white square and start typing the word you want. A list of words and phrases
+			which fit will appear in the little box underneath the grid. There may be a lot of them, so scroll the box to see them all.
+			Click on any word or phrase to insert it into the grid. The clue enumeration will automatically update to match.</p>
+		<p>As you fill words in, you may find places where nothing good fits. That's part of the challenge! To backtrack,
+			select an entry in the grid and click &lsquo;clear&rsquo; in the box underneath.</p>
+		<p>Progress will be automatically saved in your browser as you go along, and will typically persist for about a month, or until
+			the browser's cache is cleared. If you've put a lot of work into your crossword, print a hard copy! Long-term storage isn't available here yet.</p>
+		<h4>Writing clues</h4>
+		<p>Clue entry is free-form, and this tool is too dumb to help you with that part. It provides a space to write them down, but the rest is up to you!</p>
+		<h4>It's finished, what now?</h4>
+		<p>Use the buttons beneath the clues to print out your puzzle and its solution. You can also download it as an
+			<a href="http://www.ipuz.org">ipuz</a> file, a text-based format which is compatible with professional
+			software such as <a href="http://www.crossword-compiler.com/">Crossword Compiler</a> and
+			<a href="http://www.crosswordman.com/sympathy.html">Sympathy</a>. If you have a UK-style cryptic and want
+			an audience, try sending it to <a href="http://bigdave44.com/">Big Dave</a> for his
+			<a href="http://crypticcrosswords.net/puzzles/rookie-corner/">Rookie Corner</a> series. It's a great place for beginners
+			to get feedback and advice.</p>
+		<h4>Upcoming features</h4>
+		<p>There are plenty of things this tool can't yet do. Plans for the future include:
+			<ul><li>User modification of grids to add or remove black squares</li>
+				<li>Manual adjustment of clue enumeration for words not in the dictionary</li>
+				<li>Saving crosswords on the server so that puzzles can be stored, linked, shared and solved online</li>
+				<li>Downloading completed crosswords in PDF format</li></ul>
+			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>.</p>
+		<div class="buttons">
+			<button id="close-help" class="buttons" onclick="closeHelp()">Close help</button>
+		</div>
 	</div>
 </div>
 {% endblock %}
@@ -58,11 +89,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var gridBox = document.getElementById('grid');
 	var clueBox = document.getElementsByClassName('clues')[0];
 	var clueLists = clueBox.getElementsByTagName('ul');
-	var printButton = document.getElementById('print-puzzle');
-	var solButton = document.getElementById('print-solution');
-	var ipuzButton = document.getElementById('ipuz');
-	var restartButton = document.getElementById('restart');
-	var showHelp = true;
+	var showIntro = true;
 
 	var grid = new GridModule.Grid(15, function(changeType) {
 		// New input
@@ -77,12 +104,12 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		}
 
 		var found = suggestor.showSuggestions(entry);
-		if (!found && showHelp)
+		if (!found && showIntro)
 			GridCreator.showHelpText(contextBox);
 		
 		if (changeType == 'text') {
 			saveAll();
-			showHelp = false;
+			showIntro = false;
 		}
 	});
 
@@ -107,29 +134,39 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 	var suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
 	suggestor.loadWordList(wordListUrl);
 
-	printButton.addEventListener('click', function(e) {
+	var openHelp = function() {
+		clueBox.style.display = 'none';
+		document.getElementsByClassName('help')[0].style.display = 'inline-block';
+	};
+
+	var closeHelp = function() {
+		document.getElementsByClassName('help')[0].style.display = 'none';
+		clueBox.style.display = 'inline-block';
+	};
+
+	var printPuzzle = function() {
 		ClassShim.addClass(gridBox, 'hide-solution');
 		window.print();
 		ClassShim.removeClass(gridBox, 'hide-solution');
-	});
+	};
 
-	solButton.addEventListener('click', function(e) {
+	var printSolution = function() {
 		window.print();
-	});
+	};
 
-	ipuzButton.addEventListener('click', function(e) {
+	var downloadIpuz = function() {
 		var ipuz = PuzzleCreator.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
 											ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
 		var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
 		saveAs(blob, 'ThreePins.ipuz');
-	});
+	};
 
-	restartButton.addEventListener('click', function(e) {
+	var restart = function() {
 		if (window.confirm('Do you want to discard this puzzle and start over?')) {
 			PuzzleCreator.clearLocal();
 			document.location.reload(false);
 		}
-	});
+	};
 
 	var connectControls = function() {
 		grid.loadGrid(gridBox);
@@ -159,7 +196,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		grid.clearActive();
 		suggestor.clearSuggestions();
 
-		if (showHelp)
+		if (showIntro)
 			GridCreator.showHelpText(contextBox);
 	};
 
@@ -174,7 +211,7 @@ Online crossword creator. Create your own 15x15 blocked puzzle here.
 		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
 		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
 		connectControls();
-		showHelp = false;
+		showIntro = false;
 	} else {
 		showInstruction();
 		var thumbs = document.getElementsByTagName('svg');

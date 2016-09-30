@@ -45,7 +45,7 @@ var GridCreator = (function() {
 		div.appendChild(p);
 
 		p = document.createElement('p');
-		p.innerHTML = 'HERE, YOU CAN CONSTRUCT YOUR OWN CROSSWORD ONLINE.';
+		p.innerHTML = 'HERE, YOU CAN CONSTRUCT YOUR OWN CROSSWORD INTERACTIVELY.';
 		div.appendChild(p);
 
 		p = document.createElement('p');
