@@ -221,7 +221,7 @@ var GridCreator = (function() {
 				if (count == 0) {
 					var warning = document.createElement('span');
 					ClassShim.addClass(warning, 'warning');
-					warning.innerHTML = 'SORRY, NOTHING FITS HERE - '
+					warning.innerHTML = 'SORRY, NOTHING FITS HERE<br>'
 					box.insertBefore(warning, box.firstChild);
 				}
 
