@@ -5,7 +5,7 @@ QUnit.test("Show select grid", function(assert) {
 	var instruction = fixture.childNodes[0];
 	assert.ok(instruction, "Node is present");
 	assert.ok(instruction.classList.contains('instructions'), "Node has instruction class");
-	assert.notEqual(instruction.innerHTML.indexOf('CHOOSE YOUR GRID'), -1, "Node has instruction text");
+	assert.notEqual(instruction.innerHTML.indexOf('CHOOSE A GRID'), -1, "Node has instruction text");
 });
 
 QUnit.test("Input field preserved", function(assert) {
