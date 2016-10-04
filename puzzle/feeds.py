@@ -1,9 +1,17 @@
+"""
+Generate an RSS feed of published crosswords.
+
+Uses the built-in feed framework. There's no attempt to send the actual
+crossword, it's just a message indicating that a new one is available.
+"""
+
 from django.contrib.syndication.views import Feed
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from puzzle.models import Puzzle
 
 class PuzzleFeed(Feed):
+    #pylint: disable=no-self-use,missing-docstring
     title = 'Three Pins'
     link = 'http://www.threepins.org'
     description = 'A cryptic crossword outlet.'
