@@ -95,14 +95,6 @@ var GridModule = (function() {
 
 		/* --- Iterators --- */
 
-		var iterateAll = function(f) {
-			for (var y = 0; y < size; y++) {
-				for (var x = 0; x < size; x++) {
-					f(x, y);
-				}
-			}
-		};
-
 		var iterateLights = function(f) {
 			for (var y = 0; y < size; y++) {
 				for (var x = 0; x < size; x++) {
@@ -377,7 +369,7 @@ var GridModule = (function() {
 				changeListener('text');
 		};
 
-		var saveLetters = function(grid) {
+		var saveLetters = function() {
 			if (window.localStorage) {
 				var letters = '';
 				var nonEmpty = false;
@@ -399,7 +391,7 @@ var GridModule = (function() {
 			}
 		};
 
-		this.loadLetters = function(grid) {
+		this.loadLetters = function() {
 			if (window.localStorage) {
 				var letters = localStorage.getItem(storageName);
 				if (letters) {
@@ -419,11 +411,12 @@ var GridModule = (function() {
 		};
 
 		this.updateLetters = function(prevInput, newInput) {
+			var i;
 			if (newInput.length > prevInput.length) {
-				for (var i = prevInput.length; i < newInput.length; i++)
+				for (i = prevInput.length; i < newInput.length; i++)
 					setTargetLetter(newInput[i]);
 			} else if (prevInput.length > newInput.length) {
-				for (var i = newInput.length; i < prevInput.length; i++)
+				for (i = newInput.length; i < prevInput.length; i++)
 					clearTargetLetter(true);
 			} else {
 				var change;
@@ -432,11 +425,11 @@ var GridModule = (function() {
 						break;
 				}
 
-				for (var i = change; i < newInput.length; i++)
+				for (i = change; i < newInput.length; i++)
 					clearTargetLetter(true);
 
-				for (var i = change; i < newInput.length; i++)
-					setTargetLetter(newLetters[i]);
+				for (i = change; i < newInput.length; i++)
+					setTargetLetter(newInput[i]);
 			}
 
 			saveLetters();
@@ -452,7 +445,7 @@ var GridModule = (function() {
 			return ((down && x > 0 && getLetter(x - 1, y)) ||
 					(down && x < (size - 1) && getLetter(x + 1, y)) ||
 					(!down && y > 0 && getLetter(x, y - 1)) ||
-					(!down && y < (size - 1) && getLetter(x, y + 1)))
+					(!down && y < (size - 1) && getLetter(x, y + 1)));
 		};
 
 		this.getClueNums = function() {
@@ -473,15 +466,14 @@ var GridModule = (function() {
 		this.getWordLengths = function() {
 			var wordLengths = {across: [], down: []};
 			iterateLights(function(x, y) {
+				var length = 1;
 				if (headAcross(x, y)) {
-					var length = 1;
 					while ((x + length < size) && grid[x + length][y].light)
 						length++;
 					wordLengths.across.push(length);
 				}
 
 				if (headDown(x, y)) {
-					var length = 1;
 					while ((y + length < size) && grid[x][y + length].light)
 						length++;
 					wordLengths.down.push(length);
@@ -615,16 +607,17 @@ var GridModule = (function() {
 		/* --- Initialisation --- */
 
 		this.loadGrid = function(container) {
-			for (var x = 0; x < size; x++) {
+			var x, y;
+			for (x = 0; x < size; x++) {
 				grid[x] = [];
-				for (var y = 0; y < size; y++) {
+				for (y = 0; y < size; y++) {
 					grid[x][y] = new Square();
 				}
 			}
 
 			var elList = container.querySelectorAll('.block, .light');
-			for (var y = 0; y < size; y++) {
-				for (var x = 0; x < size; x++) {
+			for (y = 0; y < size; y++) {
+				for (x = 0; x < size; x++) {
 					var el = elList[y * size + x];
 					grid[x][y].light = !ClassShim.hasClass(el, 'block');
 					grid[x][y].head = el.getElementsByClassName('grid-number').length > 0;
@@ -778,7 +771,7 @@ var GridModule = (function() {
 		var checkAllButton = document.createElement('button');
 		checkAllButton.innerHTML = 'Check All';
 		checkAllButton.addEventListener('click', function() {
-			grid.checkAll()
+			grid.checkAll();
 		});
 
 		var solutionButton = document.createElement('button');

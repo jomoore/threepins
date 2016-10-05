@@ -681,6 +681,27 @@ QUnit.test("Delete text", function(assert) {
 	assert.noLetter(nodeList.gridItem(1, 0), "Second backspace from populated square");
 });
 
+QUnit.test("Replace text", function(assert) {
+	var size = 5;
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, "Grid created");
+
+	/* Set up some text */
+	grid.activateClicked(nodeList.gridItem(0, 0));
+	assert.target(nodeList.gridItem(0, 0), "Initial selection");
+	grid.updateLetters('...', '...abc');
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "Content A");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'B', "Content B");
+	assert.letterEqual(nodeList.gridItem(2, 0), 'C', "Content C");
+
+	/* Change the last letter */
+	grid.updateLetters('...abc', '...abd');
+	assert.letterEqual(nodeList.gridItem(0, 0), 'A', "First letter preserved");
+	assert.letterEqual(nodeList.gridItem(1, 0), 'B', "Second letter preserved");
+	assert.letterEqual(nodeList.gridItem(2, 0), 'D', "Third letter updated");
+});
+
 QUnit.test("Check answer", function(assert) {
 	var size = 5;
 	var nodeList = Builder.createAlternating(size, 1);
