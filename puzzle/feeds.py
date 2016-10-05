@@ -11,7 +11,9 @@ from django.utils import timezone
 from puzzle.models import Puzzle
 
 class PuzzleFeed(Feed):
+    """Everything is built into the framework, so there's not much to say about it."""
     #pylint: disable=no-self-use,missing-docstring
+
     title = 'Three Pins'
     link = 'http://www.threepins.org'
     description = 'A cryptic crossword outlet.'
