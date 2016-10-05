@@ -86,13 +86,8 @@ def get_date_string(obj):
     """Helper to give the publish date in a nice British format."""
     return timezone.localtime(obj.pub_date).strftime('%d %b %Y')
 
-def display_puzzle(request, obj, title, description, show_answers=False, show_preview=False):
-    """Main helper to render a puzzle which has been pulled out of the database.
-
-    Title and description are used to put something meaningful into the HTML head.
-    show_answers is used to display a complete solution without using Javascript.
-    show_preview is used to check unpublished puzzles after upload.
-    """
+def display_puzzle(request, obj, title, description, template):
+    """Main helper to render a puzzle which has been pulled out of the database."""
     grid = create_grid(obj, 15)
     across_clues = get_clues(obj, grid, False)
     down_clues = get_clues(obj, grid, True)
@@ -102,24 +97,17 @@ def display_puzzle(request, obj, title, description, show_answers=False, show_pr
     if prev_puzzle < 0:
         prev_puzzle = None
 
-    if show_preview:
+    if 'preview' in template:
         if Puzzle.objects.filter(number=next_puzzle).count() == 0:
             next_puzzle = None
     elif Puzzle.objects.filter(number=next_puzzle, pub_date__lte=timezone.now()).count() == 0:
         next_puzzle = None
 
-    if show_answers:
-        template = 'puzzle/solution.html'
-    elif show_preview:
-        template = 'puzzle/preview.html'
-    else:
-        template = 'puzzle/puzzle.html'
-
     save_request(request)
 
     context = {'title': title, 'description': description, 'number': obj.number,
                'date': get_date_string(obj), 'author': obj.author.name, 'grid': grid,
-               'across_clues': across_clues, 'down_clues': down_clues, 'show_answers': show_answers,
+               'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, template, context)
 
@@ -130,7 +118,7 @@ def latest(request):
     title = 'A cryptic crossword outlet'
     description = 'A free interactive site dedicated to amateur cryptic crosswords. '
     description += 'Solve online or on paper.'
-    return display_puzzle(request, obj, title, description)
+    return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
 @gzip_page
 def puzzle(request, number):
@@ -140,7 +128,7 @@ def puzzle(request, number):
     description = 'Crossword #' + number + ', first published on ' + get_date_string(obj) + '.'
     if obj.pub_date > timezone.now():
         raise Http404
-    return display_puzzle(request, obj, title, description)
+    return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
 def solution(request, number):
     """Show a solution by puzzle number."""
@@ -148,21 +136,21 @@ def solution(request, number):
     title = 'Solution #' + number
     if obj.pub_date > timezone.now():
         raise Http404
-    return display_puzzle(request, obj, title, title, True)
+    return display_puzzle(request, obj, title, title, 'puzzle/solution.html')
 
 @staff_member_required
 def preview(request, number):
     """Preview an unpublished puzzle."""
     obj = get_object_or_404(Puzzle, number=number)
     title = 'Preview #' + number
-    return display_puzzle(request, obj, title, title, False, True)
+    return display_puzzle(request, obj, title, title, 'puzzle/preview.html')
 
 @staff_member_required
 def preview_solution(request, number):
     """Preview the solution of an unpublished puzzle."""
     obj = get_object_or_404(Puzzle, number=number)
     title = 'Solution #' + number
-    return display_puzzle(request, obj, title, title, True, True)
+    return display_puzzle(request, obj, title, title, 'puzzle/preview_solution.html')
 
 def index(request):
     """Show a list of all published puzzles."""

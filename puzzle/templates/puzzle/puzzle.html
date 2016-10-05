@@ -38,9 +38,8 @@
 				{% if square.number %}
 				<div class="grid-number">{{ square.number }}</div>
 				{% endif %}
-				{% if square.letter and show_answers %}
-				<span class="letter">{{ square.letter }}</span>
-				{% endif %}
+				{% block show_answers %}
+				{% endblock %}
 			</div>
 			{% endfor %}
 			{% endfor %}
