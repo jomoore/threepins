@@ -98,15 +98,16 @@ var GridCreator = (function() {
 		var gridNumber = 1;
 		var rects = svg.getElementsByTagName('rect');
 		var size = Math.sqrt(rects.length);
+		var i;
 
 		var isBlock = [];
-		for (var i = 0; i < rects.length; i++)
+		for (i = 0; i < rects.length; i++)
 			isBlock.push(rects[i].style.fill.replace(/ /g, '') === 'rgb(0,0,0)');
 
 		clearGridContainer(container);
-		for (var i = 0; i < rects.length; i++) {
-			var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;;
-			var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;;
+		for (i = 0; i < rects.length; i++) {
+			var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;
+			var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;
 			var number = undefined;
 
 			if (!isBlock[i]) {
@@ -139,12 +140,12 @@ var GridCreator = (function() {
 	var showHelpText = function(box) {
 		var helpText = document.createElement('p');
 		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = "&uarr;<br>CLICK AND TYPE TO FIT SOME WORDS TOGETHER."
+		helpText.innerHTML = '&uarr;<br>CLICK AND TYPE TO FIT SOME WORDS TOGETHER.';
 		box.appendChild(helpText);
 
 		helpText = document.createElement('p');
 		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT. HAVE FUN! '
+		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT. HAVE FUN! ';
 		box.appendChild(helpText);
 	};
 
@@ -158,7 +159,7 @@ var GridCreator = (function() {
 			var clearButton = document.createElement('span');
 			clearButton.textContent = '--CLEAR--';
 			ClassShim.addClass(clearButton, 'suggestion');
-			clearButton.addEventListener('click', function(e) {
+			clearButton.addEventListener('click', function() {
 				clearHandler();
 			});
 			box.appendChild(clearButton);
@@ -184,7 +185,7 @@ var GridCreator = (function() {
 
 				ClassShim.addClass(suggestion, 'suggestion');
 				suggestion.innerHTML = result[0].toUpperCase().trim();
-				suggestion.addEventListener('click', function(e) {
+				suggestion.addEventListener('click', function() {
 					clickHandler(this.innerHTML);
 				});
 
@@ -204,7 +205,7 @@ var GridCreator = (function() {
 		this.clearSuggestions = function() {
 			++requestId;
 			box.innerHTML = '';
-		}
+		};
 
 		this.showSuggestions = function(searchPattern) {
 			++requestId;
@@ -215,13 +216,13 @@ var GridCreator = (function() {
 			if (wordList && pattern.search('[^\\.]') != -1) {
 				appendClearButton();
 
-				re = new RegExp('^' + pattern.replace(/./g, '$&\\W?') + '$', "gim");
+				re = new RegExp('^' + pattern.replace(/./g, '$&\\W?') + '$', 'gim');
 				var count = appendSuggestions(max, requestId);
 
 				if (count == 0) {
 					var warning = document.createElement('span');
 					ClassShim.addClass(warning, 'warning');
-					warning.innerHTML = 'SORRY, NOTHING FITS HERE<br>'
+					warning.innerHTML = 'SORRY, NOTHING FITS HERE<br>';
 					box.insertBefore(warning, box.firstChild);
 				}
 
@@ -233,10 +234,10 @@ var GridCreator = (function() {
 
 		this.loadWordList = function(url) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.onload = function(e) {
+			xhttp.onload = function() {
 				wordList = xhttp.responseText.split('$');
 			};
-			xhttp.open("GET", url);
+			xhttp.open('GET', url);
 			xhttp.send();
 		};
 
@@ -266,7 +267,7 @@ var ClueCreator = (function() {
 		};
 
 		var freezeClue = function(e) {
-			input = e.target;
+			var input = e.target;
 			if (input.value) {
 				var text = document.createElement('span');
 				ClassShim.addClass(text, 'clue-text');
@@ -283,7 +284,7 @@ var ClueCreator = (function() {
 				changeCallback();
 		};
 
-		var editClue = function(e) {
+		var editClue = function() {
 			if (selectionCallback)
 				selectionCallback();
 			
@@ -299,7 +300,7 @@ var ClueCreator = (function() {
 			}
 
 			var inputWidth = li.clientWidth;
-			for (i = 0; i < li.childNodes.length; i++)
+			for (var i = 0; i < li.childNodes.length; i++)
 				inputWidth -= li.childNodes[i].offsetWidth;
 			input.style.width = (inputWidth - 8) + 'px';
 
@@ -345,12 +346,12 @@ var ClueCreator = (function() {
 	var createClues = function(clueLists, clueNums, wordLengths) {
 		createClueLists(clueNums.across, wordLengths.across, clueLists[0]);
 		createClueLists(clueNums.down, wordLengths.down, clueLists[1]);
-	}
+	};
 
 	var setNumeration = function(clueLists, direction, index, answer) {
 		var li = clueLists[direction ? 1 : 0].getElementsByTagName('li')[index];
 		var span = li.getElementsByClassName('numeration')[0];
-		var numeration = answer.replace(/ /g, ',').replace(/[^-,]+/g, function(match, offset, string) {
+		var numeration = answer.replace(/ /g, ',').replace(/[^-,]+/g, function(match) {
 			return match.length;
 		});
 		span.innerHTML = ' (' + numeration + ')';
@@ -390,9 +391,9 @@ var ClueCreator = (function() {
 var PuzzleCreator = (function() {
 	var createIpuz = function(size, puzzle, solution, acrossClues, downClues) {
 		var ipuz = {
-			version: "http://ipuz.org/v2",
-			kind: ["http://ipuz.org/crossword#1"],
-			dimensions: {"width": size, "height": size},
+			version: 'http://ipuz.org/v2',
+			kind: ['http://ipuz.org/crossword#1'],
+			dimensions: {'width': size, 'height': size},
 			showenumerations: true,
 			puzzle: puzzle,
 			clues: {Across: acrossClues, Down: downClues},
