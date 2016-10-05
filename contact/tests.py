@@ -4,9 +4,12 @@ Unit tests for the contact form.
 Uses the django test mailbox to make sure emails are getting sent as expected.
 """
 
+import os
 from django.test import TestCase
 from django.core import mail
 from django.core.urlresolvers import reverse
+
+CONTACT_ADDRESS = os.environ.get('CONTACT_ADDRESS')
 
 class ContactTests(TestCase):
     """Tests fo the contact form."""
@@ -27,7 +30,7 @@ class ContactTests(TestCase):
         self.assertEqual(mail.outbox[0].subject, 'Web Feedback')
         self.assertEqual(mail.outbox[0].body, 'Hi there')
         self.assertEqual(mail.outbox[0].from_email, 'Bill<bill@example.com>')
-        self.assertEqual(mail.outbox[0].to, ['contact@threepins.org'])
+        self.assertEqual(mail.outbox[0].to, [CONTACT_ADDRESS])
         self.assertIn('contact/sent.html', map(lambda t: t.name, response.templates))
 
     def test_send_anonymous_message(self):
@@ -39,8 +42,8 @@ class ContactTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Web Feedback')
         self.assertEqual(mail.outbox[0].body, 'Hi there')
-        self.assertEqual(mail.outbox[0].from_email, 'Anonymous<contact@threepins.org>')
-        self.assertEqual(mail.outbox[0].to, ['contact@threepins.org'])
+        self.assertEqual(mail.outbox[0].from_email, 'Anonymous<' + CONTACT_ADDRESS + '>')
+        self.assertEqual(mail.outbox[0].to, [CONTACT_ADDRESS])
         self.assertIn('contact/sent.html', map(lambda t: t.name, response.templates))
 
     def test_reject_blank_message(self):

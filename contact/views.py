@@ -2,9 +2,12 @@
 Functions to render and handle the contact form.
 """
 
+import os
 from smtplib import SMTPRecipientsRefused
 from django.shortcuts import render
 from django.core.mail import send_mail
+
+CONTACT_ADDRESS = os.environ.get('CONTACT_ADDRESS')
 
 def contact(request):
     """Render the contact form as is."""
@@ -23,12 +26,12 @@ def send(request):
         context['name'] = 'Anonymous'
 
     if not context['email']:
-        context['email'] = 'contact@threepins.org'
+        context['email'] = CONTACT_ADDRESS
 
     try:
         send_mail('Web Feedback', context['message'],
                   context['name'] + '<' + context['email'] + '>',
-                  ['contact@threepins.org'])
+                  [CONTACT_ADDRESS])
     except SMTPRecipientsRefused:
         context['warning'] = "Couldn't make sense of that email address" \
                              "(but leave it blank if you like)."
