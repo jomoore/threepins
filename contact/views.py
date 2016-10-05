@@ -1,12 +1,19 @@
+"""
+Functions to render and handle the contact form.
+"""
+
+from smtplib import SMTPRecipientsRefused
 from django.shortcuts import render
 from django.core.mail import send_mail
-from smtplib import SMTPRecipientsRefused
 
 def contact(request):
+    """Render the contact form as is."""
     return render(request, 'contact/contact.html')
 
 def send(request):
-    context = { 'name': request.POST['name'], 'email': request.POST['email'], 'message': request.POST['message'], }
+    """Process POST of the contact form by sending an email to the site admin."""
+    context = {'name': request.POST['name'], 'email': request.POST['email'],
+               'message': request.POST['message'],}
 
     if not context['message']:
         context['warning'] = 'Add a message before you hit Send!'
@@ -19,9 +26,12 @@ def send(request):
         context['email'] = 'contact@threepins.org'
 
     try:
-        send_mail('Web Feedback', context['message'], context['name'] + '<' + context['email'] + '>', ['contact@threepins.org'])
+        send_mail('Web Feedback', context['message'],
+                  context['name'] + '<' + context['email'] + '>',
+                  ['contact@threepins.org'])
     except SMTPRecipientsRefused:
-        context['warning'] = "Couldn't make sense of that email address (but leave it blank if you like)."
+        context['warning'] = "Couldn't make sense of that email address" \
+                             "(but leave it blank if you like)."
         return render(request, 'contact/contact.html', context)
 
     return render(request, 'contact/sent.html')
