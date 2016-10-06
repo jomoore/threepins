@@ -92,7 +92,7 @@ ALLOWED_HOSTS = ['*']
 # Email
 # http://wiki.gandi.net/en/mail/standard-settings
 
-EMAIL_HOST = 'mail.gandi.net'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
