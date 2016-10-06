@@ -15,29 +15,37 @@ Frankly, anyone geeky enough to work through the setup is probably geeky enough 
 
 1. Clone this repo (or a fork of it) to your local machine.
 2. Set some environment variables describing where to find the database and SMTP server
-```bash
-export DATABASE_URL="postgres://<db_username>:<db_password>@localhost:5432/<db_name>"
-export EMAIL_HOST="<mail.provider.net>"
-export EMAIL_HOST_USER="<smtp_username>"
-export EMAIL_HOST_PASSWORD="<smtp_password>"
-export CONTACT_ADDRESS="<contact_form_recipient@example.com>"
-```
+
+    ```bash
+    export DATABASE_URL="postgres://<db_username>:<db_password>@localhost:5432/<db_name>"
+    export EMAIL_HOST="<mail.provider.net>"
+    export EMAIL_HOST_USER="<smtp_username>"
+    export EMAIL_HOST_PASSWORD="<smtp_password>"
+    export CONTACT_ADDRESS="<contact_form_recipient@example.com>"
+    ```
+
 3. Create a Python virtual environment and install dependencies
-```bash
-pyvenv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+
+    ```bash
+    pyvenv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
+
 4. Set up Django assets
-```
-python manage.py createsuperuser
-python manage.py migrate
-python manage.py collectstatic
-```
+
+    ```
+    python manage.py createsuperuser
+    python manage.py migrate
+    python manage.py collectstatic
+    ```
+
 5. Start the development server
-```
-python manage.py runserver
-```
+
+    ```
+    python manage.py runserver
+    ```
+
 6. The admin interface should be up and running locally at http://localhost:8000/admin. Log in with the Django superuser credentials.
 
 ## Load crosswords
