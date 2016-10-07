@@ -101,8 +101,10 @@ var GridCreator = (function() {
 		var i;
 
 		var isBlock = [];
-		for (i = 0; i < rects.length; i++)
-			isBlock.push(rects[i].style.fill.replace(/ /g, '') === 'rgb(0,0,0)');
+		for (i = 0; i < rects.length; i++) {
+			var color = rects[i].style.fill.replace(/ /g, '');
+			isBlock.push(color === 'rgb(0,0,0)' || color === '#000000' || color === 'black');
+		}
 
 		clearGridContainer(container);
 		for (i = 0; i < rects.length; i++) {
