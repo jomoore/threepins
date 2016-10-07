@@ -6,12 +6,13 @@ python:
 services:
 - postgresql
 
-before_install:
-- export DATABASE_URL="postgres://postgres@localhost"
-
 install:
 - pip install -r requirements.txt
 - npm install -g node-qunit-phantomjs
+
+before_script:
+- export DATABASE_URL="postgres://postgres@localhost"
+- python manage.py collectstatic
 
 script:
 - python manage.py test
