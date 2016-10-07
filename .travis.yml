@@ -12,6 +12,10 @@ install:
 
 before_script:
 - export DATABASE_URL="postgres://postgres@localhost"
+- export EMAIL_HOST="mail.example.com"
+- export EMAIL_HOST_USER="dummy_user"
+- export EMAIL_HOST_PASSWORD="dummy_password"
+- export CONTACT_ADDRESS="contact@example.com"
 - python manage.py collectstatic --noinput
 
 script:
