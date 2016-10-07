@@ -12,7 +12,7 @@ install:
 
 before_script:
 - export DATABASE_URL="postgres://postgres@localhost"
-- python manage.py collectstatic
+- python manage.py collectstatic --noinput
 
 script:
 - python manage.py test
