@@ -6,7 +6,7 @@ crossword, it's just a message indicating that a new one is available.
 """
 
 from django.contrib.syndication.views import Feed
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from puzzle.models import Puzzle
 
@@ -28,7 +28,7 @@ class PuzzleFeed(Feed):
         return 'Crossword #' + str(item.number) + ' is now available.'
 
     def item_link(self, item):
-        return reverse('puzzle.views.puzzle', args=[item.number])
+        return reverse('puzzle', args=[item.number])
 
     def item_pubdate(self, item):
         return item.pub_date

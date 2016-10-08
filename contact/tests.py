@@ -7,7 +7,7 @@ Uses the django test mailbox to make sure emails are getting sent as expected.
 import os
 from django.test import TestCase
 from django.core import mail
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 CONTACT_ADDRESS = os.environ.get('CONTACT_ADDRESS')
 

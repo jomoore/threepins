@@ -8,7 +8,7 @@ Unit test functions must start with 'test_' to be automatically detected.
 from datetime import timedelta, datetime
 from django.test import TestCase
 from django.utils import timezone
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.models import User
 from puzzle.models import Author, Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed

@@ -7,7 +7,7 @@ is unused but included in the hopes of making future extension easier.
 
 from datetime import datetime
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 
 BOOL_DOWN = ((True, 'Down'), (False, 'Across'))
@@ -37,7 +37,7 @@ class Author(models.Model):
 class Puzzle(models.Model):
     """Puzzles to solve. Non-editable fields are unused."""
     number = models.IntegerField(default=default_number)
-    author = models.ForeignKey(Author, default=default_author)
+    author = models.ForeignKey(Author, models.CASCADE, default=default_author)
     pub_date = models.DateTimeField('publication date', default=default_pub_date)
     size = models.IntegerField(default=15, editable=False)
     type = models.IntegerField(default=0, choices=PUZZLE_TYPES, editable=False)
@@ -50,13 +50,13 @@ class Puzzle(models.Model):
     def get_absolute_url(self):
         """Link to go from the puzzle's admin page to the puzzle itself."""
         if self.pub_date > timezone.now():
-            return reverse('puzzle.views.preview', args=[self.number])
+            return reverse('preview', args=[self.number])
         else:
-            return reverse('puzzle.views.puzzle', args=[self.number])
+            return reverse('puzzle', args=[self.number])
 
 class Entry(models.Model):
     """Individual clue/answer entries within a puzzle."""
-    puzzle = models.ForeignKey(Puzzle)
+    puzzle = models.ForeignKey(Puzzle, models.CASCADE)
     clue = models.CharField(max_length=200)
     answer = models.CharField(max_length=30)
     x = models.IntegerField()
@@ -74,6 +74,6 @@ class Blank(models.Model):
 
 class Block(models.Model):
     """Block co-ordinates within each blank grid."""
-    blank = models.ForeignKey(Blank)
+    blank = models.ForeignKey(Blank, models.CASCADE)
     x = models.IntegerField()
     y = models.IntegerField()

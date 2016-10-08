@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, verbose_name='ID', primary_key=True, serialize=False)),
                 ('x', models.IntegerField()),
                 ('y', models.IntegerField()),
-                ('blank', models.ForeignKey(to='puzzle.Blank')),
+                ('blank', models.ForeignKey(to='puzzle.Blank', on_delete=models.CASCADE)),
             ],
         ),
     ]
