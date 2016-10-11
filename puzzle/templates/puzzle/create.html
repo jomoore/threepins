@@ -37,11 +37,11 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			</ul>
 		</div>
 		<div id="create-controls" class="buttons">
-			<button onclick="openHelp()">Help</button>
-			<button onclick="printPuzzle()">Print puzzle</button>
-			<button onclick="printSolution()">Print solution</button>
-			<button onclick="downloadIpuz()">Download as ipuz</button>
-			<button onclick="restart()">Start over</button>
+			<button onclick="PuzzleCreator.openHelp()">Help</button>
+			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
+			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
+			<button onclick="PuzzleCreator.downloadIpuz()">Download as ipuz</button>
+			<button onclick="PuzzleCreator.restart()">Start over</button>
 		</div>
 	</div>
 	<div class="help" style="display: none;">
@@ -71,167 +71,21 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 				<li>Downloading completed crosswords in PDF format</li></ul>
 			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>.</p>
 		<div class="buttons">
-			<button id="close-help" class="buttons" onclick="closeHelp()">Close help</button>
+			<button id="close-help" class="buttons" onclick="PuzzleCreator.closeHelp()">Close help</button>
 		</div>
 	</div>
 </div>
 {% endblock %}
 
 {% block js %}
+<script type="text/javascript" src="{% static 'puzzle/FileSaver.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
 <script type="text/javascript" src="{% static 'puzzle/create.js' %}"></script>
-<script type="text/javascript" src="{% static 'puzzle/FileSaver.min.js' %}"></script>
 <script>
 	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
 	var wordListUrl = "{% static 'puzzle/wordlist.txt' %}";
 	var blockImgUrl = "{% static 'images/grey-px.png' %}"
-	var contextBox = document.getElementById('create');
-	var gridBox = document.getElementById('grid');
-	var clueBox = document.getElementsByClassName('clues')[0];
-	var clueLists = clueBox.getElementsByTagName('ul');
-	var showIntro = true;
-
-	var grid = new GridModule.Grid(15, function(changeType) {
-		// New input
-		var entry = grid.getActiveEntry();
-		var checkers;
-
-		// If the entry is complete, show alternatives
-		if (entry.indexOf('.') == -1 && changeType == 'move') {
-			checkers = grid.getActiveCheckers();
-			if (checkers.search('[^\\.]') != -1)
-				entry = checkers;
-		}
-
-		var found = suggestor.showSuggestions(entry);
-		if (!found && showIntro)
-			GridCreator.showHelpText(contextBox);
-		
-		if (changeType == 'text') {
-			saveAll();
-			showIntro = false;
-		}
-	});
-
-	var saveAll = function() {
-		PuzzleCreator.saveLocal(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-								ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
-	};
-
-	var suggestionsCleared = function() {
-		grid.resetActiveEntry();
-		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
-		suggestor.showSuggestions(grid.getActiveEntry());
-		saveAll();
-	};
-
-	var suggestionAccepted = function(suggestion) {
-		grid.setActiveEntry(suggestion.replace(/[^A-Z]/g, ''));
-		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), suggestion.replace(/[^- A-Z]/g, ''));
-		saveAll();
-	};
-
-	var suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
-	suggestor.loadWordList(wordListUrl);
-
-	var openHelp = function() {
-		clueBox.style.display = 'none';
-		document.getElementsByClassName('help')[0].style.display = 'inline-block';
-	};
-
-	var closeHelp = function() {
-		document.getElementsByClassName('help')[0].style.display = 'none';
-		clueBox.style.display = 'inline-block';
-	};
-
-	var printPuzzle = function() {
-		ClassShim.addClass(gridBox, 'hide-solution');
-		window.print();
-		ClassShim.removeClass(gridBox, 'hide-solution');
-	};
-
-	var printSolution = function() {
-		window.print();
-	};
-
-	var downloadIpuz = function() {
-		var ipuz = PuzzleCreator.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-											ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
-		var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
-		saveAs(blob, 'ThreePins.ipuz');
-	};
-
-	var restart = function() {
-		if (window.confirm('Do you want to discard this puzzle and start over?')) {
-			PuzzleCreator.clearLocal();
-			document.location.reload(false);
-		}
-	};
-
-	var connectControls = function() {
-		grid.loadGrid(gridBox);
-
-		var input = new GridModule.GridInput(grid);
-		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
-
-		var squares = document.querySelectorAll('.block, .light');
-		for (var i = 0; i < squares.length; i++) {
-			squares[i].addEventListener('mousedown', function(e) {
-				if (grid.activateClicked(this))
-					input.reset();
-				e.preventDefault();
-				return false;
-			});
-		}
-
-		document.getElementsByClassName('blanks')[0].style.display = 'none';
-		clueBox.style.display = 'inline-block';
-	};
-
-	var showInstruction = function() {
-		GridCreator.showSelectGridInstruction(gridBox);
-	};
-
-	var clueSelected = function() {
-		grid.clearActive();
-		suggestor.clearSuggestions();
-
-		if (showIntro)
-			GridCreator.showHelpText(contextBox);
-	};
-
-	var clueChanged = function() {
-		saveAll();
-	};
-
-	ClueCreator.registerListeners(clueSelected, clueChanged);
-	var saved = PuzzleCreator.loadLocal();
-	if (saved) {
-		GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
-		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
-		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
-		connectControls();
-		showIntro = false;
-	} else {
-		showInstruction();
-		var thumbs = document.getElementsByTagName('svg');
-		for (var i = 0; i < thumbs.length; i++) {
-			thumbs[i].addEventListener('mouseenter', function(e) {
-				GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-			});
-
-			thumbs[i].addEventListener('mouseleave', showInstruction);
-			
-			thumbs[i].addEventListener('click', function(e) {
-				this.removeEventListener('mouseleave', showInstruction);
-				GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-				connectControls();
-				GridCreator.showHelpText(contextBox);
-				ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
-				saveAll();
-			});
-		}
-	}
+	PuzzleCreator.init(wordListUrl, blockImgUrl);
 	// @license-end
 </script>
 {% endblock %}

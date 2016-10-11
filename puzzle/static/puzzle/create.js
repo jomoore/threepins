@@ -391,6 +391,14 @@ var ClueCreator = (function() {
 })();
 
 var PuzzleCreator = (function() {
+	var contextBox;
+	var gridBox;
+	var clueBox;
+	var clueLists;
+	var showIntro;
+	var suggestor;
+	var grid;
+
 	var createIpuz = function(size, puzzle, solution, acrossClues, downClues) {
 		var ipuz = {
 			version: 'http://ipuz.org/v2',
@@ -421,10 +429,156 @@ var PuzzleCreator = (function() {
 		localStorage.removeItem('create');
 	};
 	
+	var gridChangeListener = function(changeType) {
+		// New input
+		var entry = grid.getActiveEntry();
+		var checkers;
+
+		// If the entry is complete, show alternatives
+		if (entry.indexOf('.') == -1 && changeType == 'move') {
+			checkers = grid.getActiveCheckers();
+			if (checkers.search('[^\\.]') != -1)
+				entry = checkers;
+		}
+
+		var found = suggestor.showSuggestions(entry);
+		if (!found && showIntro)
+			GridCreator.showHelpText(contextBox);
+		
+		if (changeType == 'text') {
+			saveAll();
+			showIntro = false;
+		}
+	};
+						 
+	var saveAll = function() {
+		saveLocal(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+				  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+	};
+
+	var suggestionsCleared = function() {
+		grid.resetActiveEntry();
+		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
+		suggestor.showSuggestions(grid.getActiveEntry());
+		saveAll();
+	};
+
+	var suggestionAccepted = function(suggestion) {
+		grid.setActiveEntry(suggestion.replace(/[^A-Z]/g, ''));
+		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), suggestion.replace(/[^- A-Z]/g, ''));
+		saveAll();
+	};
+
+	var connectControls = function() {
+		grid.loadGrid(gridBox);
+
+		var input = new GridModule.GridInput(grid);
+		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
+
+		var squares = document.querySelectorAll('.block, .light');
+		for (var i = 0; i < squares.length; i++) {
+			squares[i].addEventListener('mousedown', function(e) {
+				if (grid.activateClicked(this))
+					input.reset();
+				e.preventDefault();
+				return false;
+			});
+		}
+
+		document.getElementsByClassName('blanks')[0].style.display = 'none';
+		clueBox.style.display = 'inline-block';
+	};
+
+	var showInstruction = function() {
+		GridCreator.showSelectGridInstruction(gridBox);
+	};
+
+	var clueSelected = function() {
+		grid.clearActive();
+		suggestor.clearSuggestions();
+
+		if (showIntro)
+			GridCreator.showHelpText(contextBox);
+	};
+
+	var clueChanged = function() {
+		saveAll();
+	};
+
 	return {
-		createIpuz: createIpuz,
-		saveLocal: saveLocal,
-		loadLocal: loadLocal,
-		clearLocal: clearLocal,
+		init: function(wordListUrl, blockImgUrl) {
+			contextBox = document.getElementById('create');
+			gridBox = document.getElementById('grid');
+			clueBox = document.getElementsByClassName('clues')[0];
+			clueLists = clueBox.getElementsByTagName('ul');
+			showIntro = true;
+
+			grid = new GridModule.Grid(15, gridChangeListener);
+			suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
+			suggestor.loadWordList(wordListUrl);
+
+			ClueCreator.registerListeners(clueSelected, clueChanged);
+			var saved = loadLocal();
+			if (saved) {
+				GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
+				ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
+				ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
+				connectControls();
+				showIntro = false;
+			} else {
+				showInstruction();
+				var thumbs = document.getElementsByTagName('svg');
+				for (var i = 0; i < thumbs.length; i++) {
+					thumbs[i].addEventListener('mouseenter', function(e) {
+						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
+					});
+
+					thumbs[i].addEventListener('mouseleave', showInstruction);
+					
+					thumbs[i].addEventListener('click', function(e) {
+						this.removeEventListener('mouseleave', showInstruction);
+						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
+						connectControls();
+						GridCreator.showHelpText(contextBox);
+						ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
+						saveAll();
+					});
+				}
+			}
+		},
+
+		openHelp:  function() {
+			clueBox.style.display = 'none';
+			document.getElementsByClassName('help')[0].style.display = 'inline-block';
+		},
+
+		closeHelp: function() {
+			document.getElementsByClassName('help')[0].style.display = 'none';
+			clueBox.style.display = 'inline-block';
+		},
+
+		printPuzzle: function() {
+			ClassShim.addClass(gridBox, 'hide-solution');
+			window.print();
+			ClassShim.removeClass(gridBox, 'hide-solution');
+		},
+
+		printSolution: function() {
+			window.print();
+		},
+
+		downloadIpuz: function() {
+			var ipuz = createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+								  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+			var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
+			saveAs(blob, 'ThreePins.ipuz');
+		},
+
+		restart: function() {
+			if (window.confirm('Do you want to discard this puzzle and start over?')) {
+				clearLocal();
+				document.location.reload(false);
+			}
+		},
 	};
 })();
