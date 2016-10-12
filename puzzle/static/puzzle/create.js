@@ -49,6 +49,7 @@ var GridCreator = (function() {
 		div.appendChild(p);
 
 		p = document.createElement('p');
+		ClassShim.addClass(p, 'pointy');
 		p.innerHTML = 'TO BEGIN, CHOOSE A GRID ';
 		div.appendChild(p);
 
@@ -395,6 +396,7 @@ var PuzzleCreator = (function() {
 	var gridBox;
 	var clueBox;
 	var clueLists;
+	var blankGrids;
 	var showIntro;
 	var suggestor;
 	var grid;
@@ -485,11 +487,11 @@ var PuzzleCreator = (function() {
 			});
 		}
 
-		document.getElementsByClassName('blanks')[0].style.display = 'none';
 		clueBox.style.display = 'inline-block';
 	};
 
-	var showInstruction = function() {
+	var showBlanks = function() {
+		blankGrids.style.display = 'inline-block';
 		GridCreator.showSelectGridInstruction(gridBox);
 	};
 
@@ -511,6 +513,7 @@ var PuzzleCreator = (function() {
 			gridBox = document.getElementById('grid');
 			clueBox = document.getElementsByClassName('clues')[0];
 			clueLists = clueBox.getElementsByTagName('ul');
+			blankGrids = document.getElementsByClassName('blanks')[0];
 			showIntro = true;
 
 			grid = new GridModule.Grid(15, gridChangeListener);
@@ -526,17 +529,18 @@ var PuzzleCreator = (function() {
 				connectControls();
 				showIntro = false;
 			} else {
-				showInstruction();
+				showBlanks();
 				var thumbs = document.getElementsByTagName('svg');
 				for (var i = 0; i < thumbs.length; i++) {
 					thumbs[i].addEventListener('mouseenter', function(e) {
 						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
 					});
 
-					thumbs[i].addEventListener('mouseleave', showInstruction);
+					thumbs[i].addEventListener('mouseleave', showBlanks);
 					
 					thumbs[i].addEventListener('click', function(e) {
-						this.removeEventListener('mouseleave', showInstruction);
+						this.removeEventListener('mouseleave', showBlanks);
+						blankGrids.style.display = 'none';
 						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
 						connectControls();
 						GridCreator.showHelpText(contextBox);
@@ -547,7 +551,7 @@ var PuzzleCreator = (function() {
 			}
 		},
 
-		openHelp:  function() {
+		openHelp: function() {
 			clueBox.style.display = 'none';
 			document.getElementsByClassName('help')[0].style.display = 'inline-block';
 		},

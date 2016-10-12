@@ -14,13 +14,16 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 	<div id="grid-wrapper">
 		<div id="grid">
 			<input id="ip" type="text" autocomplete="off">
+			<div class="instructions">
+				<p>LOADING...</p>
+			</div>
 		</div>
 		<div id="create">
 		</div>
 		<div class="fade">
 		</div>
 	</div>
-	<div class="blanks">
+	<div class="blanks" style="display: none;">
 		{% for img in thumbs %}
 		{{ img|safe }}
 		{% endfor %}
