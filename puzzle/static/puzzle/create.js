@@ -106,9 +106,9 @@ var GridCreator = (function() {
 			grid.loadGrid(container);
 
 			var input = new GridModule.GridInput(grid);
-			input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
+			input.registerControl(ip, antiqueIE);
 
-			var squares = document.querySelectorAll('.block, .light');
+			var squares = container.querySelectorAll('.block, .light');
 			for (var i = 0; i < squares.length; i++) {
 				squares[i].addEventListener('mousedown', function(e) {
 					if (grid.activateClicked(this))
@@ -304,7 +304,7 @@ var ClueCreator = (function() {
 		};
 
 		initClue();
-	}
+	};
 
 	var createClueLists = function(clueNumArr, lengthArr, box) {
 		for (var i = 0; i < clueNumArr.length; i++) {
@@ -497,7 +497,7 @@ var PuzzleCreator = (function() {
 			showIntro = false;
 		}
 	};
-						 
+
 	var clueSelected = function() {
 		grid.clearActive();
 		Suggestor.clearSuggestions();
@@ -532,14 +532,14 @@ var PuzzleCreator = (function() {
 
 		var thumbs = document.getElementsByTagName('svg');
 		for (var i = 0; i < thumbs.length; i++) {
-			thumbs[i].addEventListener('mouseenter', function(e) {
+			thumbs[i].addEventListener('mouseenter', function() {
 				Display.clearGridBox();
 				GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
 			});
 
 			thumbs[i].addEventListener('mouseleave', Display.showBlanks);
 			
-			thumbs[i].addEventListener('click', function(e) {
+			thumbs[i].addEventListener('click', function() {
 				this.removeEventListener('mouseleave', Display.showBlanks);
 				newPuzzle(this, blockImgUrl);
 			});
@@ -582,7 +582,7 @@ var PuzzleCreator = (function() {
 		downloadIpuz: function() {
 			var ipuz = Storage.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
 										  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
-			var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
+			var blob = new Blob([ipuz], {type: 'text/plain;charset=iso-8859-1'});
 			saveAs(blob, 'ThreePins.ipuz');
 		},
 
