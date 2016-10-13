@@ -14,32 +14,47 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 	<div id="grid-wrapper">
 		<div id="grid">
 			<input id="ip" type="text" autocomplete="off">
-			<div class="instructions">
-				<p>LOADING...</p>
+			<div id="loading" class="instructions">
+				<p>Loading...</p>
+			</div>
+			<div id="choose-grid-message" class="instructions" style="display: none;">
+				<p>Welcome to the crossword composer!</p>
+				<p>Here, you can construct your own crossword interactively.</p>
+				<p class="pointy">To begin, choose a grid&nbsp;</p>
+			</div>
+			<!-- Selected grid is created here -->
+		</div>
+		<div id="grid-assistant">
+			<div id="intro-message" class="instructions" style="display: none;">
+				<p>&uarr;<br>Click and type to fit some words together.</p>
+				<p class="pointy">Click on a clue to edit it. Have fun!&nbsp;</p>
+			</div>
+			<div id="suggestions">
+				<!-- Suggested words are shown here -->
+			</div>
+			<div class="fade">
 			</div>
 		</div>
-		<div id="create">
-		</div>
-		<div class="fade">
-		</div>
 	</div>
-	<div class="blanks" style="display: none;">
+	<div id="blanks" style="display: none;">
 		{% for img in thumbs %}
 		{{ img|safe }}
 		{% endfor %}
 	</div>
-	<div class="clues" style="display: none;">
-		<div class="across clue-box clue-text">
+	<div id="clues" style="display: none;">
+		<div class="clue-box">
 			<h4>Across</h4>
 			<ul>
+				<!-- Clue entry fields are created here -->
 			</ul>
 		</div>
-		<div class="down clue-box clue-text">
+		<div class="clue-box">
 			<h4>Down</h4>
 			<ul>
+				<!-- Clue entry fields are created here -->
 			</ul>
 		</div>
-		<div id="create-controls" class="buttons">
+		<div class="buttons">
 			<button onclick="PuzzleCreator.openHelp()">Help</button>
 			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
 			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
@@ -47,7 +62,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			<button onclick="PuzzleCreator.restart()">Start over</button>
 		</div>
 	</div>
-	<div class="help" style="display: none;">
+	<div id="help-text" style="display: none;">
 		<h4>Building the grid</h4>
 		<p>Click on a white square and start typing the word you want. A list of words and phrases
 			which fit will appear in the little box underneath the grid. There may be a lot of them, so scroll the box to see them all.
@@ -56,8 +71,10 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			select an entry in the grid and click &lsquo;clear&rsquo; in the box underneath.</p>
 		<p>Progress is automatically saved in your browser as you go along, and will persist until its cache is cleared or you click &lsquo;start over&rsquo;.
 			If you've put a lot of work into your crossword, print a hard copy! Long-term storage isn't available here yet.</p>
+
 		<h4>Writing clues</h4>
 		<p>Clue entry is free-form, and this tool is too dumb to help you with them. It provides convenient spaces to write them down, but the rest is up to you!</p>
+
 		<h4>It's finished, what now?</h4>
 		<p>Use the buttons beneath the clues to print out your puzzle and its solution. You can also download it as an
 			<a href="http://www.ipuz.org">ipuz</a> file, a text format which is compatible with professional
@@ -66,6 +83,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			an audience, try sending it to <a href="http://bigdave44.com/">Big Dave</a> for his
 			<a href="http://crypticcrosswords.net/puzzles/rookie-corner/">Rookie Corner</a> series. It's a great place for beginners
 			to get feedback and advice.</p>
+
 		<h4>Upcoming features</h4>
 		<p>There are plenty of things this tool can't yet do. Plans for the future include:
 			<ul><li>User modification of grids to add or remove black squares</li>
@@ -74,7 +92,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 				<li>Downloading completed crosswords in PDF format</li></ul>
 			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>.</p>
 		<div class="buttons">
-			<button id="close-help" class="buttons" onclick="PuzzleCreator.closeHelp()">Close help</button>
+			<button onclick="PuzzleCreator.closeHelp()">Close help</button>
 		</div>
 	</div>
 </div>

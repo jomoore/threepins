@@ -22,40 +22,6 @@
  */
 
 var GridCreator = (function() {
-
-	/* --- Select a grid --- */
-
-	var clearGridContainer = function(container) {
-		var input = container.getElementsByTagName('input')[0];
-		container.innerHTML = '';
-		if (input)
-			container.appendChild(input);
-	};
-
-	var showSelectGridInstruction = function(container) {
-		var p;
-		var div;
-			
-		clearGridContainer(container);
-		div = document.createElement('div');
-		ClassShim.addClass(div, 'instructions');
-
-		p = document.createElement('p');
-		p.innerHTML = 'WELCOME TO THE CROSSWORD COMPOSER!';
-		div.appendChild(p);
-
-		p = document.createElement('p');
-		p.innerHTML = 'HERE, YOU CAN CONSTRUCT YOUR OWN CROSSWORD INTERACTIVELY.';
-		div.appendChild(p);
-
-		p = document.createElement('p');
-		ClassShim.addClass(p, 'pointy');
-		p.innerHTML = 'TO BEGIN, CHOOSE A GRID ';
-		div.appendChild(p);
-
-		container.appendChild(div);
-	};
-
 	var createSquare = function(x, y, isBlock, blockImgUrl, number, letter) {
 		var sq = document.createElement('div');
 		sq.setAttribute('data-x', x);
@@ -94,133 +60,140 @@ var GridCreator = (function() {
 		return sq;
 	};
 
+	return {
+		createBlankGrid: function(svg, container, blockImgUrl) {
+			var gridNumber = 1;
+			var rects = svg.getElementsByTagName('rect');
+			var size = Math.sqrt(rects.length);
+			var i;
 
-	var createBlankGrid = function(svg, container, blockImgUrl) {
-		var gridNumber = 1;
-		var rects = svg.getElementsByTagName('rect');
-		var size = Math.sqrt(rects.length);
-		var i;
-
-		var isBlock = [];
-		for (i = 0; i < rects.length; i++) {
-			var color = rects[i].style.fill.replace(/ /g, '');
-			isBlock.push(color === 'rgb(0,0,0)' || color === '#000000' || color === 'black');
-		}
-
-		clearGridContainer(container);
-		for (i = 0; i < rects.length; i++) {
-			var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;
-			var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;
-			var number = undefined;
-
-			if (!isBlock[i]) {
-				// Add clue number
-				var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
-				var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
-				if (headAcross || headDown)
-					number = gridNumber++;
+			var isBlock = [];
+			for (i = 0; i < rects.length; i++) {
+				var color = rects[i].style.fill.replace(/ /g, '');
+				isBlock.push(color === 'rgb(0,0,0)' || color === '#000000' || color === 'black');
 			}
 
-			container.appendChild(createSquare(x, y, isBlock[i], blockImgUrl, number));
-		}
-	};
+			for (i = 0; i < rects.length; i++) {
+				var x = rects[i].x.baseVal.value / rects[i].width.baseVal.value;
+				var y = rects[i].y.baseVal.value / rects[i].height.baseVal.value;
+				var number = undefined;
 
-	var createIpuzGrid = function(container, puzzle, solution, blockImgUrl) {
-		clearGridContainer(container);
-		for (var row = 0; row < puzzle.length; row++) {
-			for (var col = 0; col < puzzle[row].length; col++) {
-				var isBlock = (puzzle[row][col] === '#');
-				var number = isBlock ? 0 : puzzle[row][col];
-				var letter = solution[row][col];
+				if (!isBlock[i]) {
+					// Add clue number
+					var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
+					var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
+					if (headAcross || headDown)
+						number = gridNumber++;
+				}
 
-				container.appendChild(createSquare(col, row, isBlock, blockImgUrl, number, letter));
+				container.appendChild(createSquare(x, y, isBlock[i], blockImgUrl, number));
 			}
-		}
-	};
+		},
 
-	/* --- Display context --- */
+		createIpuzGrid: function(container, puzzle, solution, blockImgUrl) {
+			for (var row = 0; row < puzzle.length; row++) {
+				for (var col = 0; col < puzzle[row].length; col++) {
+					var isBlock = (puzzle[row][col] === '#');
+					var number = isBlock ? 0 : puzzle[row][col];
+					var letter = solution[row][col];
 
-	var showHelpText = function(box) {
-		var helpText = document.createElement('p');
-		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = '&uarr;<br>CLICK AND TYPE TO FIT SOME WORDS TOGETHER.';
-		box.appendChild(helpText);
+					container.appendChild(createSquare(col, row, isBlock, blockImgUrl, number, letter));
+				}
+			}
+		},
 
-		helpText = document.createElement('p');
-		ClassShim.addClass(helpText, 'help-text');
-		helpText.innerHTML = 'CLICK ON A CLUE TO EDIT IT. HAVE FUN! ';
-		box.appendChild(helpText);
-	};
+		connectControls: function(container, grid, ip, antiqueIE) {
+			grid.loadGrid(container);
 
-	function Suggestor(box, clearHandler, clickHandler) {
-		var wordList = null;
-		var re;
-		var pattern;
-		var requestId = 0;
+			var input = new GridModule.GridInput(grid);
+			input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
 
-		var appendClearButton = function() {
-			var clearButton = document.createElement('span');
-			clearButton.textContent = '--CLEAR--';
-			ClassShim.addClass(clearButton, 'suggestion');
-			clearButton.addEventListener('click', function() {
-				clearHandler();
-			});
-			box.appendChild(clearButton);
-		};
-		
-		var appendPadding = function() {
-			var padding = document.createElement('span');
-			padding.innerHTML = '&nbsp;';
-			ClassShim.addClass(padding, 'padding');
-			box.appendChild(padding);
-		};
-
-		var appendSuggestions = function(maxNum, req) {
-			var result;
-			var count = 0;
-
-			if (req != requestId)
-				return 0;
-			
-			while (count < maxNum && (result = re.exec(wordList[pattern.length])) !== null) {
-				var suggestion = document.createElement('span');
-				var spacer = document.createTextNode(' ');
-
-				ClassShim.addClass(suggestion, 'suggestion');
-				suggestion.innerHTML = result[0].toUpperCase().trim();
-				suggestion.addEventListener('click', function() {
-					clickHandler(this.innerHTML);
+			var squares = document.querySelectorAll('.block, .light');
+			for (var i = 0; i < squares.length; i++) {
+				squares[i].addEventListener('mousedown', function(e) {
+					if (grid.activateClicked(this))
+						input.reset();
+					e.preventDefault();
+					return false;
 				});
-
-				box.appendChild(suggestion);
-				box.appendChild(spacer);
-				++count;
 			}
+		},
+	};
+})();
 
-			if (count < maxNum)
-				appendPadding();
-			else
-				window.setTimeout(appendSuggestions, 100, maxNum, req);
 
-			return count;
-		};
+var Suggestor = (function() {
+	var box;
+	var wordList = null;
+	var re;
+	var pattern;
+	var requestId = 0;
 
-		this.clearSuggestions = function() {
+	var appendClearButton = function(clearHandler) {
+		var clearButton = document.createElement('span');
+		clearButton.textContent = '--CLEAR--';
+		ClassShim.addClass(clearButton, 'suggestion');
+		clearButton.addEventListener('click', function() {
+			clearHandler();
+		});
+		box.appendChild(clearButton);
+	};
+	
+	var appendPadding = function() {
+		var padding = document.createElement('span');
+		padding.innerHTML = '&nbsp;';
+		ClassShim.addClass(padding, 'padding');
+		box.appendChild(padding);
+	};
+
+	var appendSuggestions = function(maxNum, req, clickHandler) {
+		var result;
+		var count = 0;
+
+		if (req != requestId)
+			return 0;
+		
+		while (count < maxNum && (result = re.exec(wordList[pattern.length])) !== null) {
+			var suggestion = document.createElement('span');
+			var spacer = document.createTextNode(' ');
+
+			ClassShim.addClass(suggestion, 'suggestion');
+			suggestion.innerHTML = result[0].toUpperCase().trim();
+			suggestion.addEventListener('click', function() {
+				clickHandler(this.innerHTML);
+			});
+
+			box.appendChild(suggestion);
+			box.appendChild(spacer);
+			++count;
+		}
+
+		if (count < maxNum)
+			appendPadding();
+		else
+			window.setTimeout(appendSuggestions, 100, maxNum, req, clickHandler);
+
+		return count;
+	};
+
+	return {
+		clearSuggestions: function() {
 			++requestId;
 			box.innerHTML = '';
-		};
+		},
 
-		this.showSuggestions = function(searchPattern) {
+		showSuggestions: function(suggestionBox, searchPattern, clickHandler, clearHandler) {
 			++requestId;
+			box = suggestionBox;
 			box.innerHTML = '';
 			pattern = searchPattern;
 			var max = 200;
 
 			if (wordList && pattern.search('[^\\.]') != -1) {
-				appendClearButton();
+				appendClearButton(clearHandler);
 
 				re = new RegExp('^' + pattern.replace(/./g, '$&\\W?') + '$', 'gim');
-				var count = appendSuggestions(max, requestId);
+				var count = appendSuggestions(max, requestId, clickHandler);
 
 				if (count == 0) {
 					var warning = document.createElement('span');
@@ -231,40 +204,34 @@ var GridCreator = (function() {
 
 				return true;
 			}
-				
+			
 			return false;
-		};
+		},
 
-		this.loadWordList = function(url) {
+		loadWordList: function(url) {
 			var xhttp = new XMLHttpRequest();
 			xhttp.onload = function() {
 				wordList = xhttp.responseText.split('$');
 			};
 			xhttp.open('GET', url);
 			xhttp.send();
-		};
+		},
 
 		// Test hook
-		this._setWordList = function(w) {
+		_setWordList: function(w) {
 			wordList = w.split('$');
-		};
-	}
-
-	return {
-		showSelectGridInstruction: showSelectGridInstruction,
-		createBlankGrid: createBlankGrid,
-		createIpuzGrid: createIpuzGrid,
-		showHelpText: showHelpText,
-		Suggestor: Suggestor,
+		},
 	};
 })();
+
 
 var ClueCreator = (function() {
 	var selectionCallback;
 	var changeCallback;
 
-	function ClueInput(clueNum, clueText, wordLength) {
-		var li = document.createElement('li');
+	var ClueInput = function(clueNum, clueText, wordLength) {
+		var li;
+
 		this.getListItem = function() {
 			return li;
 		};
@@ -319,88 +286,135 @@ var ClueCreator = (function() {
 			input.focus();
 		};
 
-		var content = '<span class="clue-number">' + clueNum + ' </span>';
+		var initClue = function() {
+			li = document.createElement('li');
+			var content = '<span class="clue-number">' + clueNum + ' </span>';
 
-		if (clueText.length)
-			content += '<span class="clue-text">' + clueText + '</span>';
-		else
-			ClassShim.addClass(li, 'blank-clue');
+			if (clueText.length)
+				content += '<span class="clue-text">' + clueText + '</span>';
+			else
+				ClassShim.addClass(li, 'blank-clue');
 
-		content += '<span class="numeration"> (' + wordLength + ')</span>';
-		
-		ClassShim.addClass(li, 'user-clue');
-		ClassShim.addClass(li, 'select-clue');
-		li.innerHTML = content;
-		li.addEventListener('click', editClue);
+			content += '<span class="numeration"> (' + wordLength + ')</span>';
+			
+			ClassShim.addClass(li, 'user-clue');
+			ClassShim.addClass(li, 'select-clue');
+			li.innerHTML = content;
+			li.addEventListener('click', editClue);
+		};
+
+		initClue();
 	}
-
-	var registerListeners = function(select, change) {
-		selectionCallback = select;
-		changeCallback = change;
-	};
 
 	var createClueLists = function(clueNumArr, lengthArr, box) {
 		for (var i = 0; i < clueNumArr.length; i++) {
-			var li = new ClueInput(clueNumArr[i], '', lengthArr[i]);
-			box.appendChild(li.getListItem());
-		}
-	};
-
-	var createClues = function(clueLists, clueNums, wordLengths) {
-		createClueLists(clueNums.across, wordLengths.across, clueLists[0]);
-		createClueLists(clueNums.down, wordLengths.down, clueLists[1]);
-	};
-
-	var setNumeration = function(clueLists, direction, index, answer) {
-		var li = clueLists[direction ? 1 : 0].getElementsByTagName('li')[index];
-		var span = li.getElementsByClassName('numeration')[0];
-		var numeration = answer.replace(/ /g, ',').replace(/[^-,]+/g, function(match) {
-			return match.length;
-		});
-		span.innerHTML = ' (' + numeration + ')';
-	};
-
-	var getIpuzClues = function(clueList) {
-		var clues = [];
-		var lis = clueList.getElementsByTagName('li');
-		for (var i = 0; i < lis.length; i++) {
-			var clueTextSpan = lis[i].getElementsByClassName('clue-text')[0];
-			clues.push({
-				number: parseInt(lis[i].getElementsByClassName('clue-number')[0].textContent),
-				clue: clueTextSpan ? clueTextSpan.textContent : '',
-				enumeration: lis[i].getElementsByClassName('numeration')[0].textContent.replace(/[ ()]/g, ''),
-			});
-		}
-
-		return clues;
-	};
-
-	var setIpuzClues = function(clueList, clues) {
-		for (var i = 0; i < clues.length; i++) {
-			var li = new ClueInput(clues[i].number, clues[i].clue, clues[i].enumeration);
-			clueList.appendChild(li.getListItem());
+			var clue = new ClueInput(clueNumArr[i], '', lengthArr[i]);
+			box.appendChild(clue.getListItem());
 		}
 	};
 
 	return {
-		registerListeners: registerListeners,
-		createClues: createClues,
-		setNumeration: setNumeration,
-		getIpuzClues: getIpuzClues,
-		setIpuzClues: setIpuzClues,
+		registerListeners: function(select, change) {
+			selectionCallback = select;
+			changeCallback = change;
+		},
+
+		createClues: function(clueLists, clueNums, wordLengths) {
+			createClueLists(clueNums.across, wordLengths.across, clueLists[0]);
+			createClueLists(clueNums.down, wordLengths.down, clueLists[1]);
+		},
+
+		setNumeration: function(clueLists, direction, index, answer) {
+			var li = clueLists[direction ? 1 : 0].getElementsByTagName('li')[index];
+			var span = li.getElementsByClassName('numeration')[0];
+			var numeration = answer.replace(/ /g, ',').replace(/[^-,]+/g, function(match) {
+				return match.length;
+			});
+			span.innerHTML = ' (' + numeration + ')';
+		},
+
+		getIpuzClues: function(clueList) {
+			var clues = [];
+			var lis = clueList.getElementsByTagName('li');
+			for (var i = 0; i < lis.length; i++) {
+				var clueTextSpan = lis[i].getElementsByClassName('clue-text')[0];
+				clues.push({
+					number: parseInt(lis[i].getElementsByClassName('clue-number')[0].textContent),
+					clue: clueTextSpan ? clueTextSpan.textContent : '',
+					enumeration: lis[i].getElementsByClassName('numeration')[0].textContent.replace(/[ ()]/g, ''),
+				});
+			}
+
+			return clues;
+		},
+
+		setIpuzClues: function(clueList, clues) {
+			for (var i = 0; i < clues.length; i++) {
+				var clue = new ClueInput(clues[i].number, clues[i].clue, clues[i].enumeration);
+				clueList.appendChild(clue.getListItem());
+			}
+		},
 	};
 })();
 
-var PuzzleCreator = (function() {
-	var contextBox;
-	var gridBox;
-	var clueBox;
-	var clueLists;
-	var blankGrids;
-	var showIntro;
-	var suggestor;
-	var grid;
 
+var Display = (function() {
+	var clearGridBox = function() {
+		var i;
+		var gridBox = document.getElementById('grid');
+
+		var instructions = gridBox.getElementsByClassName('instructions');
+		for (i = 0; i < instructions.length; i++)
+			instructions[i].style.display = 'none';
+
+		var squares = gridBox.querySelectorAll('.block, .light');
+		for (i = 0; i < squares.length; i++)
+			gridBox.removeChild(squares[i]);
+	};
+
+	return {
+		clearGridBox: clearGridBox,
+
+		showIntroText: function() {
+			document.getElementById('suggestions').style.display = 'none';
+			document.getElementById('intro-message').style.display = 'block';
+		},
+
+		hideIntroText: function() {
+			document.getElementById('suggestions').style.display = 'block';
+			document.getElementById('intro-message').style.display = 'none';
+		},
+
+		showBlanks: function() {
+			clearGridBox();
+			document.getElementById('blanks').style.display = 'inline-block';
+			document.getElementById('choose-grid-message').style.display = 'block';
+		},
+
+		hideBlanks: function() {
+			clearGridBox();
+			document.getElementById('blanks').style.display = 'none';
+			document.getElementById('choose-grid-message').style.display = 'none';
+		},
+
+		showClues: function() {
+			document.getElementById('clues').style.display = 'inline-block';
+		},
+
+		showHelpText: function() {
+			document.getElementById('clues').style.display = 'none';
+			document.getElementById('help-text').style.display = 'inline-block';
+		},
+
+		hideHelpText: function() {
+			document.getElementById('help-text').style.display = 'none';
+			document.getElementById('clues').style.display = 'inline-block';
+		},
+	};
+})();
+
+
+var Storage = (function() {
 	var createIpuz = function(size, puzzle, solution, acrossClues, downClues) {
 		var ipuz = {
 			version: 'http://ipuz.org/v2',
@@ -415,22 +429,49 @@ var PuzzleCreator = (function() {
 		return JSON.stringify(ipuz);
 	};
 
-	var saveLocal = function(size, puzzle, solution, acrossClues, downClues) {
-		var json = createIpuz(size, puzzle, solution, acrossClues, downClues);
-		if (window.localStorage) {
-			localStorage.setItem('create', json);
-		}
+	return {
+		createIpuz: createIpuz,
+
+		saveLocal: function(grid, clueLists) {
+			var json = createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+								  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+			if (window.localStorage) {
+				localStorage.setItem('create', json);
+			}
+		},
+
+		loadLocal: function() {
+			var json = localStorage.getItem('create');
+			return json && JSON.parse(json);
+		},
+
+		clearLocal: function() {
+			localStorage.removeItem('create');
+		},
+	};
+})();
+
+
+var PuzzleCreator = (function() {
+	var gridBox;
+	var suggestionBox;
+	var clueLists;
+	var showIntro;
+	var grid;
+
+	var suggestionAccepted = function(suggestion) {
+		grid.setActiveEntry(suggestion.replace(/[^A-Z]/g, ''));
+		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), suggestion.replace(/[^- A-Z]/g, ''));
+		Storage.saveLocal(grid, clueLists);
 	};
 
-	var loadLocal = function() {
-		var json = localStorage.getItem('create');
-		return json && JSON.parse(json);
+	var suggestionsCleared = function() {
+		grid.resetActiveEntry();
+		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
+		Suggestor.showSuggestions(suggestionBox, grid.getActiveEntry(), suggestionAccepted, suggestionsCleared);
+		Storage.saveLocal(grid, clueLists);
 	};
 
-	var clearLocal = function() {
-		localStorage.removeItem('create');
-	};
-	
 	var gridChangeListener = function(changeType) {
 		// New input
 		var entry = grid.getActiveEntry();
@@ -443,123 +484,90 @@ var PuzzleCreator = (function() {
 				entry = checkers;
 		}
 
-		var found = suggestor.showSuggestions(entry);
+		// Show suggestions, or intro text if the grid is still empty
+		Display.hideIntroText();
+		var found = Suggestor.showSuggestions(suggestionBox, entry, suggestionAccepted, suggestionsCleared);
 		if (!found && showIntro)
-			GridCreator.showHelpText(contextBox);
+			Display.showIntroText();
 		
+		// Save changes
 		if (changeType == 'text') {
-			saveAll();
+			Storage.saveLocal(grid, clueLists);
+			Display.hideIntroText();
 			showIntro = false;
 		}
 	};
 						 
-	var saveAll = function() {
-		saveLocal(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-				  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
-	};
-
-	var suggestionsCleared = function() {
-		grid.resetActiveEntry();
-		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), grid.getActiveEntry());
-		suggestor.showSuggestions(grid.getActiveEntry());
-		saveAll();
-	};
-
-	var suggestionAccepted = function(suggestion) {
-		grid.setActiveEntry(suggestion.replace(/[^A-Z]/g, ''));
-		ClueCreator.setNumeration(clueLists, grid.getActiveDirection(), grid.getActiveIndex(), suggestion.replace(/[^- A-Z]/g, ''));
-		saveAll();
-	};
-
-	var connectControls = function() {
-		grid.loadGrid(gridBox);
-
-		var input = new GridModule.GridInput(grid);
-		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
-
-		var squares = document.querySelectorAll('.block, .light');
-		for (var i = 0; i < squares.length; i++) {
-			squares[i].addEventListener('mousedown', function(e) {
-				if (grid.activateClicked(this))
-					input.reset();
-				e.preventDefault();
-				return false;
-			});
-		}
-
-		clueBox.style.display = 'inline-block';
-	};
-
-	var showBlanks = function() {
-		blankGrids.style.display = 'inline-block';
-		GridCreator.showSelectGridInstruction(gridBox);
-	};
-
 	var clueSelected = function() {
 		grid.clearActive();
-		suggestor.clearSuggestions();
-
-		if (showIntro)
-			GridCreator.showHelpText(contextBox);
+		Suggestor.clearSuggestions();
 	};
 
 	var clueChanged = function() {
-		saveAll();
+		Storage.saveLocal(grid, clueLists);
+	};
+
+	var restorePuzzle = function(saved, blockImgUrl) {
+		Display.clearGridBox();
+		Display.showClues();
+		GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
+		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
+		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
+		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
+		showIntro = false;
+	};
+
+	var newPuzzle = function(svg, blockImgUrl) {
+		Display.hideBlanks();
+		Display.showClues();
+		Display.showIntroText();
+		GridCreator.createBlankGrid(svg, gridBox, blockImgUrl);
+		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
+		ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
+		Storage.saveLocal(grid, clueLists);
+	};
+
+	var loadGridPicker = function(blockImgUrl) {
+		Display.showBlanks();
+
+		var thumbs = document.getElementsByTagName('svg');
+		for (var i = 0; i < thumbs.length; i++) {
+			thumbs[i].addEventListener('mouseenter', function(e) {
+				Display.clearGridBox();
+				GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
+			});
+
+			thumbs[i].addEventListener('mouseleave', Display.showBlanks);
+			
+			thumbs[i].addEventListener('click', function(e) {
+				this.removeEventListener('mouseleave', Display.showBlanks);
+				newPuzzle(this, blockImgUrl);
+			});
+		}
 	};
 
 	return {
 		init: function(wordListUrl, blockImgUrl) {
-			contextBox = document.getElementById('create');
 			gridBox = document.getElementById('grid');
-			clueBox = document.getElementsByClassName('clues')[0];
-			clueLists = clueBox.getElementsByTagName('ul');
-			blankGrids = document.getElementsByClassName('blanks')[0];
+			suggestionBox = document.getElementById('suggestions');
+			clueLists = document.getElementById('clues').getElementsByTagName('ul');
 			showIntro = true;
 
 			grid = new GridModule.Grid(15, gridChangeListener);
-			suggestor = new GridCreator.Suggestor(contextBox, suggestionsCleared, suggestionAccepted);
-			suggestor.loadWordList(wordListUrl);
-
+			Suggestor.loadWordList(wordListUrl);
 			ClueCreator.registerListeners(clueSelected, clueChanged);
-			var saved = loadLocal();
-			if (saved) {
-				GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
-				ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
-				ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
-				connectControls();
-				showIntro = false;
-			} else {
-				showBlanks();
-				var thumbs = document.getElementsByTagName('svg');
-				for (var i = 0; i < thumbs.length; i++) {
-					thumbs[i].addEventListener('mouseenter', function(e) {
-						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-					});
 
-					thumbs[i].addEventListener('mouseleave', showBlanks);
-					
-					thumbs[i].addEventListener('click', function(e) {
-						this.removeEventListener('mouseleave', showBlanks);
-						blankGrids.style.display = 'none';
-						GridCreator.createBlankGrid(this, gridBox, blockImgUrl);
-						connectControls();
-						GridCreator.showHelpText(contextBox);
-						ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
-						saveAll();
-					});
-				}
+			var saved = Storage.loadLocal();
+			if (saved) {
+				restorePuzzle(saved, blockImgUrl);
+			} else {
+				loadGridPicker(blockImgUrl);
 			}
 		},
 
-		openHelp: function() {
-			clueBox.style.display = 'none';
-			document.getElementsByClassName('help')[0].style.display = 'inline-block';
-		},
+		openHelp: Display.showHelpText,
 
-		closeHelp: function() {
-			document.getElementsByClassName('help')[0].style.display = 'none';
-			clueBox.style.display = 'inline-block';
-		},
+		closeHelp: Display.hideHelpText,
 
 		printPuzzle: function() {
 			ClassShim.addClass(gridBox, 'hide-solution');
@@ -572,15 +580,15 @@ var PuzzleCreator = (function() {
 		},
 
 		downloadIpuz: function() {
-			var ipuz = createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-								  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+			var ipuz = Storage.createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
+										  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
 			var blob = new Blob([ipuz], {type: "text/plain;charset=iso-8859-1"});
 			saveAs(blob, 'ThreePins.ipuz');
 		},
 
 		restart: function() {
 			if (window.confirm('Do you want to discard this puzzle and start over?')) {
-				clearLocal();
+				Storage.clearLocal();
 				document.location.reload(false);
 			}
 		},

@@ -1,22 +1,4 @@
 QUnit.module('Grid creator');
-QUnit.test('Show select grid', function(assert) {
-	var fixture = document.getElementById('qunit-fixture');
-	GridCreator.showSelectGridInstruction(fixture);
-	var instruction = fixture.childNodes[0];
-	assert.ok(instruction, 'Node is present');
-	assert.ok(instruction.classList.contains('instructions'), 'Node has instruction class');
-	assert.notEqual(instruction.innerHTML.indexOf('CHOOSE A GRID'), -1, 'Node has instruction text');
-});
-
-QUnit.test('Input field preserved', function(assert) {
-	var fixture = document.getElementById('qunit-fixture');
-	var input = document.createElement('input');
-	fixture.appendChild(input);
-	GridCreator.showSelectGridInstruction(fixture);
-	assert.equal(fixture.childNodes[0].tagName.toLowerCase(), 'input', 'Input field preserved');
-	assert.equal(fixture.childNodes[1].tagName.toLowerCase(), 'div', 'Instruction appended');
-});
-
 var createAlternatingSvg = function(size) {
 	var svgns = 'http://www.w3.org/2000/svg';
 	var svg = document.createElementNS(svgns, 'svg');
@@ -100,24 +82,17 @@ QUnit.test('Create ipuz grid', function(assert) {
 	assert.equal(letters[4].parentNode.getAttribute('data-y'), 2, 'Last letter correctly placed');
 });
 
-QUnit.test('Show help text', function(assert) {
-	var fixture = document.getElementById('qunit-fixture');
-	GridCreator.showHelpText(fixture);
-	assert.ok(fixture.getElementsByTagName('p').length, 'Text added');
-});
-
 QUnit.module('Suggestions');
-var setTestWordList = function(suggestor) {
+var setTestWordList = function() {
 	var wordList = '$$$$$\r\nracks\r\nracon\r\nradar\r\nradii\r\nradio\r\nRoddy\r\nroded\r\nrodeo\r\nrodes\r\nRodin\r\n';
-	suggestor._setWordList(wordList);
+	Suggestor._setWordList(wordList);
 };
 
 QUnit.test('Show suggestions', function(assert) {
 	var fixture = document.getElementById('qunit-fixture');
-	var suggestor = new GridCreator.Suggestor(fixture, null, null);
-	setTestWordList(suggestor);
+	setTestWordList();
 
-	suggestor.showSuggestions('R.D.O');
+	Suggestor.showSuggestions(fixture, 'R.D.O');
 	var suggestions = fixture.getElementsByClassName('suggestion');
 	assert.equal(suggestions.length, 3, 'Suggestions found');
 	assert.notEqual(suggestions[0].textContent.indexOf('CLEAR'), -1, 'Clear button found');
@@ -127,21 +102,19 @@ QUnit.test('Show suggestions', function(assert) {
 
 QUnit.test('Clear suggestions', function(assert) {
 	var fixture = document.getElementById('qunit-fixture');
-	var suggestor = new GridCreator.Suggestor(fixture, null, null);
-	setTestWordList(suggestor);
+	setTestWordList();
 
-	suggestor.showSuggestions('R.D.O');
-	suggestor.clearSuggestions();
+	Suggestor.showSuggestions(fixture, 'R.D.O');
+	Suggestor.clearSuggestions();
 	var suggestions = fixture.getElementsByClassName('suggestion');
 	assert.equal(suggestions.length, 0, 'Suggestions cleared');
 });
 
 QUnit.test('No suggestions', function(assert) {
 	var fixture = document.getElementById('qunit-fixture');
-	var suggestor = new GridCreator.Suggestor(fixture, null, null);
-	setTestWordList(suggestor);
+	setTestWordList();
 
-	suggestor.showSuggestions('R.DLO');
+	Suggestor.showSuggestions(fixture, 'R.DLO');
 	var suggestions = fixture.getElementsByClassName('suggestion');
 	assert.equal(suggestions.length, 1, 'Clear button only');
 	assert.notEqual(suggestions[0].textContent.indexOf('CLEAR'), -1, 'Clear button found');
