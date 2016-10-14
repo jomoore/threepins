@@ -12,6 +12,7 @@ ul { list-style: none; }
 .letter, .instructions, #grid-assistant { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; }
 button, .send-button { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
 button:hover, .send-button:hover { background: #336600; }
+.warning { color: red; }
 
 /* Header */
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }
@@ -25,7 +26,7 @@ nav li { display: inline; white-space: nowrap; }
 #contact { max-width: 38em; margin: auto; }
 #contact p { text-align: centre; padding-bottom: 0.1em; }
 #contact p:nth-last-child(2) { margin-bottom: 1em; }
-#contact .warning { margin-bottom: 0.7em; color: red; }
+#contact .warning { margin-bottom: 0.7em; }
 #contact label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
 #contact input, #contact textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
 #contact textarea { height: 11em; }
@@ -58,7 +59,6 @@ nav li { display: inline; white-space: nowrap; }
 .suggestion { font-size: 0.8em; padding: 0em 0.2em 0em 0.2em; border-radius: 5px; white-space: nowrap; }
 .suggestion:hover { background: #ffffba; cursor: pointer; }
 .padding { padding-bottom: 2em; }
-.warning { color: red; }
 .fade { position: relative; bottom: 2em; height: 2em; pointer-events: none;
         background-image: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%); }
 #clues > .buttons { margin-right: 10px; }
@@ -163,7 +163,6 @@ footer { border-top: 1px solid; clear: both; }
 	.leftmost { border-left: 1px solid grey; }
 	#grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
 	.grid-number { top: 1px; font-size: 9px; }
-	.buttons { display: none; }
 	#clues { display: block; width: 630px; margin: auto; }
 	.clue-box { width: 260px; }
 	.clue-box li { padding: 1px; }
