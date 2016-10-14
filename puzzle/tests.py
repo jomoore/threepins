@@ -10,17 +10,23 @@ from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
-from puzzle.models import Author, Puzzle, Entry, Blank, Block
+from puzzle.models import Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed
 from puzzle.views import create_grid, create_thumbnail, get_clues, get_date_string
 from puzzle.admin import import_from_xml, import_blank_from_ipuz
 from visitors.models import Visitor
 
+def get_user():
+    """Helper to get the first user in the database, creating one if necessary."""
+    if User.objects.count():
+        return User.objects.first()
+    else:
+        return User.objects.create_user('test', 'test@example.com', 'password')
+
 def create_small_puzzle():
     """Helper to insert a 3x3 puzzle into the database."""
     size = 3
-    Author.objects.create(name='Test Author')
-    puzzle = Puzzle.objects.create(size=size)
+    puzzle = Puzzle.objects.create(size=size, user=get_user())
     Entry.objects.create(puzzle=puzzle, clue='1a', answer='ab c', x=0, y=0, down=False)
     Entry.objects.create(puzzle=puzzle, clue='3a', answer='x-yz', x=0, y=2, down=False)
     Entry.objects.create(puzzle=puzzle, clue='1d', answer='amx', x=0, y=0, down=True)
@@ -34,27 +40,29 @@ def create_puzzle_range():
         puzzle.pub_date = timezone.now() + timedelta(days=i)
         puzzle.save()
 
+def create_empty_puzzle(number, pub_date):
+    """Helper to add an empty puzzle to the database."""
+    return Puzzle.objects.create(number=number, user=get_user(), pub_date=pub_date)
+
 class PuzzleModelTests(TestCase):
     """Tests for new puzzle creation."""
 
-    def test_default_author(self):
-        """Check that the default author is applied to a new puzzle."""
-        Author.objects.create(name='Test Author')
+    def test_default_user(self):
+        """Check that the default user is applied to a new puzzle."""
+        User.objects.create_superuser('super', 'super@example.com', 'password')
         puz = Puzzle.objects.create(number=0, pub_date=timezone.now())
-        self.assertEqual(puz.author.name, 'Test Author')
+        self.assertEqual(puz.user.username, 'super')
 
     def test_default_numbering(self):
         """Check that the default puzzle number is applied to a new puzzle."""
-        author = Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create(author=author, pub_date=timezone.now())
+        puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now())
         self.assertEqual(puz.number, 0)
-        puz = Puzzle.objects.create(author=author, pub_date=timezone.now())
+        puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now())
         self.assertEqual(puz.number, 1)
 
     def test_default_pub_date(self):
         """Check that the default publish date is applied to a new puzzle."""
-        author = Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create(number=0, author=author)
+        puz = Puzzle.objects.create(number=0, user=get_user())
         self.assertTrue(puz.pub_date > timezone.now())
         self.assertEqual(puz.pub_date.year, 2100)
         self.assertEqual(puz.pub_date.hour, 0)
@@ -62,29 +70,16 @@ class PuzzleModelTests(TestCase):
 
     def test_published_puzzle_url(self):
         """Check the absolute URL for a published puzzle."""
-        Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create(pub_date=timezone.now())
+        puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now())
         self.assertNotIn('preview', puz.get_absolute_url())
         self.assertIn(str(puz.number), puz.get_absolute_url())
 
     def test_preview_puzzle_url(self):
         """Check the absolute URL for an unpublished puzzle."""
-        Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create(pub_date=timezone.now() + timedelta(days=1))
+        puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now() + timedelta(days=1))
         self.assertIn('preview', puz.get_absolute_url())
         self.assertIn(str(puz.number), puz.get_absolute_url())
 
-
-def get_author():
-    """Helper to get the first author in the database, creating one if necessary."""
-    if Author.objects.count():
-        return Author.objects.first()
-    else:
-        return Author.objects.create(name='Test Author')
-
-def create_empty_puzzle(number, pub_date):
-    """Helper to add an empty puzzle to the database."""
-    return Puzzle.objects.create(number=number, author=get_author(), pub_date=pub_date)
 
 class FeedTests(TestCase):
     """Tests for RSS feed generation."""
@@ -117,6 +112,7 @@ class FeedTests(TestCase):
             create_empty_puzzle(i, timezone.now() - timedelta(days=num_puzzles - i))
         feed = PuzzleFeed()
         self.assertEqual(feed.items().count(), limit)
+
 
 class GridCreationTests(TestCase):
     """Tests for the grid rendering process."""
@@ -165,6 +161,7 @@ class GridCreationTests(TestCase):
                 else:
                     self.assertNotIn('leftmost', grid[row][col]['type'])
 
+
 class ThumbnailTests(TestCase):
     """Tests of SVG creation for blank grids."""
 
@@ -195,6 +192,7 @@ class ThumbnailTests(TestCase):
         self.assertIn(
             'rect y="20" x="20" width="10" height="10" style="fill:rgb(255,255,255);', svg)
 
+
 class ClueCreationTests(TestCase):
     """Tests for clue rendering, including clue numbers and numeration."""
 
@@ -221,15 +219,16 @@ class ClueCreationTests(TestCase):
         self.assertEqual(down_clues[1]['clue'], '2d')
         self.assertEqual(down_clues[1]['numeration'], '3')
 
+
 class DateFormattingTests(TestCase):
     """Tests for the date format shown above the puzzle."""
 
     def test_get_date_string(self):
         """Check that the date string is in the expected format."""
         test_date = datetime(1980, 3, 4, 1, 2, 3, tzinfo=timezone.get_default_timezone())
-        Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create(pub_date=test_date)
+        puz = Puzzle.objects.create(user=get_user(), pub_date=test_date)
         self.assertEqual(get_date_string(puz), '04 Mar 1980')
+
 
 class PuzzleViewTests(TestCase):
     """Tests for the various puzzle solving views."""
@@ -237,7 +236,7 @@ class PuzzleViewTests(TestCase):
     def log_in_super_user(self):
         """Helper function to create and log in a superuser."""
         password = 'password'
-        superuser = User.objects.create_superuser('test', 'test@example.com', password)
+        superuser = User.objects.create_superuser('super', 'super@example.com', password)
         self.client.login(username=superuser.username, password=password)
 
     def log_out_super_user(self):
@@ -404,6 +403,7 @@ class PuzzleViewTests(TestCase):
         response = self.client.get(reverse('index'))
         self.assertEqual(response.status_code, 200)
 
+
 class PuzzleAdminTests(TestCase):
     """Tests for custom admin functionality."""
 
@@ -418,8 +418,7 @@ class PuzzleAdminTests(TestCase):
 
     def test_import_from_xml(self):
         """Import a test XML file and check the results."""
-        Author.objects.create(name='Test Author')
-        puz = Puzzle.objects.create()
+        puz = Puzzle.objects.create(user=get_user())
         import_from_xml('puzzle/test_data/small.xml', puz)
         entries = Entry.objects.order_by('down', 'y', 'x')
         self.verify_entry(entries[0], {'puzzle': puz, 'clue': '1a', 'answer': 'ab c',
@@ -468,6 +467,7 @@ class PuzzleAdminTests(TestCase):
         self.verify_blocks_in_row(blocks[53:60], blank, 13, [1, 3, 5, 7, 9, 11, 13])
         self.verify_blocks_in_row(blocks[60:], blank, 14, [3])
         file.close()
+
 
 class VisitorLogTests(TestCase):
     """Tests for visitor logging when a puzzle is viewed."""

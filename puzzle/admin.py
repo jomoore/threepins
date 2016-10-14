@@ -11,7 +11,7 @@ from xml.etree import ElementTree
 from django.contrib import admin
 from django.db.models import CharField
 from django.forms import TextInput, FileField, ModelForm
-from puzzle.models import Author, Puzzle, Entry, Blank, Block
+from puzzle.models import Puzzle, Entry, Blank, Block
 
 XMLNS = '{http://crossword.info/xml/rectangular-puzzle}'
 
@@ -60,7 +60,7 @@ class PuzzleImportForm(ModelForm):
     file_import = FileField(label='Import from XML', required=False)
     class Meta:
         model = Puzzle
-        fields = ['number', 'author', 'pub_date', 'comments']
+        fields = ['number', 'user', 'pub_date', 'comments']
 
 class EntryInline(admin.StackedInline):
     """Increase the length of the text field for puzzle clues."""
@@ -103,6 +103,5 @@ class BlankAdmin(admin.ModelAdmin):
 
 admin.site.site_header = "Three Pins Administration"
 admin.site.site_title = "Three Pins"
-admin.site.register(Author)
 admin.site.register(Puzzle, PuzzleAdmin)
 admin.site.register(Blank, BlankAdmin)

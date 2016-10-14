@@ -106,7 +106,7 @@ def display_puzzle(request, obj, title, description, template):
     save_request(request)
 
     context = {'title': title, 'description': description, 'number': obj.number,
-               'date': get_date_string(obj), 'author': obj.author.name, 'grid': grid,
+               'date': get_date_string(obj), 'author': obj.user.username, 'grid': grid,
                'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
     return render(request, template, context)
@@ -157,7 +157,8 @@ def index(request):
     puzzles = Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')
     info = []
     for puz in puzzles:
-        info.append({'number': puz.number, 'author': puz.author, 'date': get_date_string(puz)})
+        info.append({'number': puz.number, 'author': puz.user.username,
+                     'date': get_date_string(puz)})
     context = {'puzzles': info}
     return render(request, 'puzzle/index.html', context)
 

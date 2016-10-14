@@ -9,13 +9,15 @@ from datetime import datetime
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 BOOL_DOWN = ((True, 'Down'), (False, 'Across'))
 PUZZLE_TYPES = ((0, 'Blocked'), (1, 'Barred'))
 
-def default_author():
-    """Default (and probably only) author for new puzzles."""
-    return Author.objects.first()
+def default_user():
+    """Default user for new puzzles."""
+    user = User.objects.filter(is_staff=True).order_by('date_joined').first()
+    return user.id if user else None
 
 def default_number():
     """Default puzzle number is one greater than the last used."""
@@ -27,22 +29,18 @@ def default_pub_date():
     """Default publish date is way off in the future."""
     return datetime(2100, 1, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone())
 
-class Author(models.Model):
-    """Puzzle authors, currently only used to display a name above the grid."""
-    name = models.CharField(max_length=15)
-    description = models.TextField(blank=True)
-    def __str__(self):
-        return self.name
-
 class Puzzle(models.Model):
     """Puzzles to solve. Non-editable fields are unused."""
+    user = models.ForeignKey(User, models.CASCADE, default=default_user)
     number = models.IntegerField(default=default_number)
-    author = models.ForeignKey(Author, models.CASCADE, default=default_author)
     pub_date = models.DateTimeField('publication date', default=default_pub_date)
     size = models.IntegerField(default=15, editable=False)
     type = models.IntegerField(default=0, choices=PUZZLE_TYPES, editable=False)
     instructions = models.TextField(blank=True, null=True, editable=False)
     comments = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = (('user', 'number'),)
 
     def __str__(self):
         return str(self.number)
@@ -62,6 +60,10 @@ class Entry(models.Model):
     x = models.IntegerField()
     y = models.IntegerField()
     down = models.BooleanField('direction', choices=BOOL_DOWN, default=False)
+
+    class Meta:
+        verbose_name_plural = 'entries'
+
     def __str__(self):
         return self.answer
 

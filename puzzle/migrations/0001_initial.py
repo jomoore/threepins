@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('type', models.IntegerField(choices=[(0, 'Blocked'), (1, 'Barred')], editable=False, default=0)),
                 ('instructions', models.TextField(blank=True, null=True, editable=False)),
                 ('comments', models.TextField(blank=True)),
-                ('author', models.ForeignKey(to='puzzle.Author', on_delete=models.CASCADE, default=puzzle.models.default_author)),
+                ('author', models.ForeignKey(to='puzzle.Author', on_delete=models.CASCADE, null=True)),
             ],
         ),
         migrations.AddField(
