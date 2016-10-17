@@ -1,5 +1,5 @@
 """
-Generate an RSS feed of published crosswords.
+Generate an RSS feed of published crosswords from staff users.
 
 Uses the built-in feed framework. There's no attempt to send the actual
 crossword, it's just a message indicating that a new one is available.
@@ -11,7 +11,7 @@ from django.utils import timezone
 from puzzle.models import Puzzle
 
 class PuzzleFeed(Feed):
-    """Everything is built into the framework, so there's not much to say about it."""
+    """RSS feed of new puzzles from the staff."""
     #pylint: disable=no-self-use,missing-docstring
 
     title = 'Three Pins'
@@ -19,7 +19,8 @@ class PuzzleFeed(Feed):
     description = 'A cryptic crossword outlet.'
 
     def items(self):
-        return Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
+        return Puzzle.objects.filter(user__is_staff=True,
+                                     pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
 
     def item_title(self, item):
         return 'Crossword #' + str(item.number)

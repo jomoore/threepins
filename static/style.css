@@ -33,6 +33,9 @@ nav li { display: inline; white-space: nowrap; }
 #contact input.send-button { width: 6em; float: right; clear: both; margin-right: 18.5%; }
 #contact input:focus, #contact textarea:focus { border: 2px solid #336600; }
 
+/* User List */
+#user-list h3 { text-align: center; font-weight: bold; font-size: 1.2em; padding-bottom: 0.2em; }
+
 /* Grid */
 #grid { text-align: center; position: relative; }
 #grid > input { opacity: 0; z-index: -1; position: absolute; top: 0px; left: -500px; }

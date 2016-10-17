@@ -606,6 +606,16 @@ var GridModule = (function() {
 
 		/* --- Initialisation --- */
 
+		// Temporary - if there is a solution cached using an older naming scheme, update it.
+		var migrateLocalStorage = function(puzzleNumber) {
+			var oldStorageName = 'puzzle' + puzzleNumber;
+			var storage = localStorage.getItem(oldStorageName);
+			if (storage) {
+				localStorage.setItem('solve-Cyborg-' + puzzleNumber, storage);
+				localStorage.removeItem(oldStorageName);
+			}
+		};
+
 		this.loadGrid = function(container) {
 			var x, y;
 			for (x = 0; x < size; x++) {
@@ -625,7 +635,9 @@ var GridModule = (function() {
 				}
 			}
 
-			storageName = 'puzzle' + container.getAttribute('data-number');
+			var puzzleNumber = container.getAttribute('data-number');
+			storageName = 'solve-' + container.getAttribute('data-author') + '-' + puzzleNumber;
+			migrateLocalStorage(puzzleNumber);
 		};
 	}
 

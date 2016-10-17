@@ -18,15 +18,22 @@ from visitors.models import Visitor
 
 def get_user():
     """Helper to get the first user in the database, creating one if necessary."""
-    if User.objects.count():
-        return User.objects.first()
+    if User.objects.filter(is_superuser=False).count():
+        return User.objects.get(is_superuser=False)
     else:
         return User.objects.create_user('test', 'test@example.com', 'password')
+
+def get_superuser():
+    """Helper to get the superuser, creating one if necessary."""
+    if User.objects.filter(is_superuser=True).count():
+        return User.objects.get(is_superuser=True)
+    else:
+        return User.objects.create_superuser('super', 'super@example.com', 'password')
 
 def create_small_puzzle():
     """Helper to insert a 3x3 puzzle into the database."""
     size = 3
-    puzzle = Puzzle.objects.create(size=size, user=get_user())
+    puzzle = Puzzle.objects.create(size=size, user=get_superuser())
     Entry.objects.create(puzzle=puzzle, clue='1a', answer='ab c', x=0, y=0, down=False)
     Entry.objects.create(puzzle=puzzle, clue='3a', answer='x-yz', x=0, y=2, down=False)
     Entry.objects.create(puzzle=puzzle, clue='1d', answer='amx', x=0, y=0, down=True)
@@ -40,16 +47,17 @@ def create_puzzle_range():
         puzzle.pub_date = timezone.now() + timedelta(days=i)
         puzzle.save()
 
-def create_empty_puzzle(number, pub_date):
-    """Helper to add an empty puzzle to the database."""
-    return Puzzle.objects.create(number=number, user=get_user(), pub_date=pub_date)
+def create_empty_staff_puzzle(number, pub_date):
+    """Helper to add an empty puzzle belonging to staff to the database."""
+    return Puzzle.objects.create(number=number, user=get_superuser(), pub_date=pub_date)
+
 
 class PuzzleModelTests(TestCase):
     """Tests for new puzzle creation."""
 
     def test_default_user(self):
         """Check that the default user is applied to a new puzzle."""
-        User.objects.create_superuser('super', 'super@example.com', 'password')
+        get_superuser()
         puz = Puzzle.objects.create(number=0, pub_date=timezone.now())
         self.assertEqual(puz.user.username, 'super')
 
@@ -86,9 +94,9 @@ class FeedTests(TestCase):
 
     def test_most_recent_first(self):
         """Check that the RSS feed appears in reverse chronological order."""
-        create_empty_puzzle(0, timezone.now() - timedelta(days=2))
-        create_empty_puzzle(1, timezone.now() - timedelta(days=1))
-        create_empty_puzzle(2, timezone.now())
+        create_empty_staff_puzzle(0, timezone.now() - timedelta(days=2))
+        create_empty_staff_puzzle(1, timezone.now() - timedelta(days=1))
+        create_empty_staff_puzzle(2, timezone.now())
         feed = PuzzleFeed()
         self.assertEqual(feed.items()[0].number, 2)
         self.assertEqual(feed.items()[1].number, 1)
@@ -96,9 +104,9 @@ class FeedTests(TestCase):
 
     def test_published_puzzles_only(self):
         """Check that unpublished puzzles don't appear in the feed."""
-        create_empty_puzzle(0, timezone.now() - timedelta(days=1))
-        create_empty_puzzle(1, timezone.now())
-        create_empty_puzzle(2, timezone.now() + timedelta(days=1))
+        create_empty_staff_puzzle(0, timezone.now() - timedelta(days=1))
+        create_empty_staff_puzzle(1, timezone.now())
+        create_empty_staff_puzzle(2, timezone.now() + timedelta(days=1))
         feed = PuzzleFeed()
         self.assertEqual(feed.items().count(), 2)
         self.assertEqual(feed.items()[0].number, 1)
@@ -109,9 +117,18 @@ class FeedTests(TestCase):
         num_puzzles = 10
         limit = 5
         for i in range(num_puzzles):
-            create_empty_puzzle(i, timezone.now() - timedelta(days=num_puzzles - i))
+            create_empty_staff_puzzle(i, timezone.now() - timedelta(days=num_puzzles - i))
         feed = PuzzleFeed()
         self.assertEqual(feed.items().count(), limit)
+
+    def test_staff_only(self):
+        """Check that puzzles created by normal users don't appear in the feed."""
+        pub_date = timezone.now()
+        Puzzle.objects.create(number=0, user=get_superuser(), pub_date=pub_date)
+        Puzzle.objects.create(number=1, user=get_user(), pub_date=pub_date)
+        feed = PuzzleFeed()
+        self.assertEqual(feed.items().count(), 1)
+        self.assertEqual(feed.items()[0].number, 0)
 
 
 class GridCreationTests(TestCase):
@@ -235,9 +252,8 @@ class PuzzleViewTests(TestCase):
 
     def log_in_super_user(self):
         """Helper function to create and log in a superuser."""
-        password = 'password'
-        superuser = User.objects.create_superuser('super', 'super@example.com', password)
-        self.client.login(username=superuser.username, password=password)
+        get_superuser()
+        self.client.login(username='super', password='password')
 
     def log_out_super_user(self):
         """Helper function to log out the superuser."""
@@ -276,7 +292,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, '<meta name="description" content="A free interactive site')
         self.assertContains(response, '&lt; Previous')
         self.assertNotContains(response, 'Next &gt;')
-        self.assertContains(response, reverse('solution', args=[2]))
+        self.assertContains(response, reverse('solution', args=['super', 2]))
 
     def test_home_page_contains_latest(self):
         """Check that the puzzle number matches the latest published puzzle in the database."""
@@ -295,88 +311,88 @@ class PuzzleViewTests(TestCase):
     def test_puzzle_without_previous(self):
         """Check that there is no 'previous' link when showing the very first puzzle."""
         create_puzzle_range()
-        response = self.client.get(reverse('puzzle', args=[0]))
+        response = self.client.get(reverse('puzzle', args=['super', 0]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="0"')
         self.assertNotContains(response, '&lt; Previous')
         self.assertContains(response, 'Next &gt;')
-        self.assertContains(response, '<title>Three Pins - Crossword #0</title>')
+        self.assertContains(response, '<title>Three Pins - Crossword #0 | super</title>')
 
     def test_next_and_previous(self):
         """Check that 'next' and 'previous' links are present when possible."""
         create_puzzle_range()
-        response = self.client.get(reverse('puzzle', args=[1]))
+        response = self.client.get(reverse('puzzle', args=['super', 1]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="1"')
         self.assertContains(response, '&lt; Previous')
         self.assertContains(response, 'Next &gt;')
-        self.assertContains(response, '<title>Three Pins - Crossword #1</title>')
+        self.assertContains(response, '<title>Three Pins - Crossword #1 | super</title>')
 
     def test_future_inaccessible(self):
         """Check that requests for unpublished puzzles receive a 404."""
         create_puzzle_range()
-        response = self.client.get(reverse('puzzle', args=[3]))
+        response = self.client.get(reverse('puzzle', args=['super', 3]))
         self.assertEqual(response.status_code, 404)
 
     def test_preview_requires_login(self):
         """Check that preview URLs redirect to a login page."""
         create_puzzle_range()
-        response = self.client.get(reverse('preview', args=[3]))
-        self.assertRedirects(response, '/admin/login/?next=/puzzle/preview/3/')
+        response = self.client.get(reverse('preview', args=['super', 3]))
+        self.assertRedirects(response, '/admin/login/?next=/users/super/preview/3/')
 
     def test_preview_future_puzzle(self):
         """Check that previews are visible to a logged in superuser."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview', args=[3]))
+        response = self.client.get(reverse('preview', args=['super', 3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertNotContains(response, 'class="letter"')
-        self.assertContains(response, '<title>Three Pins - Preview #3</title>')
+        self.assertContains(response, '<title>Three Pins - Preview #3 | super</title>')
         self.log_out_super_user()
 
     def test_solution_available(self):
         """Check that solutions are rendered into the solution page."""
         create_puzzle_range()
-        response = self.client.get(reverse('solution', args=[2]))
+        response = self.client.get(reverse('solution', args=['super', 2]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="2"')
         self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
-        self.assertContains(response, '<title>Three Pins - Solution #2</title>')
+        self.assertContains(response, '<title>Three Pins - Solution #2 | super</title>')
 
     def test_preview_solution_available(self):
         """Check that solutions are rendered into the preview solution page."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview_solution', args=[3]))
+        response = self.client.get(reverse('preview_solution', args=['super', 3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
-        self.assertContains(response, '<title>Three Pins - Solution #3</title>')
+        self.assertContains(response, '<title>Three Pins - Solution #3 | super</title>')
         self.log_out_super_user()
 
     def test_invalid_puzzle(self):
         """Check that an invalid puzzle number results in a 404."""
         create_puzzle_range()
-        response = self.client.get(reverse('puzzle', args=[100]))
+        response = self.client.get(reverse('puzzle', args=['super', 100]))
         self.assertEqual(response.status_code, 404)
 
     def test_invalid_solution(self):
         """Check that an invalid solution number results in a 404."""
         create_puzzle_range()
-        response = self.client.get(reverse('solution', args=[100]))
+        response = self.client.get(reverse('solution', args=['super', 100]))
         self.assertEqual(response.status_code, 404)
 
     def test_invalid_preview(self):
         """Check that an invalid preview number results in a 404."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview', args=[100]))
+        response = self.client.get(reverse('preview', args=['super', 100]))
         self.assertEqual(response.status_code, 404)
         self.log_out_super_user()
 
@@ -384,23 +400,23 @@ class PuzzleViewTests(TestCase):
         """Check that an invalid preview solution number results in a 404."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview_solution', args=[100]))
+        response = self.client.get(reverse('preview_solution', args=['super', 100]))
         self.assertEqual(response.status_code, 404)
         self.log_out_super_user()
 
-    def test_index_list(self):
-        """Check that the archive page lists all published puzzles."""
+    def test_user_list(self):
+        """Check that the user page lists all published puzzles."""
         create_puzzle_range()
-        response = self.client.get(reverse('index'))
-        self.assertNotContains(response, reverse('puzzle', args=[4]))
-        self.assertNotContains(response, reverse('puzzle', args=[3]))
-        self.assertContains(response, reverse('puzzle', args=[2]))
-        self.assertContains(response, reverse('puzzle', args=[1]))
-        self.assertContains(response, reverse('puzzle', args=[0]))
+        response = self.client.get(reverse('users'))
+        self.assertNotContains(response, reverse('puzzle', args=['super', 4]))
+        self.assertNotContains(response, reverse('puzzle', args=['super', 3]))
+        self.assertContains(response, reverse('puzzle', args=['super', 2]))
+        self.assertContains(response, reverse('puzzle', args=['super', 1]))
+        self.assertContains(response, reverse('puzzle', args=['super', 0]))
 
     def test_empty_index_list(self):
         """Check that the archive page still works if there are no puzzles in the database."""
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('users'))
         self.assertEqual(response.status_code, 200)
 
 

@@ -5,13 +5,13 @@
 {% endblock %}
 
 {% block prev %}
-<a href="{% url 'preview' prev_puzzle %}">&lt; Previous</a>
+<a href="{% url 'preview' author prev_puzzle %}">&lt; Previous</a>
 {% endblock %}
 
 {% block next %}
-<a href="{% url 'preview' next_puzzle %}">Next &gt;</a>
+<a href="{% url 'preview' author next_puzzle %}">Next &gt;</a>
 {% endblock %}
 
 {% block solution %}
-<a href="{% url 'preview_solution' number %}">Solution</a>
+<a href="{% url 'preview_solution' author number %}">Solution</a>
 {% endblock %}

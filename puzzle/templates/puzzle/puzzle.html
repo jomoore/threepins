@@ -8,13 +8,13 @@
 {% block nav %}
 <li>
 	{% if prev_puzzle >= 0 %}
-	{% block prev %}<a href="{% url 'puzzle' prev_puzzle %}">&lt; Previous</a>{% endblock %}
+	{% block prev %}<a href="{% url 'puzzle' author prev_puzzle %}">&lt; Previous</a>{% endblock %}
 	{% endif %}
 </li>
 {{ block.super }}
 <li>
 	{% if next_puzzle %}
-	{% block next %}<a href="{% url 'puzzle' next_puzzle %}">Next &gt;</a>{% endblock %}
+	{% block next %}<a href="{% url 'puzzle' author next_puzzle %}">Next &gt;</a>{% endblock %}
 	{% endif %}
 </li>
 {% endblock %}
@@ -23,7 +23,7 @@
 <div class="puzzle" role="main">
 	<div id="grid-wrapper">
 		<h3>&#35;{{ number }} - {{ date }} - by {{ author }}</h3>
-		<div id="grid" data-number="{{ number }}">
+		<div id="grid" data-number="{{ number }}" data-author="{{ author }}">
 			<input id="ip" type="text" autocomplete="off">
 			{% for row in grid %}
 			{% for square in row %}
@@ -46,7 +46,7 @@
 		</div>
 		<div class="buttons">
         	{% block solution %}
-			<a href="{% url 'solution' number %}">Solution</a>
+			<a href="{% url 'solution' author number %}">Solution</a>
 	        {% endblock %}
 		</div>
 	</div>

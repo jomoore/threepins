@@ -48,9 +48,9 @@ class Puzzle(models.Model):
     def get_absolute_url(self):
         """Link to go from the puzzle's admin page to the puzzle itself."""
         if self.pub_date > timezone.now():
-            return reverse('preview', args=[self.number])
+            return reverse('preview', args=[self.user.username, self.number])
         else:
-            return reverse('puzzle', args=[self.number])
+            return reverse('puzzle', args=[self.user.username, self.number])
 
 class Entry(models.Model):
     """Individual clue/answer entries within a puzzle."""

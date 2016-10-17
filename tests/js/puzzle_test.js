@@ -26,7 +26,7 @@ var Builder = (function() {
 
 	/* Create a grid entirely with lights */
 	var createEmpty = function(size) {
-		localStorage.removeItem('puzzle1');
+		localStorage.removeItem('solve-Cyborg-1');
 		for (var y = 0; y < size; y++) {
 			for (var x = 0; x < size; x++) {
 				var div = document.createElement('div');
@@ -756,6 +756,7 @@ QUnit.test('Show answer', function(assert) {
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, 'Grid created');
 
+	grid.clearAll();
 	grid.activateClicked(nodeList.gridItem(0, 0));
 	grid.showAnswer();
 
@@ -1134,4 +1135,20 @@ QUnit.test('Remember peek', function(assert) {
 	grid = recreateGrid(size, nodeList, assert);
 	assert.ok(grid, 'Grid recreated');
 	assert.letterEqual(nodeList.gridItem(0, 0), 'A', 'Correct letter preserved');
+});
+
+QUnit.test('Migrate storage name', function(assert) {
+	var size = 3;
+	localStorage.setItem('puzzle1', 'HAM.....');
+
+	var nodeList = Builder.createAlternating(size, 1);
+	var grid = createGrid(size, Builder.fixture);
+	assert.ok(grid, 'Grid created');
+
+	assert.letterEqual(nodeList.gridItem(0, 0), 'H', 'Correct letter preserved');
+	assert.letterEqual(nodeList.gridItem(1, 0), 'A', 'Correct letter preserved');
+	assert.letterEqual(nodeList.gridItem(2, 0), 'M', 'Correct letter preserved');
+
+	// Clear storage because other tests get upset when the grid size doesn't match
+	localStorage.removeItem('solve-Cyborg-1');
 });

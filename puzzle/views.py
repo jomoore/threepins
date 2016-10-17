@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.http import Http404
 from django.views.decorators.gzip import gzip_page
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User
 from puzzle.models import Puzzle, Entry, Blank, Block
 from visitors.models import save_request
 
@@ -91,76 +92,65 @@ def display_puzzle(request, obj, title, description, template):
     grid = create_grid(obj, 15)
     across_clues = get_clues(obj, grid, False)
     down_clues = get_clues(obj, grid, True)
-    next_puzzle = int(obj.number) + 1
-    prev_puzzle = int(obj.number) - 1
 
-    if prev_puzzle < 0:
-        prev_puzzle = None
-
+    prev_puzzle = Puzzle.objects.filter(user=obj.user, number__lt=obj.number).order_by('-number')
     if 'preview' in template:
-        if Puzzle.objects.filter(number=next_puzzle).count() == 0:
-            next_puzzle = None
-    elif Puzzle.objects.filter(number=next_puzzle, pub_date__lte=timezone.now()).count() == 0:
-        next_puzzle = None
+        next_puzzle = Puzzle.objects.filter(user=obj.user, number__gt=obj.number).order_by('number')
+    else:
+        next_puzzle = Puzzle.objects.filter(user=obj.user, number__gt=obj.number,
+                                            pub_date__lte=timezone.now()).order_by('number')
 
     save_request(request)
 
     context = {'title': title, 'description': description, 'number': obj.number,
                'date': get_date_string(obj), 'author': obj.user.username, 'grid': grid,
                'across_clues': across_clues, 'down_clues': down_clues,
-               'next_puzzle': next_puzzle, 'prev_puzzle': prev_puzzle}
+               'next_puzzle': next_puzzle[0].number if next_puzzle else None,
+               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None}
     return render(request, template, context)
 
 @gzip_page
 def latest(request):
     """Show the latest published puzzle."""
-    obj = Puzzle.objects.filter(pub_date__lte=timezone.now()).latest('pub_date')
+    obj = Puzzle.objects.filter(user__is_staff=True,
+                                pub_date__lte=timezone.now()).latest('pub_date')
     title = 'A cryptic crossword outlet'
     description = 'A free interactive site dedicated to amateur cryptic crosswords. '
     description += 'Solve online or on paper.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
 @gzip_page
-def puzzle(request, number):
+def puzzle(request, user, number):
     """Show a puzzle by puzzle number."""
-    obj = get_object_or_404(Puzzle, number=number)
-    title = 'Crossword #' + number
-    description = 'Crossword #' + number + ', first published on ' + get_date_string(obj) + '.'
+    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    title = 'Crossword #' + number + ' | ' + user
+    description = 'Crossword #' + number + 'by ' + user + ', first published on ' + \
+                  get_date_string(obj) + '.'
     if obj.pub_date > timezone.now():
         raise Http404
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
-def solution(request, number):
+def solution(request, user, number):
     """Show a solution by puzzle number."""
-    obj = get_object_or_404(Puzzle, number=number)
-    title = 'Solution #' + number
+    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    title = 'Solution #' + number + ' | ' + user
     if obj.pub_date > timezone.now():
         raise Http404
     return display_puzzle(request, obj, title, title, 'puzzle/solution.html')
 
 @staff_member_required
-def preview(request, number):
+def preview(request, user, number):
     """Preview an unpublished puzzle."""
-    obj = get_object_or_404(Puzzle, number=number)
-    title = 'Preview #' + number
+    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    title = 'Preview #' + number + ' | ' + user
     return display_puzzle(request, obj, title, title, 'puzzle/preview.html')
 
 @staff_member_required
-def preview_solution(request, number):
+def preview_solution(request, user, number):
     """Preview the solution of an unpublished puzzle."""
-    obj = get_object_or_404(Puzzle, number=number)
-    title = 'Solution #' + number
+    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    title = 'Solution #' + number + ' | ' + user
     return display_puzzle(request, obj, title, title, 'puzzle/preview_solution.html')
-
-def index(request):
-    """Show a list of all published puzzles."""
-    puzzles = Puzzle.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')
-    info = []
-    for puz in puzzles:
-        info.append({'number': puz.number, 'author': puz.user.username,
-                     'date': get_date_string(puz)})
-    context = {'puzzles': info}
-    return render(request, 'puzzle/index.html', context)
 
 @gzip_page
 def create(request):
@@ -171,3 +161,15 @@ def create(request):
         thumbs.append(create_thumbnail(blank, 10))
     context = {'thumbs': thumbs}
     return render(request, 'puzzle/create.html', context)
+
+def users(request):
+    """Show a list of users and their puzzles."""
+    context = {'user_list': []}
+    for user in User.objects.all().order_by('username'):
+        objs = Puzzle.objects.filter(user=user, pub_date__lte=timezone.now()).order_by('-pub_date')
+        if objs:
+            puzzle_list = []
+            for puz in objs:
+                puzzle_list.append({'number': puz.number, 'date': get_date_string(puz)})
+            context['user_list'].append({'name': user.username, 'puzzles': puzzle_list})
+    return render(request, 'puzzle/users.html', context)
