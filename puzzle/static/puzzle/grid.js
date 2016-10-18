@@ -48,6 +48,8 @@ var ClassShim = (function() {
 	};
 })();
 
+
+/* exported GridModule */
 var GridModule = (function() {
 	function Entry(x, y, down, length, target) {
 		this.set = function(x, y, down, length, target) {
@@ -233,7 +235,7 @@ var GridModule = (function() {
 			var y = active.y;
 			var down = active.down;
 
-			while (true) {
+			for (;;) {
 				x++;
 
 				if (x >= size) {
@@ -259,7 +261,7 @@ var GridModule = (function() {
 			var y = active.y;
 			var down = active.down;
 
-			while (true) {
+			for (;;) {
 				x--;
 
 				if (x < 0) {

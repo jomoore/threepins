@@ -452,6 +452,7 @@ var Storage = (function() {
 })();
 
 
+/* exported PuzzleCreator */
 var PuzzleCreator = (function() {
 	var gridBox;
 	var suggestionBox;
