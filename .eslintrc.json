@@ -1,7 +1,7 @@
 {
     "env": {
         "browser": true,
-		"qunit": true
+        "qunit": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -21,20 +21,20 @@
             "error",
             "always"
         ],
-		"no-mixed-spaces-and-tabs": [
-			"error",
-			"smart-tabs"
-		]
+        "no-mixed-spaces-and-tabs": [
+            "error",
+            "smart-tabs"
+        ]
     },
-	"globals": {
-		"saveAs": false,
-		"ClassShim": false,
-		"GridModule": false,
-		"GridCreator": false,
-		"Suggestor": false,
-		"ClueCreator": false,
-		"Display": false,
-		"Storage": false,
-		"PuzzleCreator": false
-	}
+    "globals": {
+        "saveAs": false,
+        "ClassShim": false,
+        "GridModule": false,
+        "GridCreator": false,
+        "Suggestor": false,
+        "ClueCreator": false,
+        "Display": false,
+        "Storage": false,
+        "PuzzleCreator": false
+    }
 }
