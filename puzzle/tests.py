@@ -76,16 +76,10 @@ class PuzzleModelTests(TestCase):
         self.assertEqual(puz.pub_date.hour, 0)
         self.assertEqual(puz.pub_date.second, 0)
 
-    def test_published_puzzle_url(self):
-        """Check the absolute URL for a published puzzle."""
+    def test_puzzle_url(self):
+        """Check the absolute URL for a puzzle."""
         puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now())
-        self.assertNotIn('preview', puz.get_absolute_url())
-        self.assertIn(str(puz.number), puz.get_absolute_url())
-
-    def test_preview_puzzle_url(self):
-        """Check the absolute URL for an unpublished puzzle."""
-        puz = Puzzle.objects.create(user=get_user(), pub_date=timezone.now() + timedelta(days=1))
-        self.assertIn('preview', puz.get_absolute_url())
+        self.assertIn(get_user().username, puz.get_absolute_url())
         self.assertIn(str(puz.number), puz.get_absolute_url())
 
 
@@ -331,27 +325,32 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, '<title>Three Pins - Crossword #1 | super</title>')
 
     def test_future_inaccessible(self):
-        """Check that requests for unpublished puzzles receive a 404."""
+        """Check that requests for unpublished puzzles by other authors receive a 403."""
         create_puzzle_range()
+        get_user()
+        self.client.login(username='test', password='password')
         response = self.client.get(reverse('puzzle', args=['super', 3]))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse('solution', args=['super', 3]))
+        self.assertEqual(response.status_code, 403)
+        self.client.logout()
 
     def test_preview_requires_login(self):
-        """Check that preview URLs redirect to a login page."""
+        """Check that unpublished puzzles require login."""
         create_puzzle_range()
-        response = self.client.get(reverse('preview', args=['super', 3]))
-        self.assertRedirects(response, '/admin/login/?next=/users/super/preview/3/')
+        response = self.client.get(reverse('puzzle', args=['super', 3]))
+        self.assertRedirects(response, '/admin/login/?next=/users/super/3/')
 
     def test_preview_future_puzzle(self):
         """Check that previews are visible to a logged in superuser."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview', args=['super', 3]))
+        response = self.client.get(reverse('puzzle', args=['super', 3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertNotContains(response, 'class="letter"')
-        self.assertContains(response, '<title>Three Pins - Preview #3 | super</title>')
+        self.assertContains(response, '<title>Three Pins - Crossword #3 | super</title>')
         self.log_out_super_user()
 
     def test_solution_available(self):
@@ -368,7 +367,7 @@ class PuzzleViewTests(TestCase):
         """Check that solutions are rendered into the preview solution page."""
         create_puzzle_range()
         self.log_in_super_user()
-        response = self.client.get(reverse('preview_solution', args=['super', 3]))
+        response = self.client.get(reverse('solution', args=['super', 3]))
         self.assertContains(response, 'class="puzzle"')
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
@@ -387,22 +386,6 @@ class PuzzleViewTests(TestCase):
         create_puzzle_range()
         response = self.client.get(reverse('solution', args=['super', 100]))
         self.assertEqual(response.status_code, 404)
-
-    def test_invalid_preview(self):
-        """Check that an invalid preview number results in a 404."""
-        create_puzzle_range()
-        self.log_in_super_user()
-        response = self.client.get(reverse('preview', args=['super', 100]))
-        self.assertEqual(response.status_code, 404)
-        self.log_out_super_user()
-
-    def test_invalid_preview_solution(self):
-        """Check that an invalid preview solution number results in a 404."""
-        create_puzzle_range()
-        self.log_in_super_user()
-        response = self.client.get(reverse('preview_solution', args=['super', 100]))
-        self.assertEqual(response.status_code, 404)
-        self.log_out_super_user()
 
     def test_user_list(self):
         """Check that the user page lists all published puzzles."""

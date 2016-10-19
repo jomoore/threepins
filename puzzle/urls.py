@@ -14,8 +14,5 @@ urlpatterns = [ #pylint: disable=invalid-name
     url(r'^users/(?P<user>\w+)/', include([
         url(r'^(?P<number>\d+)/$', views.puzzle, name='puzzle'),
         url(r'^(?P<number>\d+)/solution/$', views.solution, name='solution'),
-        url(r'^preview/(?P<number>\d+)/$', views.preview, name='preview'),
-        url(r'^preview/(?P<number>\d+)/solution/$', views.preview_solution,
-            name='preview_solution'),
     ])),
 ]
