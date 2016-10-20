@@ -1,0 +1,48 @@
+{% extends "puzzle/create.html" %}
+{% load staticfiles %}
+
+{% block meta %}
+<meta name="robots" content="noindex">
+{% endblock %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block description %}{{ description }}{% endblock %}
+
+{% block loading %}{% endblock %}
+
+{% block render_grid %}
+{% for row in grid %}
+{% for square in row %}
+<div data-x="{{ square.col }}" data-y="{{ square.row }}"
+	 {% if square.letter %}
+	 data-a="{{ square.letter }}"
+	 {% endif %}
+	 class="{{ square.type }}">
+	{% if 'block' in square.type %}
+	<img src="{% static 'images/grey-px.png' %}" alt="block" />
+	{% endif %}
+	{% if square.number %}
+	<div class="grid-number">{{ square.number }}</div>
+	{% endif %}
+	{% if square.letter %}
+	<span class="letter">{{ square.letter }}</span>
+	{% endif %}
+</div>
+{% endfor %}
+{% endfor %}
+{% endblock %}
+
+{% block across_clues %}
+{% for c in across_clues %}
+<li class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
+{% endfor %}
+{% endblock %}
+
+{% block down_clues %}
+{% for c in down_clues %}
+<li class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
+{% endfor %}
+{% endblock %}
+
+

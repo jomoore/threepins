@@ -372,7 +372,7 @@ var GridModule = (function() {
 		};
 
 		var saveLetters = function() {
-			if (window.localStorage) {
+			if (window.localStorage && storageName) {
 				var letters = '';
 				var nonEmpty = false;
 
@@ -394,7 +394,7 @@ var GridModule = (function() {
 		};
 
 		this.loadLetters = function() {
-			if (window.localStorage) {
+			if (window.localStorage && storageName) {
 				var letters = localStorage.getItem(storageName);
 				if (letters) {
 					var i = 0;
@@ -618,7 +618,7 @@ var GridModule = (function() {
 			}
 		};
 
-		this.loadGrid = function(container) {
+		this.loadGrid = function(container, storage) {
 			var x, y;
 			for (x = 0; x < size; x++) {
 				grid[x] = [];
@@ -637,9 +637,9 @@ var GridModule = (function() {
 				}
 			}
 
-			var puzzleNumber = container.getAttribute('data-number');
-			storageName = 'solve-' + container.getAttribute('data-author') + '-' + puzzleNumber;
-			migrateLocalStorage(puzzleNumber);
+			storageName = storage;
+			if (window.localStorage && storageName)
+				migrateLocalStorage(container.getAttribute('data-number'));
 		};
 	}
 
@@ -763,7 +763,9 @@ var GridModule = (function() {
 
 	/* The page initially contains a link to the solution in case Javascript is disabled.
 	 * Since it's enabled, we can remove the link and provide some buttons instead. */
-	var makeButtonBox = function(grid, div) {
+	var makeButtonBox = function(grid, div, editUrl, editCookie) {
+		div.innerHTML = '';
+
 		var checkButton = document.createElement('button');
 		checkButton.innerHTML = 'Check';
 		checkButton.addEventListener('click', function() {
@@ -804,7 +806,18 @@ var GridModule = (function() {
 			div.appendChild(solutionButton);
 		});
 
-		div.innerHTML = '';
+		if (editUrl) {
+			var editButton = document.createElement('button');
+			editButton.innerHTML = 'Edit Puzzle';
+			editButton.addEventListener('click', function() {
+				if (window.localStorage)
+					localStorage.removeItem(editCookie);
+				window.location.href = editUrl;
+			});
+
+			div.appendChild(editButton);
+		}
+
 		div.appendChild(checkButton);
 		div.appendChild(peekButton);
 		div.appendChild(printButton);

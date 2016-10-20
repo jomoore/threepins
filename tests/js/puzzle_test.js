@@ -304,7 +304,7 @@ QUnit.module('Grid selection');
 // Helper to create a grid and load its content from the page
 var createGrid = function(size, fixture) {
 	var grid = new GridModule.Grid(size);
-	grid.loadGrid(fixture);
+	grid.loadGrid(fixture, 'solve-Cyborg-1');
 	grid.loadLetters();
 	return grid;
 };

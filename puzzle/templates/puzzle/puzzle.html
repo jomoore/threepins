@@ -76,12 +76,22 @@
 <script>
 	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
 	var grid = new GridModule.Grid(15);
-	grid.loadGrid(document.getElementById('grid'));
+	var storage = 'solve-{{ author }}-{{ number }}';
+	grid.loadGrid(document.getElementById('grid'), storage);
 	grid.loadLetters();
 
 	var input = new GridModule.GridInput(grid);
 	input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
-	GridModule.makeButtonBox(grid, document.getElementsByClassName('buttons')[0]);
+
+	var editUrl = undefined;
+	var editCookie = undefined;
+
+	{% if editable %}
+	editUrl = "{% url 'edit' author number %}";
+	editCookie = 'edit-{{ author }}-{{ number }}';
+	{% endif %}
+
+	GridModule.makeButtonBox(grid, document.getElementsByClassName('buttons')[0], editUrl, editCookie);
 
 	var squares = document.querySelectorAll('.block, .light');
 	for (var i = 0; i < squares.length; i++) {

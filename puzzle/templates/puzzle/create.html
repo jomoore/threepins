@@ -12,17 +12,19 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 {% block main %}
 <div class="puzzle" role="main">
 	<div id="grid-wrapper">
-		<div id="grid">
+		<div id="grid" data-number="{{ number }}" data-author="{{ author }}"> 
 			<input id="ip" type="text" autocomplete="off">
+			{% block loading %}
 			<div id="loading" class="instructions">
 				<p>Loading...</p>
 			</div>
+			{% endblock %}
 			<div id="choose-grid-message" class="instructions" style="display: none;">
 				<p>Welcome to the crossword composer!</p>
 				<p>Here, you can construct your own crossword interactively.</p>
 				<p class="pointy">To begin, choose a grid&nbsp;</p>
 			</div>
-			<!-- Selected grid is created here -->
+			{% block render_grid %}{% endblock %}
 		</div>
 		<div id="grid-assistant">
 			<div id="intro-message" class="instructions" style="display: none;">
@@ -45,13 +47,13 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		<div class="clue-box">
 			<h4>Across</h4>
 			<ul>
-				<!-- Clue entry fields are created here -->
+				{% block across_clues %}{% endblock %}
 			</ul>
 		</div>
 		<div class="clue-box">
 			<h4>Down</h4>
 			<ul>
-				<!-- Clue entry fields are created here -->
+				{% block down_clues %}{% endblock %}
 			</ul>
 		</div>
 		<div class="buttons">
@@ -59,7 +61,8 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
 			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
 			<button onclick="PuzzleCreator.downloadIpuz()">Download as ipuz</button>
-			<button onclick="PuzzleCreator.restart()">Start over</button>
+			<button id="cancel" onclick="PuzzleCreator.cancelEdit()">Cancel edit</button>
+			<button id="restart" onclick="PuzzleCreator.restart()">Start over</button>
 		</div>
 	</div>
 	<div id="help-text" style="display: none;">
@@ -104,9 +107,17 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 <script type="text/javascript" src="{% static 'puzzle/create.js' %}"></script>
 <script>
 	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
-	var wordListUrl = "{% static 'puzzle/wordlist.txt' %}";
-	var blockImgUrl = "{% static 'images/grey-px.png' %}"
-	PuzzleCreator.init(wordListUrl, blockImgUrl);
+	var wordListLocation = "{% static 'puzzle/wordlist.txt' %}";
+	var blockImgLocation = "{% static 'images/grey-px.png' %}";
+	var saveLocation = undefined;
+	var storage = undefined;
+
+	{% if number and author %}
+	var saveLocation = "{% url 'puzzle' author number %}";
+	var storage = "edit-{{ author }}-{{ number}}";
+	{% endif %}
+
+	PuzzleCreator.init(wordListLocation, blockImgLocation, saveLocation, storage);
 	// @license-end
 </script>
 {% endblock %}

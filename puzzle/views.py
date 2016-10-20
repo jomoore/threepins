@@ -134,6 +134,18 @@ def puzzle(request, user, number):
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
+@gzip_page
+def edit(request, user, number):
+    """Edit a saved crossword."""
+    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    if request.user != obj.user and not request.user.is_staff:
+       raise PermissionDenied
+    title = 'Edit Crossword #' + number + ' | ' + user
+    description = 'Edit crossword #' + number + 'by ' + user + ', first published on ' + \
+                  get_date_string(obj) + '.'
+    return display_puzzle(request, obj, title, description, 'puzzle/edit.html')
+
+@gzip_page
 def solution(request, user, number):
     """Show a solution by puzzle number."""
     obj = get_object_or_404(Puzzle, user__username=user, number=number)
@@ -147,7 +159,7 @@ def create(request):
     thumbs = []
     for blank in blanks:
         thumbs.append(create_thumbnail(blank, 10))
-    context = {'thumbs': thumbs}
+    context = {'thumbs': thumbs, 'number': None, 'author': None}
     return render(request, 'puzzle/create.html', context)
 
 def users(request):

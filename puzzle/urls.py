@@ -11,8 +11,9 @@ urlpatterns = [ #pylint: disable=invalid-name
     url(r'^create/$', views.create, name='create'),
     url(r'^rss/$', PuzzleFeed(), name='rss'),
     url(r'^users/$', views.users, name='users'),
-    url(r'^users/(?P<user>\w+)/', include([
-        url(r'^(?P<number>\d+)/$', views.puzzle, name='puzzle'),
-        url(r'^(?P<number>\d+)/solution/$', views.solution, name='solution'),
+    url(r'^users/(?P<user>\w+)/(?P<number>\d+)/', include([
+        url(r'^$', views.puzzle, name='puzzle'),
+        url(r'^solution/$', views.solution, name='solution'),
+        url(r'^edit/$', views.edit, name='edit'),
     ])),
 ]
