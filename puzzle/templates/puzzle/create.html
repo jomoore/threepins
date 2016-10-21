@@ -58,6 +58,12 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		</div>
 		<div class="buttons">
 			<button onclick="PuzzleCreator.openHelp()">Help</button>
+			<form action="{% url 'save' %}" method="post">{% csrf_token %}
+				<input type="hidden" name="author" id="post-author" value="{{ author }}">
+				<input type="hidden" name="number" id="post-number" value="{{ number }}">
+				<input type="hidden" name="ipuz" id="post-ipuz">
+				<button type="submit">Publish</button>
+			</form>
 			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
 			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
 			<button onclick="PuzzleCreator.downloadIpuz()">Download as ipuz</button>
@@ -114,7 +120,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 
 	{% if number and author %}
 	var saveLocation = "{% url 'puzzle' author number %}";
-	var storage = "edit-{{ author }}-{{ number}}";
+	var storage = "edit-{{ author }}-{{ number }}";
 	{% endif %}
 
 	PuzzleCreator.init(wordListLocation, blockImgLocation, saveLocation, storage);

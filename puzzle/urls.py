@@ -9,6 +9,7 @@ from puzzle.feeds import PuzzleFeed
 urlpatterns = [ #pylint: disable=invalid-name
     url(r'^$', views.latest, name='latest'),
     url(r'^create/$', views.create, name='create'),
+    url(r'^save/$', views.save, name='save'),
     url(r'^rss/$', PuzzleFeed(), name='rss'),
     url(r'^users/$', views.users, name='users'),
     url(r'^users/(?P<user>\w+)/(?P<number>\d+)/', include([

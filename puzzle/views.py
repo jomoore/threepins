@@ -5,9 +5,11 @@ Pull the details of puzzles and blank grids out of the database and
 wrangle them into their templates.
 """
 
-from re import sub
+import json
+from re import sub, split
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.utils.html import escape
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.gzip import gzip_page
@@ -115,6 +117,76 @@ def display_puzzle(request, obj, title, description, template):
                'editable': user_is_author}
     return render(request, template, context)
 
+def get_start_position(grid_data, clue_num):
+    """Find the start co-ordinates for a particular clue number."""
+    for y, row in enumerate(grid_data):
+        for x, cell in enumerate(row):
+            if cell == clue_num:
+                return {'x': x, 'y': y}
+
+def get_answer(puzzle_data, clue, down, pos):
+    """Extract the clue's answer from ipuz data."""
+    blockChar = '#' if 'block' not in puzzle_data.keys() else puzzle_data['block']
+    size = puzzle_data['dimensions']['width']
+    numeration = split('([-,])', clue['enumeration'])
+    x = pos['x']
+    y = pos['y']
+    answer = ''
+    group = 0
+
+    while x < size and y < size:
+        # Read one letter out of the solution array
+        letter = puzzle_data['solution'][y][x]
+        if letter == blockChar:
+            break
+        answer += letter
+
+        # Insert spaces and hypens based on the enumeration
+        if group < (len(numeration) - 1) and len(answer) == int(numeration[group]):
+            group += 1
+            if numeration[group] == ',':
+                answer += ' '
+            else:
+                answer += numeration[group]
+            group += 1
+
+        # Move along to the next letter
+        if down:
+            y += 1
+        else:
+            x += 1
+
+    return answer
+
+def save_puzzle(user, number, ipuz):
+    """Save a puzzle in ipuz format to the database."""
+    puzzle_data = json.loads(ipuz)
+
+    # Remove any old data
+    existing = Puzzle.objects.filter(user=user, number=number)
+    if existing:
+        existing.delete()
+
+    # Create a new puzzle
+    puz = Puzzle(user=user, number=number, pub_date=timezone.now(),
+                 size=puzzle_data['dimensions']['width'])
+    puz.save()
+
+    # Extract entries from the ipuz data
+    for entry in puzzle_data['clues']['Across']:
+        pos = get_start_position(puzzle_data['puzzle'], entry['number'])
+        answer = get_answer(puzzle_data, entry, False, pos)
+        entry = Entry(puzzle=puz, clue=escape(entry['clue']), answer=answer,
+                      x=pos['x'], y=pos['y'], down=False)
+        entry.save()
+
+    for entry in puzzle_data['clues']['Down']:
+        pos = get_start_position(puzzle_data['puzzle'], entry['number'])
+        answer = get_answer(puzzle_data, entry, True, pos)
+        entry = Entry(puzzle=puz, clue=escape(entry['clue']), answer=answer,
+                      x=pos['x'], y=pos['y'], down=True)
+        entry.save()
+
 @gzip_page
 def latest(request):
     """Show the latest published puzzle."""
@@ -139,7 +211,7 @@ def edit(request, user, number):
     """Edit a saved crossword."""
     obj = get_object_or_404(Puzzle, user__username=user, number=number)
     if request.user != obj.user and not request.user.is_staff:
-       raise PermissionDenied
+        raise PermissionDenied
     title = 'Edit Crossword #' + number + ' | ' + user
     description = 'Edit crossword #' + number + 'by ' + user + ', first published on ' + \
                   get_date_string(obj) + '.'
@@ -161,6 +233,29 @@ def create(request):
         thumbs.append(create_thumbnail(blank, 10))
     context = {'thumbs': thumbs, 'number': None, 'author': None}
     return render(request, 'puzzle/create.html', context)
+
+def save(request):
+    """Save a puzzle to the database, then redirect to show it."""
+    author = request.POST['author']
+    number = request.POST['number']
+    ipuz = request.POST['ipuz']
+
+    if not request.user.is_authenticated:
+        raise PermissionDenied
+
+    if author == 'None':
+        raise PermissionDenied
+
+    try:
+        user = User.objects.get(username=author)
+    except User.DoesNotExist:
+        raise PermissionDenied
+
+    if request.user.username != user.username:
+        raise PermissionDenied
+
+    save_puzzle(user, number, ipuz)
+    return redirect(reverse('puzzle', kwargs={'user': author, 'number': number}))
 
 def users(request):
     """Show a list of users and their puzzles."""

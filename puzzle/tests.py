@@ -403,6 +403,131 @@ class PuzzleViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class PuzzleEditTests(TestCase):
+    """Tests for creating and editing puzzles."""
+
+    def verify_entry(self, entry, expected):
+        """Helper to check that an individual entry matches expected parameters."""
+        self.assertEqual(entry.puzzle, expected['puzzle'])
+        self.assertEqual(entry.clue, expected['clue'])
+        self.assertEqual(entry.answer.upper(), expected['answer'].upper())
+        self.assertEqual(entry.x, expected['startx'])
+        self.assertEqual(entry.y, expected['starty'])
+        self.assertEqual(entry.down, expected['down'])
+
+    def test_anon_user_no_edit_link(self):
+        """Check that anonymous users don't see an edit link on the puzzle pages."""
+        create_puzzle_range()
+        response = self.client.get(reverse('puzzle', args=['super', 1]))
+        self.assertNotContains(response, reverse('edit', args=['super', 1]))
+
+    def test_wrong_user_no_edit_link(self):
+        """Check that users don't see an edit link on puzzles belonging to other authors."""
+        create_puzzle_range()
+        get_user()
+        self.client.login(username='test', password='password')
+        response = self.client.get(reverse('puzzle', args=['super', 1]))
+        self.assertNotContains(response, reverse('edit', args=['super', 1]))
+        self.client.logout()
+
+    def test_authorised_user_edit_link(self):
+        """Check that authors see an edit link on their puzzle pages."""
+        create_puzzle_range()
+        self.client.login(username='super', password='password')
+        response = self.client.get(reverse('puzzle', args=['super', 1]))
+        self.assertContains(response, reverse('edit', args=['super', 1]))
+        self.client.logout()
+
+    def test_wrong_user_no_edit_page(self):
+        """Check that users can't get to the edit page of other users' puzzles."""
+        create_puzzle_range()
+        get_user()
+        self.client.login(username='test', password='password')
+        response = self.client.get(reverse('edit', args=['super', 1]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_page_populated(self):
+        """Check that the puzzle is pre-populated with existing contents for editing."""
+        create_puzzle_range()
+        self.client.login(username='super', password='password')
+        response = self.client.get(reverse('edit', args=['super', 1]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.count('class="light'.encode('utf-8')), 8)
+        self.assertEqual(response.content.count('class="block'.encode('utf-8')), (15 * 15) - 8)
+        self.assertEqual(response.content.count('clue-number'.encode('utf-8')), 4)
+
+    def test_unauthorised_user_no_save(self):
+        """Make sure users can't POST data directly into other users' puzzles."""
+        get_user()
+        self.client.login(username='test', password='password')
+        response = self.client.post(reverse('save'), {'author': 'super', 'number': 1, 'ipuz': '{}'})
+        self.assertEqual(response.status_code, 403)
+        response = self.client.post(reverse('save'), {'author': 'notme', 'number': 1, 'ipuz': '{}'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_save_new_puzzle(self):
+        """Check that a valid POST of puzzle data gets stored in the database."""
+        ipuz = '{' \
+               '"version":"http://ipuz.org/v2","kind":["http://ipuz.org/crossword#1"],' \
+               '"dimensions":{"width":3,"height":3},"showenumerations":true,' \
+               '"puzzle":[[1,0,2],[0,"#",0],[3,0,0]],' \
+               '"clues":{' \
+               '"Across":[' \
+               '{"number":1,"clue":"1a","enumeration":"2,1"},' \
+               '{"number":3,"clue":"3a","enumeration":"3"}],' \
+               '"Down":[' \
+               '{"number":1,"clue":"1d","enumeration":"3"},' \
+               '{"number":2,"clue":"2d","enumeration":"1-2"}]},' \
+               '"solution":[["A","B","C"],["M","#","N"],["X","Y","Z"]]' \
+               '}'
+        user = get_user()
+        self.client.login(username='test', password='password')
+        response = self.client.post(reverse('save'), {'author': 'test', 'number': 1, 'ipuz': ipuz})
+        self.assertEqual(response.status_code, 302)
+        puz = Puzzle.objects.get(user=user, number=1)
+        entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')
+        self.assertEqual(len(entries), 4)
+        self.verify_entry(entries[0], {'puzzle': puz, 'clue': '1a', 'answer': 'ab c',
+                                       'startx': 0, 'starty': 0, 'down': False})
+        self.verify_entry(entries[1], {'puzzle': puz, 'clue': '3a', 'answer': 'xyz',
+                                       'startx': 0, 'starty': 2, 'down': False})
+        self.verify_entry(entries[2], {'puzzle': puz, 'clue': '1d', 'answer': 'amx',
+                                       'startx': 0, 'starty': 0, 'down': True})
+        self.verify_entry(entries[3], {'puzzle': puz, 'clue': '2d', 'answer': 'c-nz',
+                                       'startx': 2, 'starty': 0, 'down': True})
+        self.client.logout()
+
+    def test_update_existing_puzzle(self):
+        """Check that POSTed data can overwrite existing puzzle data."""
+        ipuz = '{' \
+               '"version":"http://ipuz.org/v2","kind":["http://ipuz.org/crossword#1"],' \
+               '"dimensions":{"width":3,"height":3},"showenumerations":true,' \
+               '"puzzle":[[1,0,2],[0,"#",0],[3,0,0]],' \
+               '"clues":{' \
+               '"Across":[' \
+               '{"number":1,"clue":"1a","enumeration":"2,1"},' \
+               '{"number":3,"clue":"3a","enumeration":"3"}],' \
+               '"Down":[' \
+               '{"number":1,"clue":"1d","enumeration":"3"},' \
+               '{"number":2,"clue":"2d","enumeration":"1-2"}]},' \
+               '"solution":[["D","E","F"],["M","#","N"],["X","Y","Z"]]' \
+               '}'
+        create_puzzle_range()
+        puz = Puzzle.objects.get(user=get_superuser(), number=1)
+        entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')
+        self.verify_entry(entries[0], {'puzzle': puz, 'clue': '1a', 'answer': 'ab c',
+                                       'startx': 0, 'starty': 0, 'down': False})
+
+        self.client.login(username='super', password='password')
+        response = self.client.post(reverse('save'), {'author': 'super', 'number': 1, 'ipuz': ipuz})
+        self.assertEqual(response.status_code, 302)
+        puz = Puzzle.objects.get(user=get_superuser(), number=1)
+        entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')
+        self.verify_entry(entries[0], {'puzzle': puz, 'clue': '1a', 'answer': 'de f',
+                                       'startx': 0, 'starty': 0, 'down': False})
+        self.client.logout()
+
+
 class PuzzleAdminTests(TestCase):
     """Tests for custom admin functionality."""
 

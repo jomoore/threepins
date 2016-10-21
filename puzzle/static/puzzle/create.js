@@ -464,7 +464,10 @@ var Storage = (function() {
 
 		saveLocal: function(grid, clueLists) {
 			var json = createIpuz(15, grid.getIpuzPuzzle(), grid.getIpuzSolution(),
-								  ClueCreator.getIpuzClues(clueLists[0]), ClueCreator.getIpuzClues(clueLists[1]));
+								  ClueCreator.getIpuzClues(clueLists[0]),
+								  ClueCreator.getIpuzClues(clueLists[1]));
+
+			document.getElementById('post-ipuz').value = json;
 			if (window.localStorage) {
 				localStorage.setItem(storageName, json);
 			}
@@ -472,10 +475,12 @@ var Storage = (function() {
 
 		loadLocal: function() {
 			var json = localStorage.getItem(storageName);
+			document.getElementById('post-ipuz').value = json;
 			return json && JSON.parse(json);
 		},
 
 		clearLocal: function() {
+			document.getElementById('post-ipuz').value = '';
 			localStorage.removeItem(storageName);
 		},
 	};
@@ -542,7 +547,7 @@ var PuzzleCreator = (function() {
 	var editPuzzle = function() {
 		Display.showClues();
 		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
-		ClueCreator.connectClues(clueLists)
+		ClueCreator.connectClues(clueLists);
 		Storage.saveLocal(grid, clueLists);
 		showIntro = false;
 	};
