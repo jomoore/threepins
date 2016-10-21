@@ -480,8 +480,8 @@ var Storage = (function() {
 		},
 
 		clearLocal: function() {
-			document.getElementById('post-ipuz').value = '';
 			localStorage.removeItem(storageName);
+			return true;
 		},
 	};
 })();

@@ -319,11 +319,12 @@ var GridModule = (function() {
 		var setLetter = function(x, y, letter) {
 			clearLetter(x, y);
 
-			var el = document.createElement('span');
-			ClassShim.addClass(el, 'letter');
-			el.innerHTML = letter.toUpperCase();
-
-			grid[x][y].div.appendChild(el);
+			if (letter) {
+				var el = document.createElement('span');
+				ClassShim.addClass(el, 'letter');
+				el.innerHTML = letter.toUpperCase();
+				grid[x][y].div.appendChild(el);
+			}
 		};
 
 		var revealLetter = function(x, y) {

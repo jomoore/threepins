@@ -482,7 +482,7 @@ class PuzzleEditTests(TestCase):
                '}'
         user = get_user()
         self.client.login(username='test', password='password')
-        response = self.client.post(reverse('save'), {'author': 'test', 'number': 1, 'ipuz': ipuz})
+        response = self.client.post(reverse('save'), {'author': '', 'number': '', 'ipuz': ipuz})
         self.assertEqual(response.status_code, 302)
         puz = Puzzle.objects.get(user=user, number=1)
         entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')
@@ -519,7 +519,7 @@ class PuzzleEditTests(TestCase):
                                        'startx': 0, 'starty': 0, 'down': False})
 
         self.client.login(username='super', password='password')
-        response = self.client.post(reverse('save'), {'author': 'super', 'number': 1, 'ipuz': ipuz})
+        response = self.client.post(reverse('save'), {'author': 'super', 'number': '1', 'ipuz': ipuz})
         self.assertEqual(response.status_code, 302)
         puz = Puzzle.objects.get(user=get_superuser(), number=1)
         entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')

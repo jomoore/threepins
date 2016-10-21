@@ -58,7 +58,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		</div>
 		<div class="buttons">
 			<button onclick="PuzzleCreator.openHelp()">Help</button>
-			<form action="{% url 'save' %}" method="post">{% csrf_token %}
+			<form action="{% url 'save' %}" method="post" onsubmit="Storage.clearLocal()">{% csrf_token %}
 				<input type="hidden" name="author" id="post-author" value="{{ author }}">
 				<input type="hidden" name="number" id="post-number" value="{{ number }}">
 				<input type="hidden" name="ipuz" id="post-ipuz">

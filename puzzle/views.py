@@ -44,7 +44,8 @@ def create_grid(obj, size):
             number += 1
         for letter in answer:
             grid[row][col]['type'] = 'light'
-            grid[row][col]['letter'] = letter.upper()
+            if letter != '.':
+                grid[row][col]['letter'] = letter.upper()
             if entry.down:
                 row += 1
             else:
@@ -139,6 +140,8 @@ def get_answer(puzzle_data, clue, down, pos):
         letter = puzzle_data['solution'][y][x]
         if letter == blockChar:
             break
+        if letter == 0:
+            letter = '.'
         answer += letter
 
         # Insert spaces and hypens based on the enumeration
@@ -231,7 +234,7 @@ def create(request):
     thumbs = []
     for blank in blanks:
         thumbs.append(create_thumbnail(blank, 10))
-    context = {'thumbs': thumbs, 'number': None, 'author': None}
+    context = {'thumbs': thumbs}
     return render(request, 'puzzle/create.html', context)
 
 def save(request):
@@ -243,19 +246,15 @@ def save(request):
     if not request.user.is_authenticated:
         raise PermissionDenied
 
-    if author == 'None':
+    if author and author != request.user.username:
         raise PermissionDenied
 
-    try:
-        user = User.objects.get(username=author)
-    except User.DoesNotExist:
-        raise PermissionDenied
+    if not number:
+        previous = Puzzle.objects.filter(user=request.user).order_by('-number')
+        number = previous[0].number + 1 if previous else 1
 
-    if request.user.username != user.username:
-        raise PermissionDenied
-
-    save_puzzle(user, number, ipuz)
-    return redirect(reverse('puzzle', kwargs={'user': author, 'number': number}))
+    save_puzzle(request.user, number, ipuz)
+    return redirect(reverse('puzzle', kwargs={'user': request.user.username, 'number': number}))
 
 def users(request):
     """Show a list of users and their puzzles."""
