@@ -7,13 +7,14 @@ wrangle them into their templates.
 
 import json
 from re import sub, split
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
-from django.urls import reverse
-from django.core.exceptions import PermissionDenied
 from django.views.decorators.gzip import gzip_page
-from django.contrib.auth.models import User
 from puzzle.models import Puzzle, Entry, Blank, Block
 from visitors.models import save_request
 
@@ -93,19 +94,15 @@ def get_date_string(obj):
 def display_puzzle(request, obj, title, description, template):
     """Main helper to render a puzzle which has been pulled out of the database."""
     if obj.pub_date > timezone.now() and request.user != obj.user and not request.user.is_staff:
-        if request.user.is_authenticated:
-            raise PermissionDenied
-        else:
-            return redirect('%s?next=%s' % (reverse('admin:login'), request.path))
+        raise PermissionDenied
 
     grid = create_grid(obj, 15)
     across_clues = get_clues(obj, grid, False)
     down_clues = get_clues(obj, grid, True)
-    user_is_author = (request.user == obj.user)
 
     prev_puzzle = Puzzle.objects.filter(user=obj.user, number__lt=obj.number).order_by('-number')
     next_puzzle = Puzzle.objects.filter(user=obj.user, number__gt=obj.number).order_by('number')
-    if not user_is_author:
+    if not request.user == obj.user:
         next_puzzle = next_puzzle.filter(pub_date__lte=timezone.now())
 
     save_request(request)
@@ -114,8 +111,7 @@ def display_puzzle(request, obj, title, description, template):
                'date': get_date_string(obj), 'author': obj.user.username, 'grid': grid,
                'across_clues': across_clues, 'down_clues': down_clues,
                'next_puzzle': next_puzzle[0].number if next_puzzle else None,
-               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None,
-               'editable': user_is_author}
+               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None}
     return render(request, template, context)
 
 def get_start_position(grid_data, clue_num):
@@ -130,8 +126,7 @@ def get_answer(puzzle_data, clue, down, pos):
     blockChar = '#' if 'block' not in puzzle_data.keys() else puzzle_data['block']
     size = puzzle_data['dimensions']['width']
     numeration = split('([-,])', clue['enumeration'])
-    x = pos['x']
-    y = pos['y']
+    x, y = pos['x'], pos['y']
     answer = ''
     group = 0
 
@@ -146,12 +141,11 @@ def get_answer(puzzle_data, clue, down, pos):
 
         # Insert spaces and hypens based on the enumeration
         if group < (len(numeration) - 1) and len(answer) == int(numeration[group]):
-            group += 1
-            if numeration[group] == ',':
+            if numeration[group + 1] == ',':
                 answer += ' '
             else:
-                answer += numeration[group]
-            group += 1
+                answer += numeration[group + 1]
+            group += 2
 
         # Move along to the next letter
         if down:
@@ -201,30 +195,30 @@ def latest(request):
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
 @gzip_page
-def puzzle(request, user, number):
+def puzzle(request, author, number):
     """Show a puzzle by puzzle number."""
-    obj = get_object_or_404(Puzzle, user__username=user, number=number)
-    title = 'Crossword #' + number + ' | ' + user
-    description = 'Crossword #' + number + 'by ' + user + ', first published on ' + \
+    obj = get_object_or_404(Puzzle, user__username=author, number=number)
+    title = 'Crossword #' + number + ' | ' + author
+    description = 'Crossword #' + number + 'by ' + author + ', first published on ' + \
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
 @gzip_page
-def edit(request, user, number):
+def edit(request, author, number):
     """Edit a saved crossword."""
-    obj = get_object_or_404(Puzzle, user__username=user, number=number)
+    obj = get_object_or_404(Puzzle, user__username=author, number=number)
     if request.user != obj.user and not request.user.is_staff:
         raise PermissionDenied
-    title = 'Edit Crossword #' + number + ' | ' + user
-    description = 'Edit crossword #' + number + 'by ' + user + ', first published on ' + \
+    title = 'Edit Crossword #' + number + ' | ' + author
+    description = 'Edit crossword #' + number + 'by ' + author + ', first published on ' + \
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/edit.html')
 
 @gzip_page
-def solution(request, user, number):
+def solution(request, author, number):
     """Show a solution by puzzle number."""
-    obj = get_object_or_404(Puzzle, user__username=user, number=number)
-    title = 'Solution #' + number + ' | ' + user
+    obj = get_object_or_404(Puzzle, user__username=author, number=number)
+    title = 'Solution #' + number + ' | ' + author
     return display_puzzle(request, obj, title, title, 'puzzle/solution.html')
 
 @gzip_page
@@ -237,6 +231,7 @@ def create(request):
     context = {'thumbs': thumbs}
     return render(request, 'puzzle/create.html', context)
 
+@transaction.atomic
 def save(request):
     """Save a puzzle to the database, then redirect to show it."""
     author = request.POST['author']
@@ -254,7 +249,7 @@ def save(request):
         number = previous[0].number + 1 if previous else 1
 
     save_puzzle(request.user, number, ipuz)
-    return redirect(reverse('puzzle', kwargs={'user': request.user.username, 'number': number}))
+    return redirect(reverse('puzzle', kwargs={'author': request.user.username, 'number': number}))
 
 def users(request):
     """Show a list of users and their puzzles."""

@@ -12,7 +12,7 @@ urlpatterns = [ #pylint: disable=invalid-name
     url(r'^save/$', views.save, name='save'),
     url(r'^rss/$', PuzzleFeed(), name='rss'),
     url(r'^users/$', views.users, name='users'),
-    url(r'^users/(?P<user>\w+)/(?P<number>\d+)/', include([
+    url(r'^users/(?P<author>\w+)/(?P<number>\d+)/', include([
         url(r'^$', views.puzzle, name='puzzle'),
         url(r'^solution/$', views.solution, name='solution'),
         url(r'^edit/$', views.edit, name='edit'),

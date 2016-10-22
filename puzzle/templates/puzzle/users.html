@@ -6,11 +6,11 @@
 
 {% block main %}
 <div id="user-list">
-	{% for user in user_list %}
-	<h3>{{ user.name }}</h3>
+	{% for author in user_list %}
+	<h3>{{ author.name }}</h3>
 	<ul class="simple-content">
-		{% for puzzle in user.puzzles %}
-		<li><a href="{% url 'puzzle' user.name puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
+		{% for puzzle in author.puzzles %}
+		<li><a href="{% url 'puzzle' author.name puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
 		{% endfor %}
 	</ul>
 	{% endfor %}

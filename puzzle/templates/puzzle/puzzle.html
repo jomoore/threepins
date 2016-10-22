@@ -86,7 +86,7 @@
 	var editUrl = undefined;
 	var editCookie = undefined;
 
-	{% if editable %}
+	{% if user.username == author %}
 	editUrl = "{% url 'edit' author number %}";
 	editCookie = 'edit-{{ author }}-{{ number }}';
 	{% endif %}

@@ -335,12 +335,6 @@ class PuzzleViewTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.client.logout()
 
-    def test_preview_requires_login(self):
-        """Check that unpublished puzzles require login."""
-        create_puzzle_range()
-        response = self.client.get(reverse('puzzle', args=['super', 3]))
-        self.assertRedirects(response, '/admin/login/?next=/users/super/3/')
-
     def test_preview_future_puzzle(self):
         """Check that previews are visible to a logged in superuser."""
         create_puzzle_range()
