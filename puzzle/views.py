@@ -120,6 +120,7 @@ def display_puzzle(request, obj, title, description, template):
     return render(request, template, context)
 
 def get_or_create_user(request):
+    """Authenticate or create the user specified in the POST information."""
     username = request.POST['username']
     password = request.POST['password']
     email = request.POST['email']
@@ -127,16 +128,17 @@ def get_or_create_user(request):
         user = User.objects.create_user(username, email, password)
     else:
         user = authenticate(username=username, password=password)
+    return user
 
 def get_start_position(grid_data, clue_num):
-    """Find the start co-ordinates for a particular clue number."""
+    """Find the start co-ordinates for a particular clue number in ipuz data."""
     for y, row in enumerate(grid_data):
         for x, cell in enumerate(row):
             if cell == clue_num:
                 return {'x': x, 'y': y}
 
 def get_answer(puzzle_data, clue, down, pos):
-    """Extract the clue's answer from ipuz data."""
+    """Extract a clue's answer from ipuz data."""
     blockChar = '#' if 'block' not in puzzle_data else puzzle_data['block']
     size = puzzle_data['dimensions']['width']
     numeration = split('([-,])', clue['enumeration'])
@@ -182,26 +184,20 @@ def save_puzzle(user, number, ipuz, public):
     puz.save()
 
     # Extract entries from the ipuz data
-    for entry in puzzle_data['clues']['Across']:
-        pos = get_start_position(puzzle_data['puzzle'], entry['number'])
-        answer = get_answer(puzzle_data, entry, False, pos)
-        entry = Entry(puzzle=puz, clue=escape(entry['clue']), answer=answer,
-                      x=pos['x'], y=pos['y'], down=False)
-        entry.save()
-
-    for entry in puzzle_data['clues']['Down']:
-        pos = get_start_position(puzzle_data['puzzle'], entry['number'])
-        answer = get_answer(puzzle_data, entry, True, pos)
-        entry = Entry(puzzle=puz, clue=escape(entry['clue']), answer=answer,
-                      x=pos['x'], y=pos['y'], down=True)
-        entry.save()
+    for direction in [{'name': 'Across', 'down': False}, {'name': 'Down', 'down': True}]:
+        for entry in puzzle_data['clues'][direction['name']]:
+            pos = get_start_position(puzzle_data['puzzle'], entry['number'])
+            answer = get_answer(puzzle_data, entry, direction['down'], pos)
+            entry = Entry(puzzle=puz, clue=escape(entry['clue']), answer=answer,
+                          x=pos['x'], y=pos['y'], down=direction['down'])
+            entry.save()
 
 @gzip_page
 def latest(request):
     """Show the latest published puzzle."""
     obj = Puzzle.objects.filter(user__is_staff=True,
                                 pub_date__lte=timezone.now()).latest('pub_date')
-    title = 'A cryptic crossword outlet'
+    title = 'Three Pins - A cryptic crossword outlet'
     description = 'A free interactive site dedicated to amateur cryptic crosswords. ' \
                   'Solve online or on paper.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
@@ -210,7 +206,7 @@ def latest(request):
 def puzzle(request, author, number):
     """Show a puzzle by puzzle number."""
     obj = get_object_or_404(Puzzle, user__username=author, number=number)
-    title = 'Crossword #' + number + ' | ' + author
+    title = 'Crossword #' + number + ' | ' + author + ' | Three Pins'
     description = 'Crossword #' + number + 'by ' + author + ', first published on ' + \
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
@@ -222,7 +218,7 @@ def edit(request, author, number):
     obj = get_object_or_404(Puzzle, user__username=author, number=number)
     if request.user != obj.user and not request.user.is_staff:
         raise PermissionDenied
-    title = 'Edit Crossword #' + number + ' | ' + author
+    title = 'Edit Crossword #' + number + ' | ' + author + ' | Three Pins'
     description = 'Edit crossword #' + number + 'by ' + author + ', first published on ' + \
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/edit.html')
@@ -231,7 +227,7 @@ def edit(request, author, number):
 def solution(request, author, number):
     """Show a solution by puzzle number."""
     obj = get_object_or_404(Puzzle, user__username=author, number=number)
-    title = 'Solution #' + number + ' | ' + author
+    title = 'Solution #' + number + ' | ' + author + ' | Three Pins'
     return display_puzzle(request, obj, title, title, 'puzzle/solution.html')
 
 @gzip_page
@@ -249,7 +245,6 @@ def save(request):
     """Save a puzzle to the database, then redirect to show it."""
     author = request.POST['author']
     number = request.POST['number']
-    ipuz = request.POST['ipuz']
     user = request.user
 
     if not request.user.is_authenticated:
@@ -262,15 +257,15 @@ def save(request):
     if author and author != user.username:
         raise PermissionDenied
 
-    next = ''
+    next_url = ''
     if not number:
         previous = Puzzle.objects.filter(user=user).order_by('-number')
         number = previous[0].number + 1 if previous else 1
-        next = '?new'
-    next = reverse('puzzle', kwargs={'author': user.username, 'number': number}) + next
+        next_url = '?new'
+    next_url = reverse('puzzle', kwargs={'author': user.username, 'number': number}) + next_url
 
-    save_puzzle(user, number, ipuz, 'visibility' in request.POST)
-    return redirect(next)
+    save_puzzle(user, number, request.POST['ipuz'], 'visibility' in request.POST)
+    return redirect(next_url)
 
 def users(request):
     """Show a list of users and their puzzles."""
