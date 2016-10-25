@@ -7,6 +7,8 @@ wrangle them into their templates.
 
 import json
 from re import sub, split
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -15,7 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.gzip import gzip_page
-from puzzle.models import Puzzle, Entry, Blank, Block
+from puzzle.models import Puzzle, Entry, Blank, Block, default_pub_date
 from visitors.models import save_request
 
 def create_grid(obj, size):
@@ -93,7 +95,8 @@ def get_date_string(obj):
 
 def display_puzzle(request, obj, title, description, template):
     """Main helper to render a puzzle which has been pulled out of the database."""
-    if obj.pub_date > timezone.now() and request.user != obj.user and not request.user.is_staff:
+    now = timezone.now()
+    if obj.pub_date > now and request.user != obj.user and not request.user.is_staff:
         raise PermissionDenied
 
     grid = create_grid(obj, 15)
@@ -103,16 +106,27 @@ def display_puzzle(request, obj, title, description, template):
     prev_puzzle = Puzzle.objects.filter(user=obj.user, number__lt=obj.number).order_by('-number')
     next_puzzle = Puzzle.objects.filter(user=obj.user, number__gt=obj.number).order_by('number')
     if not request.user == obj.user:
-        next_puzzle = next_puzzle.filter(pub_date__lte=timezone.now())
+        next_puzzle = next_puzzle.filter(pub_date__lte=now)
 
     save_request(request)
 
     context = {'title': title, 'description': description, 'number': obj.number,
-               'date': get_date_string(obj), 'author': obj.user.username, 'grid': grid,
+               'author': obj.user.username, 'grid': grid,
                'across_clues': across_clues, 'down_clues': down_clues,
+               'date': get_date_string(obj) if obj.pub_date <= now else None,
                'next_puzzle': next_puzzle[0].number if next_puzzle else None,
-               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None}
+               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None,
+               'saved_new': 'new' in request.GET}
     return render(request, template, context)
+
+def get_or_create_user(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    email = request.POST['email']
+    if User.objects.filter(username=username).count() == 0:
+        user = User.objects.create_user(username, email, password)
+    else:
+        user = authenticate(username=username, password=password)
 
 def get_start_position(grid_data, clue_num):
     """Find the start co-ordinates for a particular clue number."""
@@ -123,7 +137,7 @@ def get_start_position(grid_data, clue_num):
 
 def get_answer(puzzle_data, clue, down, pos):
     """Extract the clue's answer from ipuz data."""
-    blockChar = '#' if 'block' not in puzzle_data.keys() else puzzle_data['block']
+    blockChar = '#' if 'block' not in puzzle_data else puzzle_data['block']
     size = puzzle_data['dimensions']['width']
     numeration = split('([-,])', clue['enumeration'])
     x, y = pos['x'], pos['y']
@@ -141,10 +155,7 @@ def get_answer(puzzle_data, clue, down, pos):
 
         # Insert spaces and hypens based on the enumeration
         if group < (len(numeration) - 1) and len(answer) == int(numeration[group]):
-            if numeration[group + 1] == ',':
-                answer += ' '
-            else:
-                answer += numeration[group + 1]
+            answer += sub(',', ' ', numeration[group + 1])
             group += 2
 
         # Move along to the next letter
@@ -155,17 +166,18 @@ def get_answer(puzzle_data, clue, down, pos):
 
     return answer
 
-def save_puzzle(user, number, ipuz):
+def save_puzzle(user, number, ipuz, public):
     """Save a puzzle in ipuz format to the database."""
     puzzle_data = json.loads(ipuz)
+    pub_date = timezone.now() if public else default_pub_date()
 
     # Remove any old data
     existing = Puzzle.objects.filter(user=user, number=number)
     if existing:
-        existing.delete()
+        existing[0].delete()
 
     # Create a new puzzle
-    puz = Puzzle(user=user, number=number, pub_date=timezone.now(),
+    puz = Puzzle(user=user, number=number, pub_date=pub_date,
                  size=puzzle_data['dimensions']['width'])
     puz.save()
 
@@ -203,6 +215,7 @@ def puzzle(request, author, number):
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
+@login_required
 @gzip_page
 def edit(request, author, number):
     """Edit a saved crossword."""
@@ -237,28 +250,48 @@ def save(request):
     author = request.POST['author']
     number = request.POST['number']
     ipuz = request.POST['ipuz']
+    user = request.user
 
     if not request.user.is_authenticated:
+        user = get_or_create_user(request)
+        if user is None:
+            return redirect('%s?next=%s' % (reverse('login'),
+                                            request.META.get('HTTP_REFERER', '/')))
+        login(request, user)
+
+    if author and author != user.username:
         raise PermissionDenied
 
-    if author and author != request.user.username:
-        raise PermissionDenied
-
+    next = ''
     if not number:
-        previous = Puzzle.objects.filter(user=request.user).order_by('-number')
+        previous = Puzzle.objects.filter(user=user).order_by('-number')
         number = previous[0].number + 1 if previous else 1
+        next = '?new'
+    next = reverse('puzzle', kwargs={'author': user.username, 'number': number}) + next
 
-    save_puzzle(request.user, number, ipuz)
-    return redirect(reverse('puzzle', kwargs={'author': request.user.username, 'number': number}))
+    save_puzzle(user, number, ipuz, 'visibility' in request.POST)
+    return redirect(next)
 
 def users(request):
     """Show a list of users and their puzzles."""
     context = {'user_list': []}
     for user in User.objects.all().order_by('username'):
-        objs = Puzzle.objects.filter(user=user, pub_date__lte=timezone.now()).order_by('-pub_date')
+        objs = Puzzle.objects.filter(user=user, pub_date__lte=timezone.now()).order_by('-number')
         if objs:
             puzzle_list = []
             for puz in objs:
                 puzzle_list.append({'number': puz.number, 'date': get_date_string(puz)})
             context['user_list'].append({'name': user.username, 'puzzles': puzzle_list})
     return render(request, 'puzzle/users.html', context)
+
+@login_required
+def profile(request):
+    """Show a list of puzzles belonging to the logged in user."""
+    objs = Puzzle.objects.filter(user=request.user).order_by('-number')
+    context = {'published': [], 'unpublished': []}
+    now = timezone.now()
+    for puz in objs.filter(pub_date__gt=now):
+        context['unpublished'].append({'number': puz.number})
+    for puz in objs.filter(pub_date__lte=now):
+        context['published'].append({'number': puz.number, 'date': get_date_string(puz)})
+    return render(request, 'puzzle/profile.html', context)

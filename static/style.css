@@ -9,9 +9,21 @@ a:hover { color: #0033cc; }
 ul { list-style: none; }
 .simple-content { margin-bottom: 20px; text-align: center; }
 .simple-content li { padding-bottom: 6px; }
+.simple-content h3 { text-align: center; font-weight: bold; font-size: 1.2em; padding-bottom: 0.2em; }
+.simple-form { max-width: 38em; margin: auto; }
+.simple-form p { text-align: centre; padding-bottom: 0.1em; }
+.simple-form .warning { margin-bottom: 0.7em; }
+.simple-form label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
+.simple-form input[type=text], .simple-form input[type=password], .simple-form textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
+.simple-form textarea { height: 11em; }
+.simple-form .checkbox-container { float: left; clear: left; padding: 0.3em; }
+.simple-form .checkbox-label { width: auto; padding-right: 0.5em; }
+.simple-form .buttons { float: right; clear: both; }
+.simple-form input:focus, .simple-form textarea:focus { border: 2px solid #336600; }
 .letter, .instructions, #grid-assistant { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; }
 button, .send-button { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
 button:hover, .send-button:hover { background: #336600; }
+.send-button { margin-bottom: 2em; }
 .warning { color: red; }
 
 /* Header */
@@ -23,18 +35,8 @@ nav ul { padding: 5px; }
 nav li { display: inline; white-space: nowrap; }
 
 /* Contact */
-#contact { max-width: 38em; margin: auto; }
-#contact p { text-align: centre; padding-bottom: 0.1em; }
 #contact p:nth-last-child(2) { margin-bottom: 1em; }
-#contact .warning { margin-bottom: 0.7em; }
-#contact label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
-#contact input, #contact textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
-#contact textarea { height: 11em; }
 #contact input.send-button { width: 6em; float: right; clear: both; margin-right: 18.5%; }
-#contact input:focus, #contact textarea:focus { border: 2px solid #336600; }
-
-/* User List */
-#user-list h3 { text-align: center; font-weight: bold; font-size: 1.2em; padding-bottom: 0.2em; }
 
 /* Grid */
 #grid { text-align: center; position: relative; }
@@ -52,7 +54,7 @@ nav li { display: inline; white-space: nowrap; }
 .clue-box { display: inline-block; vertical-align: top; padding-left: 30px; margin: 0px 20px 20px -1px; }
 .clue-box:nth-child(2) { border-left: 1px dashed; }
 .clue-number { font-weight: bold; }
-#clues, #blanks, #help-text { vertical-align: top; }
+#clues, #blanks, #help-text, #save-puzzle { vertical-align: top; }
 
 /* Grid Creator */
 #blanks { overflow: auto; }
@@ -65,6 +67,9 @@ nav li { display: inline; white-space: nowrap; }
 .fade { position: relative; bottom: 2em; height: 2em; pointer-events: none;
         background-image: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%); }
 #clues > .buttons { margin-right: 10px; }
+#save-puzzle p, #login-form p { margin-bottom: 0.6em; }
+#save-puzzle { margin-left: 10px; padding: 20px; border: 1px solid black; }
+#save-puzzle .buttons { padding: 15px; }
 
 /* Clue Creator */
 .user-clue { margin-bottom: 4px; }
@@ -85,6 +90,10 @@ nav li { display: inline; white-space: nowrap; }
 
 /* Footer */
 footer { border-top: 1px solid; clear: both; }
+footer ul { padding-left: 4em; padding-top: 0.5em; font-size: 0.8em; }
+footer li { display: inline; white-space: nowrap; }
+footer li:before { content: "\2014\2009"; }
+footer li:first-child:before { content: ""; }
 
 @media screen {
 	body { font-size: 0.85em; }
@@ -105,6 +114,7 @@ footer { border-top: 1px solid; clear: both; }
     #blanks { width: 100%; }
     #blanks > svg { margin-left: 30px; }
     #help-text { width: 90%; }
+    #save-puzzle { width: 80%; }
     #choose-grid-message > .pointy:after { content: "\2193" }
     #intro-message > .pointy:after { content: "\2193"; }
 }
@@ -114,6 +124,7 @@ footer { border-top: 1px solid; clear: both; }
 	h3 { font-size: 1em; }
 	#grid { height: 436px; }
 	#grid, #grid-assistant { width: 436px; margin-left: 30px; }
+    #save-puzzle { margin-left: 30px; }
 	.light, .block { width: 28px; height: 28px; line-height: 28px; }
 	.grid-number { font-size: 11px; }
     #blanks > svg { margin-left: 0px; }
@@ -129,8 +140,9 @@ footer { border-top: 1px solid; clear: both; }
 }
 
 @media screen and (min-width: 720px) {
+	.simple-form label { text-align: right; margin-left: 0em; }
+    .simple-form .checkbox-label { margin-left: 10em; }
 	#contact p { padding-left: 5em; }
-	#contact label { text-align: right; margin-left: 0em; }
 	#contact input.send-button { margin-right: 1em; }
 }
 
@@ -147,7 +159,7 @@ footer { border-top: 1px solid; clear: both; }
 
 @media screen and (min-width: 1202px) {
     #intro-message > .pointy:after { content: "\2197"; }
-    #help-text { width: 50%; }
+    #help-text, #save-puzzle { width: 50%; }
 }
 
 @media screen and (min-width: 1280px) {

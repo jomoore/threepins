@@ -57,19 +57,44 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			</ul>
 		</div>
 		<div class="buttons">
-			<button onclick="PuzzleCreator.openHelp()">Help</button>
-			<form action="{% url 'save' %}" method="post" onsubmit="Storage.clearLocal()">{% csrf_token %}
-				<input type="hidden" name="author" id="post-author" value="{{ author }}">
-				<input type="hidden" name="number" id="post-number" value="{{ number }}">
-				<input type="hidden" name="ipuz" id="post-ipuz">
-				<button type="submit">Publish</button>
-			</form>
+			<button onclick="Display.showHelpText()">Help</button>
+			<button onclick="Display.showSaveForm()">Save online</button>
 			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
 			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
 			<button onclick="PuzzleCreator.downloadIpuz()">Download as ipuz</button>
 			<button id="cancel" onclick="PuzzleCreator.cancelEdit()">Cancel edit</button>
 			<button id="restart" onclick="PuzzleCreator.restart()">Start over</button>
 		</div>
+	</div>
+	<div id="save-puzzle" class="simple-content simple-form" style="display: none">
+		<h3>Save</h3>
+		<form action="{% url 'save' %}" method="post" id="save-form">{% csrf_token %}
+			{% if not user.is_authenticated %}
+			<p>Create your login details, or enter your existing ones</p>
+			<label for="save-username">Pseudonym:</label>
+			<input type="text" name="username" id="save-username">
+			<label for="save-password">Password:</label>
+			<input type="password" name="password" id="save-password">
+			<label for="save-email">Email:</label>
+			<input type="text" name="email" id="save-email">
+			{% elif number %}
+			<p>Updating Puzzle #{{ number }} by {{ author }}</p>
+			{% else %}
+			<p>New puzzle by {{ user.username }}</p>
+			{% endif %}
+
+			<div class="checkbox-container">
+			<label for="save-public" class="checkbox-label">Allow other people to view this puzzle</label>
+			<input type="checkbox" name="visibility" value="public" id="save-public" checked>
+			</div>
+			<div class="buttons">
+				<button type="button" onclick="Display.hideSaveForm()">Cancel</button>
+				<button type="submit">Save</button>
+			</div>
+			<input type="hidden" name="author" id="save-author" value="{{ author }}">
+			<input type="hidden" name="number" id="save-number" value="{{ number }}">
+			<input type="hidden" name="ipuz" id="save-ipuz">
+		</form>
 	</div>
 	<div id="help-text" style="display: none;">
 		<h4>Building the grid</h4>
@@ -85,8 +110,9 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		<p>Clue entry is free-form, and this tool is too dumb to help you with them. It provides convenient spaces to write them down, but the rest is up to you!</p>
 
 		<h4>It's finished, what now?</h4>
-		<p>Use the buttons beneath the clues to print out your puzzle and its solution. You can also download it as an
-			<a href="http://www.ipuz.org">ipuz</a> file, a text format which is compatible with professional
+		<p>Use the buttons beneath the clues to save or print your puzzle and its solution. You'll
+			be asked to provide some details before saving so that you can login and edit the puzzle
+			later on. You can also download it as an<a href="http://www.ipuz.org">ipuz</a> file, a text format which is compatible with professional
 			software such as <a href="http://www.crossword-compiler.com/">Crossword Compiler</a> and
 			<a href="http://www.crosswordman.com/sympathy.html">Sympathy</a>. If you have a UK-style cryptic and want
 			an audience, try sending it to <a href="http://bigdave44.com/">Big Dave</a> for his
@@ -97,11 +123,10 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		<p>There are plenty of things this tool can't yet do. Plans for the future include:
 			<ul><li>User modification of grids to add or remove black squares</li>
 				<li>Manual adjustment of clue enumeration for words not in the dictionary</li>
-				<li>Saving crosswords on the server so that puzzles can be stored, linked, shared and solved online</li>
 				<li>Downloading completed crosswords in PDF format</li></ul>
 			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>.</p>
 		<div class="buttons">
-			<button onclick="PuzzleCreator.closeHelp()">Close help</button>
+			<button onclick="Display.hideHelpText()">Close help</button>
 		</div>
 	</div>
 </div>
@@ -119,8 +144,8 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 	var storage = undefined;
 
 	{% if number and author %}
-	var saveLocation = "{% url 'puzzle' author number %}";
-	var storage = "edit-{{ author }}-{{ number }}";
+	saveLocation = "{% url 'puzzle' author number %}";
+	storage = "edit-{{ author }}-{{ number }}";
 	{% endif %}
 
 	PuzzleCreator.init(wordListLocation, blockImgLocation, saveLocation, storage);

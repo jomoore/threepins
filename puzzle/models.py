@@ -43,7 +43,7 @@ class Puzzle(models.Model):
         unique_together = (('user', 'number'),)
 
     def __str__(self):
-        return str(self.number)
+        return str(self.user.username + ' #' + str(self.number))
 
     def get_absolute_url(self):
         """Link to go from the puzzle's admin page to the puzzle itself."""

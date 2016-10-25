@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block description %}Puzzles created by the user.{% endblock %}
+
+{% block main %}
+<div class="simple-content">
+	{% if unpublished %}
+	<h3>Unpublished puzzles</h3>
+	<ul>
+		{% for puzzle in unpublished %}
+		<li><a href="{% url 'puzzle' user.username puzzle.number %}"'> Puzzle #{{ puzzle.number }}</a></li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+	{% if published %}
+	<h3>Published puzzles</h3>
+	<ul>
+		{% for puzzle in published %}
+		<li><a href="{% url 'puzzle' user.username puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+	{% if not published and not unpublished %}
+	<p>No saved puzzles - <a href="{% url 'create' %}">create one here</a>!</p>
+	{% endif %}
+</div>
+{% endblock %}

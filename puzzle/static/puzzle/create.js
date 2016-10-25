@@ -434,6 +434,16 @@ var Display = (function() {
 			document.getElementById('help-text').style.display = 'none';
 			document.getElementById('clues').style.display = 'inline-block';
 		},
+
+		showSaveForm: function() {
+			document.getElementById('clues').style.display = 'none';
+			document.getElementById('save-puzzle').style.display = 'inline-block';
+		},
+									
+		hideSaveForm: function() {
+			document.getElementById('save-puzzle').style.display = 'none';
+			document.getElementById('clues').style.display = 'inline-block';
+		},
 	};
 })();
 
@@ -467,7 +477,7 @@ var Storage = (function() {
 								  ClueCreator.getIpuzClues(clueLists[0]),
 								  ClueCreator.getIpuzClues(clueLists[1]));
 
-			document.getElementById('post-ipuz').value = json;
+			document.getElementById('save-ipuz').value = json;
 			if (window.localStorage) {
 				localStorage.setItem(storageName, json);
 			}
@@ -475,7 +485,7 @@ var Storage = (function() {
 
 		loadLocal: function() {
 			var json = localStorage.getItem(storageName);
-			document.getElementById('post-ipuz').value = json;
+			document.getElementById('save-ipuz').value = json;
 			return json && JSON.parse(json);
 		},
 
@@ -617,10 +627,6 @@ var PuzzleCreator = (function() {
 			else
 				loadGridPicker(blockImgUrl);
 		},
-
-		openHelp: Display.showHelpText,
-
-		closeHelp: Display.hideHelpText,
 
 		printPuzzle: function() {
 			ClassShim.addClass(gridBox, 'hide-solution');

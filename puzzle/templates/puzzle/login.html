@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div id="login-form" class="simple-content simple-form">
+	{% if form.errors %}
+	<p>Your username and password didn't match. Please try again.</p>
+	{% endif %}
+
+	{% if next %}
+	<p>Please login to see this page.</p>
+	{% else %}
+	<p>Log in to view your saved crosswords</p>
+	{% endif %}
+
+	<form method="post" action="{% url 'login' %}">
+		{% csrf_token %}
+		{{ form.username.label_tag }}
+		{{ form.username }}
+		{{ form.password.label_tag }}
+		{{ form.password }}
+		<input type="submit" value="Log In" class="send-button" />
+		<input type="hidden" name="next" value="{{ next }}" />
+	</form>
+</div>
+{% endblock %}

@@ -6,7 +6,6 @@ Passes the URL along to the app responsible for it.
 
 from django.conf.urls import include, url
 from django.contrib import admin
-from puzzle.views import latest
 
 admin.autodiscover()
 

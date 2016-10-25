@@ -45,11 +45,24 @@
 			<li><a href="{% url 'create' %}">Create</a></li>
 			<li><a href="{% url 'users' %}">Archive</a></li>
 			<li><a href="{% url 'contact' %}">Contact</a></li>
+			{% if user.is_authenticated %}
+			<li><a href="{% url 'profile' %}">My Crosswords</a></li>
+			{% else %}
+			<li><a href="{% url 'login' %}">Login</a></li>
+			{% endif %}
 			{% endblock %}
 		</ul>
 	</nav>
 	{% block main %}{% endblock %}
 	<footer>
+		{% block footer %}
+		{% if user.is_authenticated %}
+		<ul>
+			<li>Logged in as <a href="{% url 'profile' %}">{{ user.username }}</a></li>
+			<li><a href="{% url 'logout' %}">Log out</a></li>
+		</ul>
+		{% endif %}
+		{% endblock %}
 	</footer>
 </div>
 {% block js %}{% endblock %}

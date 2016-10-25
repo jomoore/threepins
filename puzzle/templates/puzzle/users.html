@@ -5,10 +5,10 @@
 {% block description %}A list of site setters and their crossword collections.{% endblock %}
 
 {% block main %}
-<div id="user-list">
+<div class="simple-content">
 	{% for author in user_list %}
 	<h3>{{ author.name }}</h3>
-	<ul class="simple-content">
+	<ul>
 		{% for puzzle in author.puzzles %}
 		<li><a href="{% url 'puzzle' author.name puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
 		{% endfor %}
