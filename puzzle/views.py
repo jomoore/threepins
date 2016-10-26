@@ -106,6 +106,7 @@ def display_puzzle(request, obj, title, description, template):
     prev_puzzle = Puzzle.objects.filter(user=obj.user, number__lt=obj.number).order_by('-number')
     next_puzzle = Puzzle.objects.filter(user=obj.user, number__gt=obj.number).order_by('number')
     if not request.user == obj.user:
+        prev_puzzle = prev_puzzle.filter(pub_date__lte=now)
         next_puzzle = next_puzzle.filter(pub_date__lte=now)
 
     save_request(request)

@@ -658,5 +658,21 @@ var PuzzleCreator = (function() {
 				window.location.href = saveUrl;
 			}
 		},
+
+		validateSaveForm: function() {
+			var username = document.getElementById('save-username');
+			if (username && (username.value == null || username.value == '')) {
+				alert('The pseudonym/username field must be filled in to save the puzzle.');
+				return false;
+			}
+
+			var password = document.getElementById('save-password');
+			if (password && (password.value == null || password.value == '')) {
+				alert('The password field must be filled in to save the puzzle.');
+				return false;
+			}
+
+			return true;
+		},
 	};
 })();

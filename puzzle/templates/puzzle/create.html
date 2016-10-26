@@ -68,7 +68,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 	</div>
 	<div id="save-puzzle" class="simple-content simple-form" style="display: none">
 		<h3>Save</h3>
-		<form action="{% url 'save' %}" method="post" id="save-form">{% csrf_token %}
+		<form action="{% url 'save' %}" method="post" id="save-form" onsubmit="return PuzzleCreator.validateSaveForm()">{% csrf_token %}
 			{% if not user.is_authenticated %}
 			<p>Create your login details, or enter your existing ones</p>
 			<label for="save-username">Pseudonym:</label>
@@ -78,7 +78,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			<label for="save-email">Email:</label>
 			<input type="text" name="email" id="save-email">
 			{% elif number %}
-			<p>Updating Puzzle #{{ number }} by {{ author }}</p>
+			<p>Puzzle #{{ number }} by {{ author }}</p>
 			{% else %}
 			<p>New puzzle by {{ user.username }}</p>
 			{% endif %}
@@ -98,21 +98,20 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 	</div>
 	<div id="help-text" style="display: none;">
 		<h4>Building the grid</h4>
-		<p>Click on a white square and start typing the word you want. A list of words and phrases
+		<p>Click on any white square and start typing the word you want. A list of words and phrases
 			which fit will appear in the little box underneath the grid. There may be a lot of them, so scroll the box to see them all.
-			Click on any word or phrase to insert it into the grid. The clue enumeration will automatically update to match.</p>
-		<p>As you fill words in, you may find places where nothing good fits. That's part of the challenge! To backtrack,
+			Click on any word or phrase to insert it into the grid, and the clue enumeration will automatically update to match.</p>
+		<p>As you fill words in, you may find places where nothing good fits - that's part of the challenge! To backtrack,
 			select an entry in the grid and click &lsquo;clear&rsquo; in the box underneath.</p>
-		<p>Progress is automatically saved in your browser as you go along, and will persist until its cache is cleared or you click &lsquo;start over&rsquo;.
-			If you've put a lot of work into your crossword, print a hard copy! Long-term storage isn't available here yet.</p>
+		<p>Progress is automatically saved in your browser as you go along, and will persist until its cache is cleared or you click &lsquo;start over&rsquo;.</p>
 
 		<h4>Writing clues</h4>
 		<p>Clue entry is free-form, and this tool is too dumb to help you with them. It provides convenient spaces to write them down, but the rest is up to you!</p>
 
 		<h4>It's finished, what now?</h4>
 		<p>Use the buttons beneath the clues to save or print your puzzle and its solution. You'll
-			be asked to provide some details before saving so that you can login and edit the puzzle
-			later on. You can also download it as an<a href="http://www.ipuz.org">ipuz</a> file, a text format which is compatible with professional
+			be asked to provide some details before saving so that you can log in and edit the puzzle
+			later on. You can also download it as an <a href="http://www.ipuz.org">ipuz</a> file, a text format which is compatible with professional
 			software such as <a href="http://www.crossword-compiler.com/">Crossword Compiler</a> and
 			<a href="http://www.crosswordman.com/sympathy.html">Sympathy</a>. If you have a UK-style cryptic and want
 			an audience, try sending it to <a href="http://bigdave44.com/">Big Dave</a> for his
@@ -124,7 +123,8 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			<ul><li>User modification of grids to add or remove black squares</li>
 				<li>Manual adjustment of clue enumeration for words not in the dictionary</li>
 				<li>Downloading completed crosswords in PDF format</li></ul>
-			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>.</p>
+			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>. For any technical problems, you can also log
+				an issue on the site's <a href="https://github.com/jomoore/threepins">github page</a>.</p>
 		<div class="buttons">
 			<button onclick="Display.hideHelpText()">Close help</button>
 		</div>
