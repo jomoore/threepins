@@ -10,9 +10,9 @@ ul { list-style: none; }
 .simple-content { margin-bottom: 20px; text-align: center; }
 .simple-content li { padding-bottom: 6px; }
 .simple-content h3 { text-align: center; font-weight: bold; font-size: 1.2em; padding-bottom: 0.2em; }
+.simple-content p { text-align: centre; padding-bottom: 0.1em; }
 .simple-content > div { display: inline-block; vertical-align: top; padding: 20px; }
 .simple-form { max-width: 38em; margin: auto; }
-.simple-form p { text-align: centre; padding-bottom: 0.1em; }
 .simple-form .warning { margin-bottom: 0.7em; }
 .simple-form label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
 .simple-form input[type=text], .simple-form input[type=password], .simple-form textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
@@ -26,6 +26,7 @@ ul { list-style: none; }
 button, input[type=submit] { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
 button:hover, input[type=submit]:hover { background: #336600; }
 .warning { color: red; }
+.share-link { font-family: "Courier New", Courier, monospace; padding: 3px; margin: 2px; border: 1px dashed black; }
 
 /* Header */
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }

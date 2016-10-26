@@ -555,7 +555,7 @@ var PuzzleCreator = (function() {
 	};
 
 	var editPuzzle = function() {
-		Display.showIntroText()
+		Display.showIntroText();
 		Display.showClues();
 		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
 		ClueCreator.connectClues(clueLists);

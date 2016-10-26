@@ -211,7 +211,7 @@ def puzzle(request, author, number):
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
-def puzzle_redirect(request, number):
+def puzzle_redirect(request, number): #pylint: disable=unused-argument
     """Redirect from the old URL scheme where no author is specified."""
     author = User.objects.filter(is_staff=True).order_by('date_joined').first().username
     return redirect('puzzle', permanent=True, author=author, number=number)
@@ -250,6 +250,8 @@ def save(request):
     """Save a puzzle to the database, then redirect to show it."""
     author = request.POST['author']
     number = request.POST['number']
+    public = 'visibility' in request.POST
+    new_puzzle = not number
     user = request.user
 
     if not request.user.is_authenticated:
@@ -262,12 +264,16 @@ def save(request):
     if author and author != user.username:
         raise PermissionDenied
 
-    if not number:
+    if new_puzzle:
         previous = Puzzle.objects.filter(user=user).order_by('-number')
         number = previous[0].number + 1 if previous else 1
 
-    save_puzzle(user, number, request.POST['ipuz'], 'visibility' in request.POST)
-    return redirect('puzzle', author=user.username, number=number)
+    save_puzzle(user, number, request.POST['ipuz'], public)
+    if new_puzzle:
+        context = {'number': number, 'public': public}
+        return render(request, 'puzzle/saved.html', context)
+    else:
+        return redirect('puzzle', author=user.username, number=number)
 
 def users(request):
     """Show a list of users and their puzzles."""

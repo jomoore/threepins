@@ -397,6 +397,7 @@ class PuzzleViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_redirect_legacy_url(self):
+        """Check that the old /puzzle/N URLs redirect to the default setter."""
         create_puzzle_range()
         response = self.client.get('/puzzle/1', follow=True)
         self.assertRedirects(response, '/setter/super/1/', status_code=301)
@@ -482,7 +483,7 @@ class PuzzleEditTests(TestCase):
         user = get_user()
         self.client.login(username='test', password='password')
         response = self.client.post(reverse('save'), {'author': '', 'number': '', 'ipuz': ipuz})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         puz = Puzzle.objects.get(user=user, number=1)
         entries = Entry.objects.filter(puzzle=puz).order_by('down', 'y', 'x')
         self.assertEqual(len(entries), 4)

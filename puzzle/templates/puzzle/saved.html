@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Saved | {{ user.username }} | Three Pins{% endblock %}
+
+{% block description %}Your puzzle has been saved.{% endblock %}
+
+{% block meta %}
+<meta name="robots" content="noindex">
+{% endblock %}
+
+{% block main %}
+<div id="saved" class="simple-content">
+	<p><b>Your puzzle has been saved</b></p>
+	<p><b><a href="{% url 'puzzle' user.username number %}">Click here to view or edit it</a></b></p>
+	<br>
+	{% if public %}
+	<p>If you want to share it, the link is:</p>
+	<p><span class="share-link">http://www.threepins.org{% url 'puzzle' user.username number %}</span></p>
+	{% else %}
+	<p>The puzzle is not yet visible to anyone but you. If you edit and save the puzzle later, you can make it public then.</p>
+	{% endif %}
+	<br>
+	<p>You can view a full list of your saved puzzles in the &lsquo;<a href="{% url 'profile' %}">My Crosswords</a>&rsquo; section.</p>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
+	if (window.localStorage)
+		localStorage.removeItem('create');
+</script>
+{% endblock %}
