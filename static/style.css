@@ -15,15 +15,15 @@ ul { list-style: none; }
 .simple-form .warning { margin-bottom: 0.7em; }
 .simple-form label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
 .simple-form input[type=text], .simple-form input[type=password], .simple-form textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
+.simple-form input[type=submit] { margin-bottom: 2em; width: 6em }
 .simple-form textarea { height: 11em; }
 .simple-form .checkbox-container { float: left; clear: left; padding: 0.3em; }
 .simple-form .checkbox-label { width: auto; padding-right: 0.5em; }
 .simple-form .buttons { float: right; clear: both; }
 .simple-form input:focus, .simple-form textarea:focus { border: 2px solid #336600; }
 .letter, .instructions, #grid-assistant { font-family: "Patrick Hand SC", Tahoma, sans-serif; color: #336600; }
-button, .send-button { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
-button:hover, .send-button:hover { background: #336600; }
-.send-button { margin-bottom: 2em; }
+button, input[type=submit] { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
+button:hover, input[type=submit]:hover { background: #336600; }
 .warning { color: red; }
 
 /* Header */
@@ -36,7 +36,7 @@ nav li { display: inline; white-space: nowrap; }
 
 /* Contact */
 #contact p:nth-last-child(2) { margin-bottom: 1em; }
-#contact input.send-button { width: 6em; float: right; clear: both; margin-right: 18.5%; }
+#contact input[type=submit] { float: right; clear: both; margin-right: 18.5%; }
 
 /* Grid */
 #grid { text-align: center; position: relative; }
@@ -103,7 +103,7 @@ footer li:first-child:before { content: ""; }
 	nav li { padding: 5px; }
 	#grid-wrapper { display: inline-block; margin: 0px 20px 20px 10px; }
 	#grid { height: 301px; }
-	#grid, #grid-assistant { width: 301px; }
+	#grid, #grid-assistant, #grid-wrapper > .buttons { width: 301px; }
 	.light, .block { width: 19px; height: 19px; line-height: 19px; border-bottom: 1px solid black; border-right: 1px solid black; }
 	.topmost { border-top: 1px solid black; }
 	.leftmost { border-left: 1px solid black; }
@@ -123,7 +123,7 @@ footer li:first-child:before { content: ""; }
 	body { font-size: 1em; }
 	h3 { font-size: 1em; }
 	#grid { height: 436px; }
-	#grid, #grid-assistant { width: 436px; margin-left: 30px; }
+	#grid, #grid-assistant, #grid-wrapper > .buttons { width: 436px; margin-left: 30px; }
     #save-puzzle { margin-left: 30px; }
 	.light, .block { width: 28px; height: 28px; line-height: 28px; }
 	.grid-number { font-size: 11px; }
@@ -134,7 +134,7 @@ footer li:first-child:before { content: ""; }
 	.clue-box { width: 300px; }
 }
 
-@media screen and (min-width: 680px) {
+@media screen and (min-width: 690px) {
 	nav { font-size: 1.4em; }
 	nav li { padding: 15px; }
 }
@@ -143,14 +143,17 @@ footer li:first-child:before { content: ""; }
 	.simple-form label { text-align: right; margin-left: 0em; }
     .simple-form .checkbox-label { margin-left: 10em; }
 	#contact p { padding-left: 5em; }
-	#contact input.send-button { margin-right: 1em; }
+	#contact input[type=submit] { margin-right: 1em; }
 }
 
 @media screen and (min-width: 870px) {
-	nav { font-size: 1.8em; }
-	nav li { padding: 20px; }
     #blanks { width: 350px; height: 490px; }
     #choose-grid-message > .pointy:after { content: "\2192" }
+}
+
+@media screen and (min-width: 900px) {
+	nav { font-size: 1.8em; }
+	nav li { padding: 20px; }
 }
 
 @media screen and (min-width: 1020px) {
