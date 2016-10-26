@@ -311,7 +311,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'data-number="0"')
         self.assertNotContains(response, '&lt; Previous')
         self.assertContains(response, 'Next &gt;')
-        self.assertContains(response, '<title>Three Pins - Crossword #0 | super</title>')
+        self.assertContains(response, '<title>Crossword #0 | super | Three Pins</title>')
 
     def test_next_and_previous(self):
         """Check that 'next' and 'previous' links are present when possible."""
@@ -322,7 +322,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'data-number="1"')
         self.assertContains(response, '&lt; Previous')
         self.assertContains(response, 'Next &gt;')
-        self.assertContains(response, '<title>Three Pins - Crossword #1 | super</title>')
+        self.assertContains(response, '<title>Crossword #1 | super | Three Pins</title>')
 
     def test_future_inaccessible(self):
         """Check that requests for unpublished puzzles by other authors receive a 403."""
@@ -344,7 +344,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertNotContains(response, 'class="letter"')
-        self.assertContains(response, '<title>Three Pins - Crossword #3 | super</title>')
+        self.assertContains(response, '<title>Crossword #3 | super | Three Pins</title>')
         self.log_out_super_user()
 
     def test_solution_available(self):
@@ -355,7 +355,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="2"')
         self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
-        self.assertContains(response, '<title>Three Pins - Solution #2 | super</title>')
+        self.assertContains(response, '<title>Solution #2 | super | Three Pins</title>')
 
     def test_preview_solution_available(self):
         """Check that solutions are rendered into the preview solution page."""
@@ -366,7 +366,7 @@ class PuzzleViewTests(TestCase):
         self.assertContains(response, 'id="grid"')
         self.assertContains(response, 'data-number="3"')
         self.assertEqual(response.content.count('class="letter"'.encode('utf-8')), 8)
-        self.assertContains(response, '<title>Three Pins - Solution #3 | super</title>')
+        self.assertContains(response, '<title>Solution #3 | super | Three Pins</title>')
         self.log_out_super_user()
 
     def test_invalid_puzzle(self):
