@@ -16,7 +16,7 @@ ul { list-style: none; }
 .simple-form .warning { margin-bottom: 0.7em; }
 .simple-form label { float: left; clear: left; width: 6em; text-align: left; margin-left: 1em; }
 .simple-form input[type=text], .simple-form input[type=password], .simple-form textarea { float: left; padding: 0.3em; width: 78%; margin: 0em 0em 0.8em 1em; }
-.simple-form input[type=submit] { margin-bottom: 2em; width: 6em }
+.simple-form input[type=submit] { margin-bottom: 2em; width: 6em; float: right; clear: both; margin-right: 18.5%; }
 .simple-form textarea { height: 11em; }
 .simple-form .checkbox-container { float: left; clear: left; padding: 0.3em; }
 .simple-form .checkbox-label { width: auto; padding-right: 0.5em; }
@@ -37,7 +37,6 @@ nav li { display: inline; white-space: nowrap; }
 
 /* Contact */
 #contact p:nth-last-child(2) { margin-bottom: 1em; }
-#contact input[type=submit] { float: right; clear: both; margin-right: 18.5%; }
 
 /* Grid */
 #grid { text-align: center; position: relative; }
@@ -143,8 +142,8 @@ footer li:first-child:before { content: ""; }
 @media screen and (min-width: 720px) {
 	.simple-form label { text-align: right; margin-left: 0em; }
     .simple-form .checkbox-label { margin-left: 10em; }
+	.simple-form input[type=submit] { margin-right: 1em; }
 	#contact p { padding-left: 5em; }
-	#contact input[type=submit] { margin-right: 1em; }
 }
 
 @media screen and (min-width: 870px) {

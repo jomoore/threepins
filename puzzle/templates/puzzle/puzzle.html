@@ -75,10 +75,6 @@
 <script type="text/javascript" src="{% static 'puzzle/grid.js' %}"></script>
 <script>
 	// @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt
-	{% if saved_new %}
-	if (window.localStorage) localStorage.removeItem('create');
-	{% endif %}
-
 	var grid = new GridModule.Grid(15);
 	var storage = 'solve-{{ author }}-{{ number }}';
 	grid.loadGrid(document.getElementById('grid'), storage);

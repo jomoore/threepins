@@ -28,8 +28,10 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		</div>
 		<div id="grid-assistant">
 			<div id="intro-message" class="instructions" style="display: none;">
+				{% block intro_text %}
 				<p>&uarr;<br>Click and type to fit some words together.</p>
 				<p class="pointy">Click on a clue to edit it. Have fun!&nbsp;</p>
+				{% endblock %}
 			</div>
 			<div id="suggestions">
 				<!-- Suggested words are shown here -->

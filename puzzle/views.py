@@ -116,8 +116,7 @@ def display_puzzle(request, obj, title, description, template):
                'across_clues': across_clues, 'down_clues': down_clues,
                'date': get_date_string(obj) if obj.pub_date <= now else None,
                'next_puzzle': next_puzzle[0].number if next_puzzle else None,
-               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None,
-               'saved_new': 'new' in request.GET}
+               'prev_puzzle': prev_puzzle[0].number if prev_puzzle else None}
     return render(request, template, context)
 
 def get_or_create_user(request):
@@ -263,15 +262,12 @@ def save(request):
     if author and author != user.username:
         raise PermissionDenied
 
-    next_url = ''
     if not number:
         previous = Puzzle.objects.filter(user=user).order_by('-number')
         number = previous[0].number + 1 if previous else 1
-        next_url = '?new'
-    next_url = reverse('puzzle', kwargs={'author': user.username, 'number': number}) + next_url
 
     save_puzzle(user, number, request.POST['ipuz'], 'visibility' in request.POST)
-    return redirect(next_url)
+    return redirect('puzzle', author=user.username, number=number)
 
 def users(request):
     """Show a list of users and their puzzles."""

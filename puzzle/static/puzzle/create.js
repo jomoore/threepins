@@ -555,11 +555,12 @@ var PuzzleCreator = (function() {
 	};
 
 	var editPuzzle = function() {
+		Display.showIntroText()
 		Display.showClues();
 		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
 		ClueCreator.connectClues(clueLists);
 		Storage.saveLocal(grid, clueLists);
-		showIntro = false;
+		showIntro = true;
 	};
 
 	var restorePuzzle = function(saved, blockImgUrl) {
