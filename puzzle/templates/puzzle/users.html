@@ -6,13 +6,16 @@
 
 {% block main %}
 <div class="simple-content">
+	<p>This is the complete list of crosswords published on this site, sorted by user.</p>
 	{% for author in user_list %}
-	<h3>{{ author.name }}</h3>
-	<ul>
-		{% for puzzle in author.puzzles %}
-		<li><a href="{% url 'puzzle' author.name puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
-		{% endfor %}
-	</ul>
+	<div>
+		<h3>{{ author.name }}</h3>
+		<ul>
+			{% for puzzle in author.puzzles %}
+			<li><a href="{% url 'puzzle' author.name puzzle.number %}"'> Puzzle #{{ puzzle.number }} &mdash; {{ puzzle.date }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
 	{% endfor %}
 </div>
 {% endblock %}

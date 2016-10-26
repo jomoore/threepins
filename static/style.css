@@ -10,6 +10,7 @@ ul { list-style: none; }
 .simple-content { margin-bottom: 20px; text-align: center; }
 .simple-content li { padding-bottom: 6px; }
 .simple-content h3 { text-align: center; font-weight: bold; font-size: 1.2em; padding-bottom: 0.2em; }
+.simple-content > div { display: inline-block; vertical-align: top; padding: 20px; }
 .simple-form { max-width: 38em; margin: auto; }
 .simple-form p { text-align: centre; padding-bottom: 0.1em; }
 .simple-form .warning { margin-bottom: 0.7em; }
@@ -90,7 +91,7 @@ nav li { display: inline; white-space: nowrap; }
 
 /* Footer */
 footer { border-top: 1px solid; clear: both; }
-footer ul { padding-left: 4em; padding-top: 0.5em; font-size: 0.8em; }
+footer ul { padding: 0.5em 0em 2em 4em; font-size: 0.8em; }
 footer li { display: inline; white-space: nowrap; }
 footer li:before { content: "\2014\2009"; }
 footer li:first-child:before { content: ""; }
