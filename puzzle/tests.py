@@ -396,6 +396,11 @@ class PuzzleViewTests(TestCase):
         response = self.client.get(reverse('users'))
         self.assertEqual(response.status_code, 200)
 
+    def test_redirect_legacy_url(self):
+        create_puzzle_range()
+        response = self.client.get('/puzzle/1', follow=True)
+        self.assertRedirects(response, '/setter/super/1/', status_code=301)
+
 
 class PuzzleEditTests(TestCase):
     """Tests for creating and editing puzzles."""

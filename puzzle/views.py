@@ -212,6 +212,11 @@ def puzzle(request, author, number):
                   get_date_string(obj) + '.'
     return display_puzzle(request, obj, title, description, 'puzzle/puzzle.html')
 
+def puzzle_redirect(request, number):
+    """Redirect from the old URL scheme where no author is specified."""
+    author = User.objects.filter(is_staff=True).order_by('date_joined').first().username
+    return redirect('puzzle', permanent=True, author=author, number=number)
+
 @login_required
 @gzip_page
 def edit(request, author, number):
