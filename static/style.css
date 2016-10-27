@@ -26,7 +26,7 @@ ul { list-style: none; }
 button, input[type=submit] { background: #adc199; color: white; border-radius: 4px; padding: 3px 4px 3px 4px; margin: 8px 0px 0px 5px; }
 button:hover, input[type=submit]:hover { background: #336600; }
 .warning { color: red; }
-.share-link { font-family: "Courier New", Courier, monospace; padding: 3px; margin: 2px; border: 1px dashed black; }
+.share-link { font-family: "Courier New", Courier, monospace; padding: 3px; margin: 2px; }
 
 /* Header */
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }

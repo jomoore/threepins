@@ -6,7 +6,7 @@
 
 {% block main %}
 <div class="simple-content">
-	<p>This is the complete list of crosswords published on this site, sorted by user.</p>
+	<p>This is the complete list of crosswords published on this site, grouped by setter.</p>
 	{% for author in user_list %}
 	<div>
 		<h3>{{ author.name }}</h3>

@@ -15,7 +15,7 @@
 	<br>
 	{% if public %}
 	<p>If you want to share it, the link is:</p>
-	<p><span class="share-link">http://www.threepins.org{% url 'puzzle' user.username number %}</span></p>
+	<p><span class="share-link"><a href="{% url 'puzzle' user.username number %}">www.threepins.org{% url 'puzzle' user.username number %}</a></span></p>
 	{% else %}
 	<p>The puzzle is not yet visible to anyone but you. If you edit and save the puzzle later, you can make it public then.</p>
 	{% endif %}

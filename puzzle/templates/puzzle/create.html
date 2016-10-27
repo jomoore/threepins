@@ -60,19 +60,19 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 		</div>
 		<div class="buttons">
 			<button onclick="Display.showHelpText()">Help</button>
-			<button onclick="Display.showSaveForm()">Save online</button>
+			<button id="cancel" onclick="PuzzleCreator.cancelEdit()">Cancel edit</button>
+			<button id="restart" onclick="PuzzleCreator.restart()">Start over</button>
 			<button onclick="PuzzleCreator.printPuzzle()">Print puzzle</button>
 			<button onclick="PuzzleCreator.printSolution()">Print solution</button>
 			<button onclick="PuzzleCreator.downloadIpuz()">Download as ipuz</button>
-			<button id="cancel" onclick="PuzzleCreator.cancelEdit()">Cancel edit</button>
-			<button id="restart" onclick="PuzzleCreator.restart()">Start over</button>
+			<button onclick="Display.showSaveForm()">Save online</button>
 		</div>
 	</div>
 	<div id="save-puzzle" class="simple-content simple-form" style="display: none">
 		<h3>Save</h3>
 		<form action="{% url 'save' %}" method="post" id="save-form" onsubmit="return PuzzleCreator.validateSaveForm()">{% csrf_token %}
 			{% if not user.is_authenticated %}
-			<p>Create your login details, or enter your existing ones</p>
+			<p>Create your setter login details, or enter your existing ones</p>
 			<label for="save-username">Pseudonym:</label>
 			<input type="text" name="username" id="save-username">
 			<label for="save-password">Password:</label>

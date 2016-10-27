@@ -654,7 +654,7 @@ var PuzzleCreator = (function() {
 		},
 
 		cancelEdit: function() {
-			if (window.confirm('Do you want to cancel all changes and go back to the saved version?')) {
+			if (window.confirm('Do you want to cancel any changes and go back to the saved version?')) {
 				Storage.clearLocal();
 				window.location.href = saveUrl;
 			}
