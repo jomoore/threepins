@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from puzzle.models import Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed
-from puzzle.views import create_grid, create_thumbnail, get_clues, get_date_string
+from puzzle.construction import create_grid, create_thumbnail, get_clues, get_date_string
 from puzzle.admin import import_from_xml, import_blank_from_ipuz
 from visitors.models import Visitor
 
@@ -496,6 +496,54 @@ class PuzzleEditTests(TestCase):
         self.verify_entry(entries[3], {'puzzle': puz, 'clue': '2d', 'answer': 'c-nz',
                                        'startx': 2, 'starty': 0, 'down': True})
         self.client.logout()
+
+    def test_new_user_save_puzzle(self):
+        """Check that new users can create credentials and save."""
+        ipuz = '{' \
+               '"version":"http://ipuz.org/v2","kind":["http://ipuz.org/crossword#1"],' \
+               '"dimensions":{"width":3,"height":3},"showenumerations":true,' \
+               '"puzzle":[[1,0,2],[0,"#",0],[3,0,0]],' \
+               '"clues":{' \
+               '"Across":[' \
+               '{"number":1,"clue":"1a","enumeration":"2,1"},' \
+               '{"number":3,"clue":"3a","enumeration":"3"}],' \
+               '"Down":[' \
+               '{"number":1,"clue":"1d","enumeration":"3"},' \
+               '{"number":2,"clue":"2d","enumeration":"1-2"}]},' \
+               '"solution":[["A","B","C"],["M","#","N"],["X","Y","Z"]]' \
+               '}'
+        response = self.client.post(reverse('save'), {'author': '', 'number': '', 'ipuz': ipuz,
+                                                      'username': 'Newbie', 'password': 'secret',
+                                                      'email': 'noob@example.com'})
+        self.assertEqual(response.status_code, 200)
+
+        user = User.objects.get(username='Newbie')
+        self.assertEqual(user.email, 'noob@example.com')
+        puz = Puzzle.objects.get(user=user, number=1)
+        self.assertEqual(len(Entry.objects.filter(puzzle=puz)), 4)
+
+    def test_existing_user_login_save(self):
+        """Check that existing users can provide credentials and save."""
+        ipuz = '{' \
+               '"version":"http://ipuz.org/v2","kind":["http://ipuz.org/crossword#1"],' \
+               '"dimensions":{"width":3,"height":3},"showenumerations":true,' \
+               '"puzzle":[[1,0,2],[0,"#",0],[3,0,0]],' \
+               '"clues":{' \
+               '"Across":[' \
+               '{"number":1,"clue":"1a","enumeration":"2,1"},' \
+               '{"number":3,"clue":"3a","enumeration":"3"}],' \
+               '"Down":[' \
+               '{"number":1,"clue":"1d","enumeration":"3"},' \
+               '{"number":2,"clue":"2d","enumeration":"1-2"}]},' \
+               '"solution":[["A","B","C"],["M","#","N"],["X","Y","Z"]]' \
+               '}'
+        user = get_user()
+        response = self.client.post(reverse('save'), {'author': '', 'number': '', 'ipuz': ipuz,
+                                                      'username': user.username,
+                                                      'password': 'password', 'email': ''})
+        self.assertEqual(response.status_code, 200)
+        puz = Puzzle.objects.get(user=user, number=1)
+        self.assertEqual(len(Entry.objects.filter(puzzle=puz)), 4)
 
     def test_update_existing_puzzle(self):
         """Check that POSTed data can overwrite existing puzzle data."""
