@@ -82,7 +82,7 @@ def get_clues(obj, grid, down):
         numeration = sub(r'[^ -]+', lambda m: str(len(m.group(0))), sub("'", '', entry.answer))
         numeration = sub(' ', ',', numeration)
         clues.append({'number': grid[entry.y][entry.x]['number'], 'clue': entry.clue,
-                      'numeration': numeration})
+                      'numeration': numeration, 'x': entry.x, 'y': entry.y})
     return clues
 
 def get_date_string(obj):

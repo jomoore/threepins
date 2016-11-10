@@ -804,26 +804,21 @@ QUnit.test('Clear all', function(assert) {
 });
 
 QUnit.module('Grid-fill');
-QUnit.test('Get grid numbers', function(assert) {
+QUnit.test('Get clue data', function(assert) {
 	var size = 5;
 	Builder.createAlternating(size, 1);
 	var grid = createGrid(size, Builder.fixture);
 	assert.ok(grid, 'Grid created');
 
-	var clueNums = grid.getClueNums();
-	assert.deepEqual(clueNums.across, ['1', '4', '5'], 'Across clue numbers match');
-	assert.deepEqual(clueNums.down, ['1', '2', '3'], 'Down clue numbers match');
-});
-
-QUnit.test('Get word lengths', function(assert) {
-	var size = 5;
-	Builder.createAlternating(size, 1);
-	var grid = createGrid(size, Builder.fixture);
-	assert.ok(grid, 'Grid created');
-
-	var wordLengths = grid.getWordLengths();
-	assert.deepEqual(wordLengths.across, [5, 5, 5], 'Across lengths match');
-	assert.deepEqual(wordLengths.down, [5, 5, 5], 'Down lengths match');
+	var clueData = grid.getClueData();
+	assert.deepEqual(clueData.across, [{x: 0, y: 0, clueNum: '1', wordLen: 5},
+									   {x: 0, y: 2, clueNum: '4', wordLen: 5},
+									   {x: 0, y: 4, clueNum: '5', wordLen: 5}],
+					 'Across clue data matches');
+	assert.deepEqual(clueData.down, [{x: 0, y: 0, clueNum: '1', wordLen: 5},
+									 {x: 2, y: 0, clueNum: '2', wordLen: 5},
+									 {x: 4, y: 0, clueNum: '3', wordLen: 5}],
+					 'Down clue data matches');
 });
 
 QUnit.test('Get text', function(assert) {

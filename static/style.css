@@ -61,7 +61,7 @@ nav li { display: inline; white-space: nowrap; }
 #blanks { overflow: auto; }
 #blanks > svg { float: left; padding: 2px; border: 5px solid transparent; }
 #blanks > svg:hover { border: 5px solid #336600; cursor: pointer; }
-#suggestions, #intro-message { text-align: center; height: 7.5em; margin-top: 10px; overflow: auto; }
+#suggestions, #intro-message { text-align: center; height: 7.5em; margin-top: 5px; overflow: auto; }
 .suggestion { font-size: 0.8em; padding: 0em 0.2em 0em 0.2em; border-radius: 5px; white-space: nowrap; }
 .suggestion:hover { background: #ffffba; cursor: pointer; }
 .padding { padding-bottom: 2em; }
@@ -71,6 +71,8 @@ nav li { display: inline; white-space: nowrap; }
 #save-puzzle p, #login-form p { margin-bottom: 0.6em; }
 #save-puzzle { margin-left: 10px; padding: 20px; border: 1px solid black; }
 #save-puzzle .buttons { padding: 15px; }
+#edit-controls { text-align: right; margin-top: 5px; font-size: 0.9em; }
+#edit-controls label { padding-left: 5px; }
 
 /* Clue Creator */
 .user-clue { margin-bottom: 4px; }

@@ -26,6 +26,14 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			</div>
 			{% block render_grid %}{% endblock %}
 		</div>
+		<div id="edit-controls" style="display: none;">
+			<form action="">
+				<label for="edit-letters">Edit text</label>
+				<input type="radio" name="edit-mode" id="edit-letters" checked />
+				<label for="edit-pattern">Edit pattern</label>
+				<input type="radio" name="edit-mode" id="edit-pattern" />
+			</form>
+		</div>
 		<div id="grid-assistant">
 			<div id="intro-message" class="instructions" style="display: none;">
 				{% block intro_text %}
@@ -105,6 +113,9 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 			Click on any word or phrase to insert it into the grid, and the clue enumeration will automatically update to match.</p>
 		<p>As you fill words in, you may find places where nothing good fits - that's part of the challenge! To backtrack,
 			select an entry in the grid and click &lsquo;clear&rsquo; in the box underneath.</p>
+		<p>To add or remove black squares, select the &lsquo;Edit pattern&rsquo; radio button beneath the grid and then click the squares
+			you want to change. Clue numbers and enumeration will automatically change to match the grid. When done, select the
+			&lsquo;Edit text&rsquo; radio button to go back to filling in words.</p>
 		<p>Progress is automatically saved in your browser as you go along, and will persist until its cache is cleared or you click &lsquo;start over&rsquo;.</p>
 
 		<h4>Writing clues</h4>
@@ -122,8 +133,7 @@ An online crossword composer. Create your own 15x15 blocked puzzle here.
 
 		<h4>Upcoming features</h4>
 		<p>There are plenty of things this tool can't yet do. Plans for the future include:
-			<ul><li>User modification of grids to add or remove black squares</li>
-				<li>Manual adjustment of clue enumeration for words not in the dictionary</li>
+			<ul><li>Manual adjustment of clue enumeration for words not in the dictionary</li>
 				<li>Downloading completed crosswords in PDF format</li></ul>
 			If there's something else you'd like to see, please <a href="{% url 'contact' %}">get in touch</a>. For any technical problems, you can also log
 				an issue on the site's <a href="https://github.com/jomoore/threepins">github page</a>.</p>

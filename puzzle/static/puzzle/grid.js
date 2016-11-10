@@ -451,39 +451,27 @@ var GridModule = (function() {
 					(!down && y < (size - 1) && getLetter(x, y + 1)));
 		};
 
-		this.getClueNums = function() {
-			var clueNums = {across: [], down: []};
+		this.getClueData = function() {
+			var clueData = {across: [], down: []};
 			iterateLights(function(x, y) {
+				var wordLen;
+
 				if (headAcross(x, y)) {
-					clueNums.across.push(getClueNumber(x, y));
+					wordLen = 1;
+					while ((x + wordLen < size) && grid[x + wordLen][y].light)
+						wordLen++;
+					clueData.across.push({x: x, y: y, clueNum: getClueNumber(x, y), wordLen: wordLen});
 				}
 
 				if (headDown(x, y)) {
-					clueNums.down.push(getClueNumber(x, y));
+					wordLen = 1;
+					while ((y + wordLen < size) && grid[x][y + wordLen].light)
+						wordLen++;
+					clueData.down.push({x: x, y: y, clueNum: getClueNumber(x, y), wordLen: wordLen});
 				}
 			});
 
-			return clueNums;
-		};
-
-		this.getWordLengths = function() {
-			var wordLengths = {across: [], down: []};
-			iterateLights(function(x, y) {
-				var length = 1;
-				if (headAcross(x, y)) {
-					while ((x + length < size) && grid[x + length][y].light)
-						length++;
-					wordLengths.across.push(length);
-				}
-
-				if (headDown(x, y)) {
-					while ((y + length < size) && grid[x][y + length].light)
-						length++;
-					wordLengths.down.push(length);
-				}
-			});
-
-			return wordLengths;
+			return clueData;
 		};
 
 		this.getActiveEntry = function() {

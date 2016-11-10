@@ -22,7 +22,26 @@
  */
 
 var GridCreator = (function() {
-	var createSquare = function(x, y, isBlock, blockImgUrl, number, letter) {
+	var blockImg;
+
+	var addBlockImg = function(square) {
+		if (blockImg) {
+			// Add image for print
+			var img = document.createElement('img');
+			img.src = blockImg;
+			img.alt = 'block';
+			square.appendChild(img);
+		}
+	};
+
+	var addGridNumber = function(square, number) {
+		var gn = document.createElement('div');
+		gn.innerHTML = number;
+		ClassShim.addClass(gn, 'grid-number');
+		square.appendChild(gn);
+	};
+
+	var createSquare = function(x, y, isBlock, number, letter) {
 		var sq = document.createElement('div');
 		sq.setAttribute('data-x', x);
 		sq.setAttribute('data-y', y);
@@ -33,20 +52,11 @@ var GridCreator = (function() {
 
 		if (isBlock) {
 			ClassShim.addClass(sq, 'block');
-			if (blockImgUrl) {
-				// Add image for print
-				var img = document.createElement('img');
-				img.src = blockImgUrl;
-				img.alt = 'block';
-				sq.appendChild(img);
-			}
+			addBlockImg(sq);
 		} else {
 			ClassShim.addClass(sq, 'light');
 			if (number) {
-				var gn = document.createElement('div');
-				gn.innerHTML = number;
-				ClassShim.addClass(gn, 'grid-number');
-				sq.appendChild(gn);
+				addGridNumber(sq, number);
 			}
 
 			if (letter) {
@@ -60,6 +70,49 @@ var GridCreator = (function() {
 		return sq;
 	};
 
+	var renumberGrid = function(container) {
+		var gridNumber = 1;
+		var squares = container.querySelectorAll('.block, .light');
+		var size = Math.sqrt(squares.length);
+		var i;
+
+		var isBlock = [];
+		for (i = 0; i < squares.length; i++) {
+			isBlock.push(ClassShim.hasClass(squares[i], 'block'));
+		}
+
+		for (i = 0; i < squares.length; i++) {
+			var x = i % size;
+			var y = Math.floor(i / size);
+
+			if (!isBlock[i]) {
+				var oldNum = squares[i].getElementsByClassName('grid-number');
+				if (oldNum.length)
+					squares[i].removeChild(oldNum[0]);
+
+				var headAcross = ((x < size - 1) && !isBlock[i + 1] && (x == 0 || isBlock[i - 1]));
+				var headDown = ((y < size - 1) && !isBlock[i + size] && (y == 0 || isBlock[i - size]));
+				if (headAcross || headDown)
+					addGridNumber(squares[i], gridNumber++);
+			}
+		}
+	};
+
+	var toggleSquare = function(container, div) {
+		if (ClassShim.hasClass(div, 'light')) {
+			div.innerHTML = '';
+			ClassShim.removeClass(div, 'light');
+			ClassShim.addClass(div, 'block');
+			addBlockImg(div);
+		} else {
+			div.innerHTML = '';
+			ClassShim.removeClass(div, 'block');
+			ClassShim.addClass(div, 'light');
+		}
+
+		renumberGrid(container);
+	};
+
 	return {
 		createBlankGrid: function(svg, container, blockImgUrl) {
 			var gridNumber = 1;
@@ -67,6 +120,7 @@ var GridCreator = (function() {
 			var size = Math.sqrt(rects.length);
 			var i;
 
+			blockImg = blockImgUrl;
 			var isBlock = [];
 			for (i = 0; i < rects.length; i++) {
 				var color = rects[i].style.fill.replace(/ /g, '');
@@ -86,38 +140,24 @@ var GridCreator = (function() {
 						number = gridNumber++;
 				}
 
-				container.appendChild(createSquare(x, y, isBlock[i], blockImgUrl, number));
+				container.appendChild(createSquare(x, y, isBlock[i], number));
 			}
 		},
 
 		createIpuzGrid: function(container, puzzle, solution, blockImgUrl) {
+			blockImg = blockImgUrl;
 			for (var row = 0; row < puzzle.length; row++) {
 				for (var col = 0; col < puzzle[row].length; col++) {
 					var isBlock = (puzzle[row][col] === '#');
 					var number = isBlock ? 0 : puzzle[row][col];
 					var letter = solution[row][col];
 
-					container.appendChild(createSquare(col, row, isBlock, blockImgUrl, number, letter));
+					container.appendChild(createSquare(col, row, isBlock, number, letter));
 				}
 			}
 		},
 
-		connectControls: function(container, grid, ip, antiqueIE) {
-			grid.loadGrid(container);
-
-			var input = new GridModule.GridInput(grid);
-			input.registerControl(ip, antiqueIE);
-
-			var squares = container.querySelectorAll('.block, .light');
-			for (var i = 0; i < squares.length; i++) {
-				squares[i].addEventListener('mousedown', function(e) {
-					if (grid.activateClicked(this))
-						input.reset();
-					e.preventDefault();
-					return false;
-				});
-			}
-		},
+		toggleSquare: toggleSquare,
 	};
 })();
 
@@ -286,8 +326,10 @@ var ClueCreator = (function() {
 			input.focus();
 		};
 
-		var initClue = function(clueNum, clueText, wordLength) {
+		var initClue = function(clueNum, clueText, wordLength, x, y) {
 			li = document.createElement('li');
+			li.setAttribute('data-x', x);
+			li.setAttribute('data-y', y);
 			var content = '<span class="clue-number">' + clueNum + ' </span>';
 
 			if (clueText.length)
@@ -304,18 +346,62 @@ var ClueCreator = (function() {
 		};
 
 		// Poor man's constructor overloading - initialise either from number/text/numeration or from an existing li
-		if (arguments.length == 3)
-			initClue(arguments[0], arguments[1], arguments[2]);
+		if (arguments.length == 5)
+			initClue(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 		else {
 			li = arguments[0];
 			li.addEventListener('click', editClue);
 		}
 	};
 
-	var createClueLists = function(clueNumArr, lengthArr, box) {
-		for (var i = 0; i < clueNumArr.length; i++) {
-			var clue = new ClueInput(clueNumArr[i], '', lengthArr[i]);
+	var createClueLists = function(clueData, box) {
+		for (var i = 0; i < clueData.length; i++) {
+			var clue = new ClueInput(clueData[i].clueNum, '', clueData[i].wordLen, clueData[i].x, clueData[i].y);
 			box.appendChild(clue.getListItem());
+		}
+	};
+
+	var renumberClueLists = function(clueData, box, down) {
+		var lis = box.getElementsByTagName('li');
+		var liIndex = 0;
+		var cdIndex = 0;
+		var li, x, y;
+		
+		while (cdIndex < clueData.length) {
+			li = lis[liIndex] || null;
+			if (li) {
+				x = li.getAttribute('data-x');
+				y = li.getAttribute('data-y');
+			}
+
+			if ((!down && clueData[cdIndex].y == y && Math.abs(clueData[cdIndex].x - x) <= 1) ||
+				(down && clueData[cdIndex].x == x && Math.abs(clueData[cdIndex].y - y) <= 1)) {
+				// Found an existing clue which matches
+				var numeration = li.getElementsByClassName('numeration')[0];
+				var oldLen = numeration.textContent.match(/[0-9]+/g).reduce(function (a, b) {
+					return a + parseInt(b);
+				}, 0);
+
+				if (oldLen != clueData[cdIndex].wordLen)
+					numeration.textContent = ' (' + clueData[cdIndex].wordLen + ')';
+				li.getElementsByClassName('clue-number')[0].textContent = clueData[cdIndex].clueNum + ' ';
+				++liIndex;
+				++cdIndex;
+			} else if (li == null || clueData[cdIndex].y < y || (clueData[cdIndex].y == y && clueData[cdIndex].x < x)) {
+				// New clue needs to be inserted
+				var clue = new ClueInput(clueData[cdIndex].clueNum, '', clueData[cdIndex].wordLen, clueData[cdIndex].x, clueData[cdIndex].y);
+				box.insertBefore(clue.getListItem(), li);
+				++liIndex;
+				++cdIndex;
+			} else {
+				// Old clue needs to be deleted
+				box.removeChild(li);
+			}
+		}
+
+		while (liIndex < lis.length) {
+			// Delete any leftover clues
+			box.removeChild(lis[liIndex]);
 		}
 	};
 
@@ -325,9 +411,9 @@ var ClueCreator = (function() {
 			changeCallback = change;
 		},
 
-		createClues: function(clueLists, clueNums, wordLengths) {
-			createClueLists(clueNums.across, wordLengths.across, clueLists[0]);
-			createClueLists(clueNums.down, wordLengths.down, clueLists[1]);
+		createClues: function(clueLists, clueData) {
+			createClueLists(clueData.across, clueLists[0]);
+			createClueLists(clueData.down, clueLists[1]);
 		},
 
 		connectClues: function(clueLists) {
@@ -337,6 +423,11 @@ var ClueCreator = (function() {
 					ClueInput(lis[i]);
 				}
 			}
+		},
+
+		renumberClues: function(clueLists, clueData) {
+			renumberClueLists(clueData.across, clueLists[0], false);
+			renumberClueLists(clueData.down, clueLists[1], true);
 		},
 
 		setNumeration: function(clueLists, direction, index, answer) {
@@ -363,10 +454,10 @@ var ClueCreator = (function() {
 			return clues;
 		},
 
-		setIpuzClues: function(clueList, clues) {
+		setIpuzClues: function(clueList, clueData, clues) {
 			clueList.innerHTML = '';
 			for (var i = 0; i < clues.length; i++) {
-				var clue = new ClueInput(clues[i].number, clues[i].clue, clues[i].enumeration);
+				var clue = new ClueInput(clues[i].number, clues[i].clue, clues[i].enumeration, clueData[i].x, clueData[i].y);
 				clueList.appendChild(clue.getListItem());
 			}
 		},
@@ -419,6 +510,10 @@ var Display = (function() {
 			clearGridBox();
 			document.getElementById('blanks').style.display = 'none';
 			document.getElementById('choose-grid-message').style.display = 'none';
+		},
+
+		showEditControls: function() {
+			document.getElementById('edit-controls').style.display = 'block';
 		},
 
 		showClues: function() {
@@ -554,10 +649,35 @@ var PuzzleCreator = (function() {
 		Storage.saveLocal(grid, clueLists);
 	};
 
+	var connectGridControls = function() {
+		grid.loadGrid(gridBox);
+
+		var input = new GridModule.GridInput(grid);
+		input.registerControl(document.getElementById('ip'), document.getElementById('antique-IE'));
+
+		var squares = gridBox.querySelectorAll('.block, .light');
+		for (var i = 0; i < squares.length; i++) {
+			squares[i].addEventListener('mousedown', function(e) {
+				if (document.getElementById('edit-pattern').checked) {
+					grid.clearActive();
+					GridCreator.toggleSquare(gridBox, this);
+					grid.loadGrid(gridBox);
+					ClueCreator.renumberClues(clueLists, grid.getClueData());
+					Storage.saveLocal(grid, clueLists);
+				} else {
+					if (grid.activateClicked(this))
+						input.reset();
+				}
+				e.preventDefault();
+			});
+		}
+	};
+
 	var editPuzzle = function() {
+		Display.showEditControls();
 		Display.showIntroText();
 		Display.showClues();
-		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
+		connectGridControls();
 		ClueCreator.connectClues(clueLists);
 		Storage.saveLocal(grid, clueLists);
 		showIntro = true;
@@ -565,21 +685,25 @@ var PuzzleCreator = (function() {
 
 	var restorePuzzle = function(saved, blockImgUrl) {
 		Display.clearGridBox();
+		Display.showEditControls();
 		Display.showClues();
 		GridCreator.createIpuzGrid(gridBox, saved.puzzle, saved.solution, blockImgUrl);
-		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
-		ClueCreator.setIpuzClues(clueLists[0], saved.clues.Across);
-		ClueCreator.setIpuzClues(clueLists[1], saved.clues.Down);
+		connectGridControls();
+
+		var clueData = grid.getClueData();
+		ClueCreator.setIpuzClues(clueLists[0], clueData.across, saved.clues.Across);
+		ClueCreator.setIpuzClues(clueLists[1], clueData.down, saved.clues.Down);
 		showIntro = false;
 	};
 
 	var newPuzzle = function(svg, blockImgUrl) {
 		Display.hideBlanks();
+		Display.showEditControls();
 		Display.showClues();
 		Display.showIntroText();
 		GridCreator.createBlankGrid(svg, gridBox, blockImgUrl);
-		GridCreator.connectControls(gridBox, grid, document.getElementById('ip'), document.getElementById('antique-IE'));
-		ClueCreator.createClues(clueLists, grid.getClueNums(), grid.getWordLengths());
+		connectGridControls();
+		ClueCreator.createClues(clueLists, grid.getClueData());
 		Storage.saveLocal(grid, clueLists);
 	};
 

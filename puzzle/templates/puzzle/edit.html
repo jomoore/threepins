@@ -39,12 +39,12 @@
 
 {% block across_clues %}
 {% for c in across_clues %}
-<li class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
+<li data-x="{{ c.x }}" data-y="{{ c.y }}" class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
 {% endfor %}
 {% endblock %}
 
 {% block down_clues %}
 {% for c in down_clues %}
-<li class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
+<li data-x="{{ c.x }}" data-y="{{ c.y }}" class="user-clue select-clue {% if not c.clue|length %}blank-clue{% endif %}"><span class="clue-number">{{ c.number }} </span>{% if c.clue|length %}<span class="clue-text">{{ c.clue|safe }}</span>{% endif %}<span class="numeration"> ({{ c.numeration }})</span></li>
 {% endfor %}
 {% endblock %}
