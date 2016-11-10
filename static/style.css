@@ -32,7 +32,7 @@ button:hover, input[type=submit]:hover { background: #336600; }
 header { text-align: center; margin: auto; padding-top: 5px; width: 250px; }
 header img { float: left; border: 0px; }
 nav { clear: left; font-weight: bold; text-align: center; margin: 10px 0px 20px 0px;
-	  background: url(images/nav.png) repeat-x; background-size: contain; }
+      background: url(images/nav.png) repeat-x; background-size: contain; }
 nav ul { padding: 5px; }
 nav li { display: inline; white-space: nowrap; }
 
@@ -99,21 +99,21 @@ footer li:before { content: "\2014\2009"; }
 footer li:first-child:before { content: ""; }
 
 @media screen {
-	body { font-size: 0.85em; }
-	h1 { padding-left: 10px; }
-	h2 { padding-left: 10px; }
-	h3 { font-size: 0.8em; }
-	nav li { padding: 5px; }
-	#grid-wrapper { display: inline-block; margin: 0px 20px 20px 10px; }
-	#grid { height: 301px; }
-	#grid, #grid-assistant, #grid-wrapper > .buttons { width: 301px; }
-	.light, .block { width: 19px; height: 19px; line-height: 19px; border-bottom: 1px solid black; border-right: 1px solid black; }
-	.topmost { border-top: 1px solid black; }
-	.leftmost { border-left: 1px solid black; }
-	#grid img { display: none; }
-	.grid-number { top: 0px; font-size: 9px; }
-	#clues { display: inline-block; }
-	.clue-box { width: 280px; }
+    body { font-size: 0.85em; }
+    h1 { padding-left: 10px; }
+    h2 { padding-left: 10px; }
+    h3 { font-size: 0.8em; }
+    nav li { padding: 5px; }
+    #grid-wrapper { display: inline-block; margin: 0px 20px 20px 10px; }
+    #grid { height: 301px; }
+    #grid, #grid-assistant, #grid-wrapper > .buttons { width: 301px; }
+    .light, .block { width: 19px; height: 19px; line-height: 19px; border-bottom: 1px solid black; border-right: 1px solid black; }
+    .topmost { border-top: 1px solid black; }
+    .leftmost { border-left: 1px solid black; }
+    #grid img { display: none; }
+    .grid-number { top: 0px; font-size: 9px; }
+    #clues { display: inline-block; }
+    .clue-box { width: 280px; }
     #blanks { width: 100%; }
     #blanks > svg { margin-left: 30px; }
     #help-text { width: 90%; }
@@ -123,30 +123,30 @@ footer li:first-child:before { content: ""; }
 }
 
 @media screen and (min-width: 500px) {
-	body { font-size: 1em; }
-	h3 { font-size: 1em; }
-	#grid { height: 436px; }
-	#grid, #grid-assistant, #grid-wrapper > .buttons { width: 436px; margin-left: 30px; }
+    body { font-size: 1em; }
+    h3 { font-size: 1em; }
+    #grid { height: 436px; }
+    #grid, #grid-assistant, #grid-wrapper > .buttons { width: 436px; margin-left: 30px; }
     #save-puzzle { margin-left: 30px; }
-	.light, .block { width: 28px; height: 28px; line-height: 28px; }
-	.grid-number { font-size: 11px; }
+    .light, .block { width: 28px; height: 28px; line-height: 28px; }
+    .grid-number { font-size: 11px; }
     #blanks > svg { margin-left: 0px; }
 }
 
 @media screen and (min-width: 580px) {
-	.clue-box { width: 300px; }
+    .clue-box { width: 300px; }
 }
 
 @media screen and (min-width: 690px) {
-	nav { font-size: 1.4em; }
-	nav li { padding: 15px; }
+    nav { font-size: 1.4em; }
+    nav li { padding: 15px; }
 }
 
 @media screen and (min-width: 720px) {
-	.simple-form label { text-align: right; margin-left: 0em; }
+    .simple-form label { text-align: right; margin-left: 0em; }
     .simple-form .checkbox-label { margin-left: 10em; }
-	.simple-form input[type=submit] { margin-right: 1em; }
-	#contact p { padding-left: 5em; }
+    .simple-form input[type=submit] { margin-right: 1em; }
+    #contact p { padding-left: 5em; }
 }
 
 @media screen and (min-width: 870px) {
@@ -155,8 +155,8 @@ footer li:first-child:before { content: ""; }
 }
 
 @media screen and (min-width: 900px) {
-	nav { font-size: 1.8em; }
-	nav li { padding: 20px; }
+    nav { font-size: 1.8em; }
+    nav li { padding: 20px; }
 }
 
 @media screen and (min-width: 1020px) {
@@ -169,24 +169,24 @@ footer li:first-child:before { content: ""; }
 }
 
 @media screen and (min-width: 1280px) {
-	.clue-box { width: 320px; }
+    .clue-box { width: 320px; }
     #blanks { width: 700px; }
 }
 
 @media print {
-	a, header img, nav, #grid-assistant, .hide-solution .letter, #grid > input, .buttons, footer { display: none; }
-	body { font-size: 0.75em; }
-	h3 { font-size: 0.8em; }
-	#grid-wrapper { display: block; margin: auto; padding: 15px 0px 30px 0px; width: 376px; }
-	#grid { width: 376px; height: 376px; }
-	.light, .block { width: 24px; height: 24px; line-height: 24px; border-bottom: 1px solid grey; border-right: 1px solid grey; }
-	.topmost { border-top: 1px solid grey; }
-	.leftmost { border-left: 1px solid grey; }
-	#grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
-	.grid-number { top: 1px; font-size: 9px; }
-	#clues { display: block; width: 630px; margin: auto; }
-	.clue-box { width: 260px; }
-	.clue-box li { padding: 1px; }
+    a, header img, nav, #grid-assistant, .hide-solution .letter, #grid > input, .buttons, footer { display: none; }
+    body { font-size: 0.75em; }
+    h3 { font-size: 0.8em; }
+    #grid-wrapper { display: block; margin: auto; padding: 15px 0px 30px 0px; width: 376px; }
+    #grid { width: 376px; height: 376px; }
+    .light, .block { width: 24px; height: 24px; line-height: 24px; border-bottom: 1px solid grey; border-right: 1px solid grey; }
+    .topmost { border-top: 1px solid grey; }
+    .leftmost { border-left: 1px solid grey; }
+    #grid img { height: 100%; width: 100%; position: absolute; left: 0px; top: 0px;}
+    .grid-number { top: 1px; font-size: 9px; }
+    #clues { display: block; width: 630px; margin: auto; }
+    .clue-box { width: 260px; }
+    .clue-box li { padding: 1px; }
 }
 
 @page { size: portrait; }
