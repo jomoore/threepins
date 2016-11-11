@@ -72,7 +72,6 @@ nav li { display: inline; white-space: nowrap; }
 #save-puzzle { margin-left: 10px; padding: 20px; border: 1px solid black; }
 #save-puzzle .buttons { padding: 15px; }
 #edit-controls { text-align: right; margin-top: 5px; font-size: 0.9em; }
-#edit-controls label { padding-left: 5px; }
 #edit-controls label { padding-left: 5px; vertical-align: middle; }
 #edit-controls input[type="radio"] { vertical-align: middle; margin-top: 1px; }
 
