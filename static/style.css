@@ -73,7 +73,7 @@ nav li { display: inline; white-space: nowrap; }
 #save-puzzle .buttons { padding: 15px; }
 #edit-controls { text-align: right; margin-top: 5px; font-size: 0.9em; }
 #edit-controls label { padding-left: 5px; }
-#edit-controls input[type="radio"] { vertical-align: top; margin-top: 3px; }
+#edit-controls input[type="radio"] { vertical-align: top; margin-top: 0.25em; }
 
 /* Clue Creator */
 .user-clue { margin-bottom: 4px; }
