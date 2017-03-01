@@ -68,7 +68,7 @@ The JavaScript has QUnit tests. Open tests/js/qunit.html in a browser to run the
 Configuration files are provided for [Pylint](https://www.pylint.org/) and [ESLint](http://eslint.org/).
 Package [pylint-django](https://github.com/landscapeio/pylint-django) is used to filter out Django-specific warnings.
 
-    ```
+    ```bash
     pyvenv lint-venv
     source lint-venv/bin/activate
     pip install -r requirements.txt
