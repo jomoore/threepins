@@ -73,7 +73,7 @@ pyvenv lint-venv
 source lint-venv/bin/activate
 pip install -r requirements.txt
 pip install pylint-django
-pylint --load-plugins pylint_django puzzle
+pylint puzzle
 ```
 
 ## Deployment
