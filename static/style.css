@@ -51,7 +51,7 @@ nav li { display: inline; white-space: nowrap; }
 .buttons { text-align: right; padding-right: 10px; display: flex; justify-content: flex-end; flex-wrap: wrap; }
 
 /* Clues */
-.puzzle { clear: left; background: url(images/smudge.jpg) bottom right no-repeat; padding-bottom: 20px; }
+.puzzle { clear: left; background: url(images/smudge.jpg) bottom right no-repeat; padding-bottom: 20px; max-width: 1260px; margin: auto; }
 .clue-box { display: inline-block; vertical-align: top; padding-left: 30px; margin: 0px 20px 20px -1px; }
 .clue-box:nth-child(2) { border-left: 1px dashed; }
 .clue-number { font-weight: bold; }
