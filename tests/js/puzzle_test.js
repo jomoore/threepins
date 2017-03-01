@@ -976,6 +976,9 @@ QUnit.test('Change listener', function(assert) {
 	grid.clearActive();				 
 	assert.equal(callCount, ++expectedCount, 'Listener called when clearing entry');
 	assert.equal(changeType, 'move', 'Change type move');
+	grid.activateClicked(nodeList.gridItem(1,1));
+	assert.equal(callCount, ++expectedCount, 'Listener called when clearing entry by clicking a block');
+	assert.equal(changeType, 'move', 'Change type move');
 
 	grid.activateClicked(nodeList.gridItem(0, 0));
 	assert.equal(callCount, ++expectedCount, 'Reset to known position');

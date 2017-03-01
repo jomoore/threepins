@@ -200,12 +200,12 @@ var GridModule = (function() {
 		var doClearActive = function() {
 			clearHighlights();
 			active.clear();
+			if (changeListener)
+				changeListener('move');
 		};
 
 		this.clearActive = function() {
 			doClearActive();
-			if (changeListener)
-				changeListener('move');
 		};
 
 		this.activateClicked = function(div) {
