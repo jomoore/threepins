@@ -63,6 +63,19 @@ python manage.py test
 
 The JavaScript has QUnit tests. Open tests/js/qunit.html in a browser to run them.
 
+## Linting
+
+Configuration files are provided for [Pylint](https://www.pylint.org/) and [ESLint](http://eslint.org/).
+Package [pylint-django](https://github.com/landscapeio/pylint-django) is used to filter out Django-specific warnings.
+
+    ```
+    pyvenv lint-venv
+    source lint-venv/bin/activate
+    pip install -r requirements.txt
+    pip install pylint-django
+    pylint --load-plugins pylint_django puzzle
+    ```
+
 ## Deployment
 
 The website is currently deployed on heroku. See <https://devcenter.heroku.com/articles/getting-started-with-python> to do the same.
