@@ -79,7 +79,7 @@ pylint puzzle
 ## Deployment
 
 The website is currently deployed on heroku. See <https://devcenter.heroku.com/articles/getting-started-with-python> to do the same.
-The environment variables above all need to be set in the staging and production environments, plus [SECRET_KEY](https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/).
+The environment variables above all need to be set in the staging and production environments, plus [SECRET_KEY](https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/) and `SECURE_SSL_REDIRECT`.
 
 See also <https://devcenter.heroku.com/articles/heroku-postgresql#pg-push-and-pg-pull> to copy the database between development and staging.
 
