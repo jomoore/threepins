@@ -9,8 +9,8 @@ from puzzle.feeds import PuzzleFeed
 
 urlpatterns = [ #pylint: disable=invalid-name
     url(r'^$', views.latest, name='latest'),
-    url(r'^login/$', auth_views.login, {'template_name': 'puzzle/login.html'}, name='login'),
-    url(r'^logout/$', auth_views.logout, {'next_page': 'latest'}, name='logout'),
+    url(r'^login/$', auth_views.LoginView.as_view(template_name='puzzle/login.html'), name='login'),
+    url(r'^logout/$', auth_views.LogoutView.as_view(next_page='latest'), name='logout'),
     url(r'^create/$', views.create, name='create'),
     url(r'^save/$', views.save, name='save'),
     url(r'^rss/$', PuzzleFeed(), name='rss'),
