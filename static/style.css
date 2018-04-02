@@ -175,7 +175,7 @@ footer li:first-child:before { content: ""; }
 }
 
 @media print {
-    a, header img, nav, #grid-assistant, .hide-solution .letter, #grid > input, .buttons, footer { display: none; }
+    a, header img, nav, #grid-assistant, .hide-solution .letter, #grid > input, #edit-controls, .buttons, footer { display: none !important; }
     body { font-size: 0.75em; }
     h3 { font-size: 0.8em; }
     #grid-wrapper { display: block; margin: auto; padding: 15px 0px 30px 0px; width: 376px; }
