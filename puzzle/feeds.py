@@ -29,7 +29,7 @@ class PuzzleFeed(Feed):
         return 'Crossword #' + str(item.number) + ' is now available.'
 
     def item_link(self, item):
-        return reverse('puzzle', args=[item.number])
+        return reverse('puzzle', kwargs={'author': item.user.username, 'number': item.number})
 
     def item_pubdate(self, item):
         return item.pub_date
