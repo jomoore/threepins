@@ -27,7 +27,7 @@ Frankly, anyone geeky enough to work through the setup is probably geeky enough 
 3. Create a Python virtual environment and install dependencies
 
     ```bash
-    pyvenv venv
+    python -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
     ```
