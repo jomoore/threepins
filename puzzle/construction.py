@@ -132,6 +132,7 @@ def get_start_position(grid_data, clue_num):
         for x, cell in enumerate(row):
             if cell == clue_num:
                 return {'x': x, 'y': y}
+    return None
 
 def get_answer(puzzle_data, clue, down, pos):
     """Extract a clue's answer from ipuz data."""

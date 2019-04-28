@@ -98,8 +98,7 @@ def save(request):
     if new_puzzle:
         context = {'number': number, 'public': public}
         return render(request, 'puzzle/saved.html', context)
-    else:
-        return redirect('puzzle', author=user.username, number=number)
+    return redirect('puzzle', author=user.username, number=number)
 
 def users(request):
     """Show a list of users and their puzzles."""

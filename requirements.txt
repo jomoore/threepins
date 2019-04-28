@@ -1,6 +1,7 @@
 dj-database-url==0.5.0
 Django==1.11.20
 django-ipware==2.1.0
+django-simple-math-captcha==1.0.8
 gunicorn==19.9.0
 psycopg2-binary==2.8.2
 pytz==2019.1

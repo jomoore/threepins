@@ -69,7 +69,7 @@ Configuration files are provided for [Pylint](https://www.pylint.org/) and [ESLi
 Package [pylint-django](https://github.com/landscapeio/pylint-django) is used to filter out Django-specific warnings.
 
 ```bash
-pyvenv lint-venv
+python -m venv lint-venv
 source lint-venv/bin/activate
 pip install -r requirements.txt
 pip install pylint-django

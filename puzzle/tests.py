@@ -20,15 +20,13 @@ def get_user():
     """Helper to get the first user in the database, creating one if necessary."""
     if User.objects.filter(is_superuser=False).count():
         return User.objects.get(is_superuser=False)
-    else:
-        return User.objects.create_user('test', 'test@example.com', 'password')
+    return User.objects.create_user('test', 'test@example.com', 'password')
 
 def get_superuser():
     """Helper to get the superuser, creating one if necessary."""
     if User.objects.filter(is_superuser=True).count():
         return User.objects.get(is_superuser=True)
-    else:
-        return User.objects.create_superuser('super', 'super@example.com', 'password')
+    return User.objects.create_superuser('super', 'super@example.com', 'password')
 
 def create_small_puzzle():
     """Helper to insert a 3x3 puzzle into the database."""
