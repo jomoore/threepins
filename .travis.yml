@@ -1,9 +1,11 @@
 language: python
 
+dist: xenial
+
 cache: pip
 
 python:
-- 3.6
+- 3.7
 
 services:
 - postgresql
