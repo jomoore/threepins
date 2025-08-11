@@ -35,8 +35,8 @@ Frankly, anyone geeky enough to work through the setup is probably geeky enough 
 4. Set up Django assets
 
     ```
-    python manage.py createsuperuser
     python manage.py migrate
+    python manage.py createsuperuser
     python manage.py collectstatic
     ```
 

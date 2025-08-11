@@ -2,24 +2,24 @@
 Map puzzle URLs to views. Also maps the root URL to the latest puzzle.
 """
 
-from django.conf.urls import include, url
+from django.urls import include, re_path
 from django.contrib.auth import views as auth_views
 from puzzle import views
 from puzzle.feeds import PuzzleFeed
 
 urlpatterns = [ #pylint: disable=invalid-name
-    url(r'^$', views.latest, name='latest'),
-    url(r'^login/$', auth_views.LoginView.as_view(template_name='puzzle/login.html'), name='login'),
-    url(r'^logout/$', auth_views.LogoutView.as_view(next_page='latest'), name='logout'),
-    url(r'^create/$', views.create, name='create'),
-    url(r'^save/$', views.save, name='save'),
-    url(r'^rss/$', PuzzleFeed(), name='rss'),
-    url(r'^archive/$', views.users, name='users'),
-    url(r'^profile/$', views.profile, name='profile'),
-    url(r'^puzzle/(?P<number>\d+)/$', views.puzzle_redirect),
-    url(r'^setter/(?P<author>\w+)/(?P<number>\d+)/', include([
-        url(r'^$', views.puzzle, name='puzzle'),
-        url(r'^solution/$', views.solution, name='solution'),
-        url(r'^edit/$', views.edit, name='edit'),
+    re_path(r'^$', views.latest, name='latest'),
+    re_path(r'^login/$', auth_views.LoginView.as_view(template_name='puzzle/login.html'), name='login'),
+    re_path(r'^logout/$', auth_views.LogoutView.as_view(next_page='latest'), name='logout'),
+    re_path(r'^create/$', views.create, name='create'),
+    re_path(r'^save/$', views.save, name='save'),
+    re_path(r'^rss/$', PuzzleFeed(), name='rss'),
+    re_path(r'^archive/$', views.users, name='users'),
+    re_path(r'^profile/$', views.profile, name='profile'),
+    re_path(r'^puzzle/(?P<number>\d+)/$', views.puzzle_redirect),
+    re_path(r'^setter/(?P<author>\w+)/(?P<number>\d+)/', include([
+        re_path(r'^$', views.puzzle, name='puzzle'),
+        re_path(r'^solution/$', views.solution, name='solution'),
+        re_path(r'^edit/$', views.edit, name='edit'),
     ])),
 ]

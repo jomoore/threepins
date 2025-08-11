@@ -2,9 +2,9 @@
 Resolve URLs for the contact form.
 """
 
-from django.conf.urls import url
+from django.urls import re_path
 from contact import views
 
 urlpatterns = [ #pylint: disable=invalid-name
-    url(r'^$', views.contact, name='contact'),
+    re_path(r'^$', views.contact, name='contact'),
 ]
