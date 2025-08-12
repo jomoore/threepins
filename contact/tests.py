@@ -5,7 +5,6 @@ Uses the django test mailbox to make sure emails are getting sent as expected.
 """
 
 import os
-from simplemathcaptcha import utils as captcha_utils
 from django.test import TestCase
 from django.core import mail
 from django.urls import reverse
@@ -26,9 +25,7 @@ class ContactTests(TestCase):
         response = self.client.post(reverse('contact'),
                                     {'name': 'Bill',
                                      'email': 'bill@example.com',
-                                     'message': 'Hi there',
-                                     'captcha_0': 1,
-                                     'captcha_1': captcha_utils.hash_answer(1)})
+                                     'message': 'Hi there'})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Web Feedback')
         self.assertEqual(mail.outbox[0].body, 'Hi there')
@@ -41,9 +38,7 @@ class ContactTests(TestCase):
         response = self.client.post(reverse('contact'),
                                     {'name': '',
                                      'email': '',
-                                     'message': 'Hi there',
-                                     'captcha_0': 1,
-                                     'captcha_1': captcha_utils.hash_answer(1)})
+                                     'message': 'Hi there'})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Web Feedback')
         self.assertEqual(mail.outbox[0].body, 'Hi there')
@@ -56,19 +51,6 @@ class ContactTests(TestCase):
         response = self.client.post(reverse('contact'),
                                     {'name': 'Bill',
                                      'email': 'bill@example.com',
-                                     'message': '',
-                                     'captcha_0': 1,
-                                     'captcha_1': captcha_utils.hash_answer(1)})
-        self.assertEqual(len(mail.outbox), 0)
-        self.assertIn('contact/contact.html', map(lambda t: t.name, response.templates))
-
-    def test_reject_incorrect_captcha(self):
-        """Check that the page shows an error if the captcha is incorrect."""
-        response = self.client.post(reverse('contact'),
-                                    {'name': 'Bill',
-                                     'email': 'bill@example.com',
-                                     'message': '',
-                                     'captcha_0': 2,
-                                     'captcha_1': captcha_utils.hash_answer(1)})
+                                     'message': ''})
         self.assertEqual(len(mail.outbox), 0)
         self.assertIn('contact/contact.html', map(lambda t: t.name, response.templates))

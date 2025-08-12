@@ -14,7 +14,7 @@
 	<p>Whatever the reason, please get in touch!</p>
 	<form action="{% url 'contact' %}" method="post">
 		{% csrf_token %}
-		{{ form }}
+		{{ form.as_div }}
 		<input type="submit" name="send" value="Send" />
 	</form>
 </div>

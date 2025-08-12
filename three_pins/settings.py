@@ -23,7 +23,7 @@ DEFAULT_SECRET_KEY = '9_hj6d9e_ss$8bk6p^80n)t_cy418r6*_*3g(u-uoa4+qa26qy'
 SECRET_KEY = os.environ.get('SECRET_KEY', DEFAULT_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 # Application definition
@@ -62,6 +62,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
+                'django.template.context_processors.request',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
@@ -86,8 +87,6 @@ TIME_ZONE = 'Pacific/Auckland'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 
 
@@ -97,6 +96,8 @@ USE_TZ = True
 # Parse database configuration from $DATABASE_URL
 DATABASES = {}
 DATABASES['default'] = dj_database_url.config()
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
