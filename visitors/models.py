@@ -9,12 +9,12 @@ and where they came from. Usually, the answer is "robots".
 from re import sub
 from django.db import models
 from django.utils import timezone
-from ipware.ip import get_real_ip
+from ipware.ip import get_client_ip
 
 def save_request(request):
     """Record a page request's context in the database."""
     log = Visitor()
-    ip_addr = get_real_ip(request)
+    ip_addr, _ = get_client_ip(request)
     log.ip_addr = sub(r'[0-9a-fA-F]+$', 'x', ip_addr) if ip_addr is not None else ''
     log.user_agent = request.META.get('HTTP_USER_AGENT', '')
     log.path = request.path
