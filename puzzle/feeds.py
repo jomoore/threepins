@@ -12,7 +12,7 @@ from puzzle.models import Puzzle
 
 class PuzzleFeed(Feed):
     """RSS feed of new puzzles from the staff."""
-    #pylint: disable=no-self-use,missing-docstring
+    #pylint: disable=missing-docstring
 
     title = 'Three Pins'
     link = 'http://www.threepins.org'

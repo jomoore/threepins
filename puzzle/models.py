@@ -9,14 +9,15 @@ from datetime import datetime
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 BOOL_DOWN = ((True, 'Down'), (False, 'Across'))
 PUZZLE_TYPES = ((0, 'Blocked'), (1, 'Barred'))
 
 def default_user():
     """Default user for new puzzles."""
-    user = User.objects.filter(is_staff=True).order_by('date_joined').first()
+    user_model = get_user_model()
+    user = user_model.objects.filter(is_staff=True).order_by('date_joined').first()
     return user.id if user else None
 
 def default_number():
@@ -31,7 +32,8 @@ def default_pub_date():
 
 class Puzzle(models.Model):
     """Puzzles to solve. Non-editable fields are unused."""
-    user = models.ForeignKey(User, models.CASCADE, default=default_user)
+    user_model = get_user_model()
+    user = models.ForeignKey(user_model, models.CASCADE, default=default_user)
     number = models.IntegerField(default=default_number)
     pub_date = models.DateTimeField('publication date', default=default_pub_date)
     size = models.IntegerField(default=15, editable=False)

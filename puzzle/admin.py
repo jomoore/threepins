@@ -19,26 +19,26 @@ def import_from_xml(xml, puzzle):
     """Load a puzzle from Crossword Compiler XML format into the database."""
     # pylint: disable=no-member
     # false +ve on xml.etree.ElementTree.Element (v1.64)
-    crossword = ElementTree.parse(xml).find('*/%scrossword' % XMLNS)
-    for word in crossword.iter('%sword' % XMLNS):
+    crossword = ElementTree.parse(xml).find(f'*/{XMLNS}crossword')
+    for word in crossword.iter(f'{XMLNS}word'):
         xraw = word.attrib['x'].split('-')
         yraw = word.attrib['y'].split('-')
         xstart = int(xraw[0])
         ystart = int(yraw[0])
         down = len(yraw) > 1
-        clue = crossword.find('*/%sclue[@word="%s"]' % (XMLNS, word.attrib['id'])).text
+        clue = crossword.find(f'*/{XMLNS}clue[@word="{word.attrib['id']}"]').text
         if 'solution' in word.attrib:
             answer = word.attrib['solution']
         else:
             answer = ''
             if down:
                 for y in range(ystart, int(yraw[1]) + 1):
-                    answer += crossword.find('*/%scell[@x="%d"][@y="%d"]' %
-                                             (XMLNS, xstart, y)).attrib['solution'].lower()
+                    cell = f'*/{XMLNS}cell[@x="{xstart}"][@y="{y}"]'
+                    answer += crossword.find(cell).attrib['solution'].lower()
             else:
                 for x in range(xstart, int(xraw[1]) + 1):
-                    answer += crossword.find('*/%scell[@x="%d"][@y="%d"]' %
-                                             (XMLNS, x, ystart)).attrib['solution'].lower()
+                    cell = f'*/{XMLNS}cell[@x="{x}"][@y="{ystart}"]'
+                    answer += crossword.find(cell).attrib['solution'].lower()
 
         # XML is 1-based, model is 0-based
         xstart -= 1
@@ -73,7 +73,7 @@ class PuzzleAdmin(admin.ModelAdmin):
     inlines = [EntryInline]
 
     def save_model(self, request, obj, form, change):
-        super(PuzzleAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
         xml_file = form.cleaned_data.get('file_import', None)
         if xml_file:
             import_from_xml(xml_file, obj)
@@ -96,7 +96,7 @@ class BlankAdmin(admin.ModelAdmin):
     save_as = True
 
     def save_model(self, request, obj, form, change):
-        super(BlankAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
         ipuz_file = form.cleaned_data.get('file_import', None)
         if ipuz_file:
             import_blank_from_ipuz(ipuz_file, obj)

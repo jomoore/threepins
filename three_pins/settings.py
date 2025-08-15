@@ -23,7 +23,7 @@ DEFAULT_SECRET_KEY = '9_hj6d9e_ss$8bk6p^80n)t_cy418r6*_*3g(u-uoa4+qa26qy'
 SECRET_KEY = os.environ.get('SECRET_KEY', DEFAULT_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 # Application definition

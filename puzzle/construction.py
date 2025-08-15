@@ -8,7 +8,7 @@ SVG thumbnails, and ipuz format for saving.
 import json
 from re import sub, split
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.utils import timezone
@@ -61,16 +61,16 @@ def create_grid(obj, size):
 def create_thumbnail(blank, square_size):
     """Create an SVG of the blank grid."""
     blocks = Block.objects.filter(blank=blank.id)
-    svg = '<svg width="%d" height="%d">' % (blank.size * square_size, blank.size * square_size)
+    svg = f'<svg width="{blank.size * square_size}" height="{blank.size * square_size}">'
     for y in range(blank.size):
         for x in range(blank.size):
             if any(b.x == x and b.y == y for b in blocks):
                 fill = '0,0,0'
             else:
                 fill = '255,255,255'
-            svg += '<rect y="%d" x="%d" ' % (y * square_size, x * square_size)
-            svg += 'width="%d" height="%d" ' % (square_size, square_size)
-            svg += 'style="fill:rgb(%s);stroke-width:1;stroke:rgb(0,0,0)" />' % fill
+            svg += f'<rect y="{y * square_size}" x="{x * square_size}" '
+            svg += f'width="{square_size}" height="{square_size}" '
+            svg += f'style="fill:rgb({fill});stroke-width:1;stroke:rgb(0,0,0)" />'
     svg += '</svg>'
     return svg
 
@@ -120,8 +120,9 @@ def get_or_create_user(request):
     username = request.POST['username']
     password = request.POST['password']
     email = request.POST['email']
-    if User.objects.filter(username=username).count() == 0:
-        user = User.objects.create_user(username, email, password)
+    user_model = get_user_model()
+    if user_model.objects.filter(username=username).count() == 0:
+        user = user_model.objects.create_user(username, email, password)
     else:
         user = authenticate(username=username, password=password)
     return user
@@ -136,7 +137,7 @@ def get_start_position(grid_data, clue_num):
 
 def get_answer(puzzle_data, clue, down, pos):
     """Extract a clue's answer from ipuz data."""
-    blockChar = '#' if 'block' not in puzzle_data else puzzle_data['block']
+    block_char = '#' if 'block' not in puzzle_data else puzzle_data['block']
     size = puzzle_data['dimensions']['width']
     numeration = split('([-,])', clue['enumeration'])
     x, y = pos['x'], pos['y']
@@ -146,7 +147,7 @@ def get_answer(puzzle_data, clue, down, pos):
     while x < size and y < size:
         # Read one letter out of the solution array
         letter = puzzle_data['solution'][y][x]
-        if letter == blockChar:
+        if letter == block_char:
             break
         if letter == 0:
             letter = '.'
