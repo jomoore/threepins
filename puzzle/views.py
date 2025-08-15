@@ -7,7 +7,7 @@ wrangle them into their templates.
 
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
@@ -39,7 +39,8 @@ def puzzle(request, author, number):
 
 def puzzle_redirect(request, number): #pylint: disable=unused-argument
     """Redirect from the old URL scheme where no author is specified."""
-    author = User.objects.filter(is_staff=True).order_by('date_joined').first().username
+    user_model = get_user_model()
+    author = user_model.objects.filter(is_staff=True).order_by('date_joined').first().username
     return redirect('puzzle', permanent=True, author=author, number=number)
 
 @login_required
@@ -83,8 +84,9 @@ def save(request):
     if not request.user.is_authenticated:
         user = get_or_create_user(request)
         if user is None:
-            return redirect('%s?next=%s' % (reverse('login'),
-                                            request.META.get('HTTP_REFERER', '/')))
+            target = reverse('login')
+            referer = request.META.get('HTTP_REFERER', '/')
+            return redirect(f'{target}?next={referer}')
         login(request, user)
 
     if author and author != user.username:
@@ -102,8 +104,9 @@ def save(request):
 
 def users(request):
     """Show a list of users and their puzzles."""
+    user_model = get_user_model()
     context = {'user_list': []}
-    for user in User.objects.all().order_by('username'):
+    for user in user_model.objects.all().order_by('username'):
         objs = Puzzle.objects.filter(user=user, pub_date__lte=timezone.now()).order_by('-number')
         if objs:
             puzzle_list = []
@@ -123,3 +126,9 @@ def profile(request):
     for puz in objs.filter(pub_date__lte=now):
         context['published'].append({'number': puz.number, 'date': get_date_string(puz)})
     return render(request, 'puzzle/profile.html', context)
+
+@login_required
+def logout_user(request):
+    """Log out a logged in user."""
+    logout(request)
+    return redirect('/')

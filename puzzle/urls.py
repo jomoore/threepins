@@ -7,10 +7,11 @@ from django.contrib.auth import views as auth_views
 from puzzle import views
 from puzzle.feeds import PuzzleFeed
 
-urlpatterns = [ #pylint: disable=invalid-name
+urlpatterns = [
     re_path(r'^$', views.latest, name='latest'),
-    re_path(r'^login/$', auth_views.LoginView.as_view(template_name='puzzle/login.html'), name='login'),
-    re_path(r'^logout/$', auth_views.LogoutView.as_view(next_page='latest'), name='logout'),
+    re_path(r'^login/$', auth_views.LoginView.as_view(template_name='puzzle/login.html'),
+            name='login'),
+    re_path(r'^logout/$', views.logout_user, name='logout'),
     re_path(r'^create/$', views.create, name='create'),
     re_path(r'^save/$', views.save, name='save'),
     re_path(r'^rss/$', PuzzleFeed(), name='rss'),

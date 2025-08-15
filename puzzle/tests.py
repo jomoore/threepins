@@ -9,7 +9,7 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from puzzle.models import Puzzle, Entry, Blank, Block
 from puzzle.feeds import PuzzleFeed
 from puzzle.construction import create_grid, create_thumbnail, get_clues, get_date_string
@@ -18,15 +18,17 @@ from visitors.models import Visitor
 
 def get_user():
     """Helper to get the first user in the database, creating one if necessary."""
-    if User.objects.filter(is_superuser=False).count():
-        return User.objects.get(is_superuser=False)
-    return User.objects.create_user('test', 'test@example.com', 'password')
+    user_model = get_user_model()
+    if user_model.objects.filter(is_superuser=False).count():
+        return user_model.objects.get(is_superuser=False)
+    return user_model.objects.create_user('test', 'test@example.com', 'password')
 
 def get_superuser():
     """Helper to get the superuser, creating one if necessary."""
-    if User.objects.filter(is_superuser=True).count():
-        return User.objects.get(is_superuser=True)
-    return User.objects.create_superuser('super', 'super@example.com', 'password')
+    user_model = get_user_model()
+    if user_model.objects.filter(is_superuser=True).count():
+        return user_model.objects.get(is_superuser=True)
+    return user_model.objects.create_superuser('super', 'super@example.com', 'password')
 
 def create_small_puzzle():
     """Helper to insert a 3x3 puzzle into the database."""
@@ -264,9 +266,9 @@ class PuzzleViewTests(TestCase):
         self.assertEqual(response.content.count('class="grid-number"'.encode('utf-8')), 3)
         self.assertEqual(response.content.count('data-a='.encode('utf-8')), 8)
         for i in range(3):
-            search_str = 'data-x="%i"' % i
+            search_str = f'data-x="{i}"'
             self.assertEqual(response.content.count(search_str.encode('utf-8')), 15)
-            search_str = 'data-y="%i"' % i
+            search_str = f'data-y="{i}"'
             self.assertEqual(response.content.count(search_str.encode('utf-8')), 15)
 
     def test_home_page_clues(self):
@@ -400,6 +402,15 @@ class PuzzleViewTests(TestCase):
         response = self.client.get('/puzzle/1', follow=True)
         self.assertRedirects(response, '/setter/super/1/', status_code=301)
 
+    def test_user_logout(self):
+        """Check that the logout URL returns the user to the home page and removes their access."""
+        create_puzzle_range()
+        self.log_in_super_user()
+        response = self.client.get(reverse('logout'))
+        self.assertRedirects(response, '/', status_code=302)
+        response = self.client.get(reverse('puzzle', args=['super', 3]))
+        self.assertEqual(response.status_code, 403)
+
 
 class PuzzleEditTests(TestCase):
     """Tests for creating and editing puzzles."""
@@ -515,7 +526,8 @@ class PuzzleEditTests(TestCase):
                                                       'email': 'noob@example.com'})
         self.assertEqual(response.status_code, 200)
 
-        user = User.objects.get(username='Newbie')
+        user_model = get_user_model()
+        user = user_model.objects.get(username='Newbie')
         self.assertEqual(user.email, 'noob@example.com')
         puz = Puzzle.objects.get(user=user, number=1)
         self.assertEqual(len(Entry.objects.filter(puzzle=puz)), 4)
@@ -622,8 +634,8 @@ class PuzzleAdminTests(TestCase):
     def test_import_from_ipuz(self):
         """Import a blank grid from an ipuz file and check the result."""
         blank = Blank.objects.create()
-        file = open('puzzle/test_data/ettu.ipuz', 'rb')
-        import_blank_from_ipuz(file, blank)
+        with open('puzzle/test_data/ettu.ipuz', 'rb') as file:
+            import_blank_from_ipuz(file, blank)
         blocks = Block.objects.order_by('y', 'x')
         self.verify_blocks_in_row(blocks[0:1], blank, 0, [11])
         self.verify_blocks_in_row(blocks[1:8], blank, 1, [1, 3, 5, 7, 9, 11, 13])
@@ -637,7 +649,6 @@ class PuzzleAdminTests(TestCase):
         self.verify_blocks_in_row(blocks[46:53], blank, 11, [1, 3, 5, 7, 9, 11, 13])
         self.verify_blocks_in_row(blocks[53:60], blank, 13, [1, 3, 5, 7, 9, 11, 13])
         self.verify_blocks_in_row(blocks[60:], blank, 14, [3])
-        file.close()
 
 
 class VisitorLogTests(TestCase):
